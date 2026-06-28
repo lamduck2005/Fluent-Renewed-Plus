@@ -120,7 +120,11 @@ function Creator.UpdateTheme(RegistryIndex: Instance?)
 				task.wait()
 			end
 
-			RegistryIndex[Property] = Creator.GetThemeProperty(ColorIdx)
+			if typeof(ColorIdx) == "function" then
+				ColorIdx(Creator.GetThemeProperty)
+			else
+				RegistryIndex[Property] = Creator.GetThemeProperty(ColorIdx)
+			end
 		end
 	else
 		for _, Object in next, Creator.Registry do
@@ -137,7 +141,11 @@ function Creator.UpdateTheme(RegistryIndex: Instance?)
 					task.wait()
 				end
 
-				Object.Object[Property] = Creator.GetThemeProperty(ColorIdx)
+				if typeof(ColorIdx) == "function" then
+					ColorIdx(Creator.GetThemeProperty)
+				else
+					Object.Object[Property] = Creator.GetThemeProperty(ColorIdx)
+				end
 			end
 		end
 	end	

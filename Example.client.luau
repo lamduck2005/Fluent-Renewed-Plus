@@ -8,7 +8,9 @@ local Window = Library:Window{
     Resize = true,
     Acrylic = true,
     Theme = "Vynixu",
-    MinimizeKey = Enum.KeyCode.P
+    MinimizeKey = Enum.KeyCode.P,
+    MinimizeButton = true,
+    Transparency = false
 }
 
 local Tabs = {

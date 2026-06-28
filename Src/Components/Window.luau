@@ -418,9 +418,205 @@ return function(Config)
 		end)	
 	end
 
+	----------------------------------------------------------------
+	-- MINIMIZE BUTTON
+	----------------------------------------------------------------
+	if Config.MinimizeButton then
+		local RunService = game:GetService("RunService")
+		local LocalPlayer = game:GetService("Players").LocalPlayer
+
+		local MINIMIZE_GUI_NAME = "FluentMinimizeGUI"
+		local MINIMIZE_BUTTON_NAME = "FluentMinBtn"
+		local MinButtonSize = if typeof(Config.MinimizeButtonSize) == "number" then Config.MinimizeButtonSize else 50
+
+		local screenGui = Library.UIContainer:FindFirstChild(MINIMIZE_GUI_NAME)
+		if not screenGui then
+			screenGui = New("ScreenGui", {
+				Name = MINIMIZE_GUI_NAME,
+				ResetOnSpawn = false,
+				ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+				DisplayOrder = 999,
+				Parent = Library.UIContainer,
+			})
+		elseif screenGui.Parent ~= Library.UIContainer then
+			screenGui.Parent = Library.UIContainer
+		end
+
+		local frame = screenGui:FindFirstChild(MINIMIZE_BUTTON_NAME)
+		if not frame then
+			local iconData = Library.Utilities:GetIcon("bird")
+			local ICON_PADDING = 0.18
+			frame = New("ImageButton", {
+				Name = MINIMIZE_BUTTON_NAME,
+				Size = UDim2.new(0, MinButtonSize, 0, MinButtonSize),
+				BackgroundColor3 = Color3.new(0, 0, 0),
+				BackgroundTransparency = 0.2,
+				Parent = screenGui,
+			}, {
+				New("UICorner", {
+					CornerRadius = UDim.new(0, 8),
+				}),
+				New("UIStroke", {
+					Thickness = 1.8,
+					ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+				}),
+				New("ImageLabel", {
+					Name = "Icon",
+					Size = UDim2.fromScale(1 - ICON_PADDING * 2, 1 - ICON_PADDING * 2),
+					Position = UDim2.fromScale(ICON_PADDING, ICON_PADDING),
+					BackgroundTransparency = 1,
+					Image = iconData.Image,
+					ImageRectSize = iconData.ImageRectSize,
+					ImageRectOffset = iconData.ImageRectOffset,
+					ScaleType = Enum.ScaleType.Fit,
+				}),
+			})
+		end
+
+		local iconLabel = frame:FindFirstChild("Icon")
+		if iconLabel then
+			Creator.AddThemeObject(iconLabel, {
+				ImageColor3 = "Accent",
+			})
+		end
+
+		local framePosition = UDim2.new(0, 100, 0, 100)
+		local SharedTable = Library.Utilities.Shared
+		if SharedTable.FluentMFP then
+			framePosition = SharedTable.FluentMFP
+		end
+		frame.Position = framePosition
+
+		Window.MinimizeGui = screenGui
+
+		local cachedStroke = frame:FindFirstChildOfClass("UIStroke")
+		local cachedIcon = frame:FindFirstChild("Icon")
+		local function getAccent()
+			return Creator.GetThemeProperty("Accent")
+		end
+
+		Creator.AddThemeObject(cachedStroke, {
+			Color = function(GetTheme)
+				if not Window._minBtnHovering and not Window._minBtnDragging then
+					cachedStroke.Color = GetTheme("Accent")
+				end
+			end,
+		})
+
+		local dragging = false
+		local isHovering = false
+		local dragStart: Vector2?
+		local startPos: UDim2?
+		local totalDragDistance = 0
+		local DRAG_THRESHOLD = 5
+		local LERP_SPEED = 0.5
+		local targetPosition = frame.Position
+
+		Window._minBtnHovering = false
+		Window._minBtnDragging = false
+
+		Creator.AddSignal(frame.MouseEnter, function()
+			isHovering = true
+			Window._minBtnHovering = true
+			frame.BackgroundTransparency = 0
+			if cachedIcon then cachedIcon.ImageColor3 = Color3.new(1, 1, 1) end
+			if cachedStroke then cachedStroke.Color = Color3.new(1, 1, 1) end
+		end)
+
+		Creator.AddSignal(frame.MouseLeave, function()
+			isHovering = false
+			Window._minBtnHovering = false
+			if not dragging then
+				frame.BackgroundTransparency = 0.2
+				if cachedIcon then cachedIcon.ImageColor3 = getAccent() end
+				if cachedStroke then cachedStroke.Color = getAccent() end
+			end
+		end)
+
+		Creator.AddSignal(frame.InputBegan, function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				dragging = true
+				Window._minBtnDragging = true
+				dragStart = Vector2.new(input.Position.X, input.Position.Y)
+				startPos = frame.Position
+				totalDragDistance = 0
+				frame.BackgroundTransparency = 0
+				if cachedIcon then cachedIcon.ImageColor3 = Color3.new(1, 1, 1) end
+				if cachedStroke then cachedStroke.Color = Color3.new(1, 1, 1) end
+			end
+		end)
+
+		Creator.AddSignal(UserInputService.InputChanged, function(input)
+			if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+				local currentPos = Vector2.new(input.Position.X, input.Position.Y)
+				local delta = currentPos - (dragStart or Vector2.new(0, 0))
+				totalDragDistance = delta.Magnitude
+
+				targetPosition = UDim2.new(
+					(startPos or UDim2.new(0, 0)).X.Scale,
+					(startPos or UDim2.new(0, 0)).X.Offset + delta.X,
+					(startPos or UDim2.new(0, 0)).Y.Scale,
+					(startPos or UDim2.new(0, 0)).Y.Offset + delta.Y
+				)
+			end
+		end)
+
+		Creator.AddSignal(UserInputService.InputEnded, function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				if dragging then
+					dragging = false
+					Window._minBtnDragging = false
+					if totalDragDistance < DRAG_THRESHOLD then
+						Window:Minimize()
+					end
+
+					local vpSize = Camera.ViewportSize
+					local clampedX = math.clamp(targetPosition.X.Offset, 0, vpSize.X - MinButtonSize)
+					local clampedY = math.clamp(targetPosition.Y.Offset, 0, vpSize.Y - MinButtonSize)
+					framePosition = UDim2.new(0, clampedX, 0, clampedY)
+
+					SharedTable.FluentMFP = framePosition
+					frame.Position = framePosition
+					frame.BackgroundTransparency = isHovering and 0 or 0.2
+					if isHovering then
+						if cachedIcon then cachedIcon.ImageColor3 = Color3.new(1, 1, 1) end
+						if cachedStroke then cachedStroke.Color = Color3.new(1, 1, 1) end
+					else
+						if cachedIcon then cachedIcon.ImageColor3 = getAccent() end
+						if cachedStroke then cachedStroke.Color = getAccent() end
+					end
+				end
+			end
+		end)
+
+		Creator.AddSignal(RunService.RenderStepped, function()
+			if dragging then
+				local currentPos = frame.Position
+				local newX = currentPos.X.Offset + (targetPosition.X.Offset - currentPos.X.Offset) * LERP_SPEED
+				local newY = currentPos.Y.Offset + (targetPosition.Y.Offset - currentPos.Y.Offset) * LERP_SPEED
+
+				frame.Position = UDim2.new(
+					targetPosition.X.Scale,
+					newX,
+					targetPosition.Y.Scale,
+					newY
+				)
+			end
+		end)
+
+		Creator.AddSignal(frame.AncestryChanged, function()
+			if not frame:IsDescendantOf(game) then
+				Window.MinimizeGui = nil
+			end
+		end)
+	end
+
 	function Window:Destroy()
 		if Library.UseAcrylic then
 			Window.AcrylicPaint.Model:Destroy()
+		end
+		if Window.MinimizeGui then
+			Window.MinimizeGui:Destroy()
 		end
 		Window.Root:Destroy()
 	end

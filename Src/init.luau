@@ -259,7 +259,10 @@ function Library:Window(Config: {
 		Mobile: {
 			GetIcon: (IsMinimized: boolean) -> { Image: string, ImageRectOffset: Vector2, ImageRectSize: Vector2 },
 			Size: UDim2
-		}?
+		}?,
+		MinimizeButton: boolean?,
+		MinimizeButtonSize: number?,
+		Transparency: boolean?
 	})
 	assert(Library.CreatedWindow == nil, debug.traceback("You cannot create more than one window.", 2))
 
@@ -278,6 +281,7 @@ function Library:Window(Config: {
 	Library.UseAcrylic = if typeof(Config.Acrylic) == "boolean" then Config.Acrylic else false
 	Library.Acrylic = if typeof(Config.Acrylic) == "boolean" then Config.Acrylic else false
 	Library.Theme = if typeof(Config.Theme) == "string" then Config.Theme else "Vynixu"
+	Library.Transparency = if typeof(Config.Transparency) == "boolean" then Config.Transparency else true
 
 	if Config.Acrylic then
 		Acrylic.init()
@@ -299,12 +303,15 @@ function Library:Window(Config: {
 				return Library.Utilities:GetIcon(IsMinimized and "phosphor-eye" or "phosphor-eye-slash")
 			end,
 			Size = UDim2.fromOffset(30, 30)
-		}
+		},
+		MinimizeButton = Config.MinimizeButton,
+		MinimizeButtonSize = Config.MinimizeButtonSize
 	}
 
 	BaseContainer.Name = `FluentRenewed_{Config.Title}`
 
 	Library.CreatedWindow = Window
+	Library:ToggleTransparency(Library.Transparency)
 	Library:SetTheme(Library.Theme)
 
 	return Window
@@ -338,6 +345,10 @@ function Library:Destroy()
 		end
 
 		Creator.Disconnect()
+
+		if Library.CreatedWindow.MinimizeGui then
+			Library.CreatedWindow.MinimizeGui:Destroy()
+		end
 
 		for i,v in next, Library.Connections do
 			local type = typeof(v)
