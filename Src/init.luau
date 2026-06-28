@@ -40,6 +40,7 @@ local function Clone<Original>(ToClone: any & Original): (Original, boolean)
 end
 
 local MarketplaceService = Clone(game:GetService("MarketplaceService"))
+local Players = Clone(game:GetService("Players"))
 local TweenService = Clone(game:GetService("TweenService"))
 local Camera = Clone(game:GetService("Workspace")).CurrentCamera
 local UserInputService = Clone(game:GetService("UserInputService"))
@@ -56,6 +57,8 @@ local Themes = require(Root.Themes)
 local Signal = require(Root.Packages.Signal)
 
 local NotificationModule = require(Components.Notification)
+local KeySystemModule = require(Root.Modules.KeySystem)
+local KeyServices = require(Root.Modules.KeyServices)
 
 local SharedTable = shared or _G or (getgenv and getgenv()) or getfenv(1)
 local New = Creator.New
@@ -263,7 +266,8 @@ function Library:Window(Config: {
 		MinimizeButton: boolean?,
 		MinimizeButtonSize: number?,
 		MinimizeButtonIcon: string?,
-		Transparency: boolean?
+		Transparency: boolean?,
+		KeySystem: { [string]: any }?
 	})
 	assert(Library.CreatedWindow == nil, debug.traceback("You cannot create more than one window.", 2))
 
@@ -283,6 +287,90 @@ function Library:Window(Config: {
 	Library.Acrylic = if typeof(Config.Acrylic) == "boolean" then Config.Acrylic else false
 	Library.Theme = if typeof(Config.Theme) == "string" then Config.Theme else "Vynixu"
 	Library.Transparency = if typeof(Config.Transparency) == "boolean" then Config.Transparency else true
+
+	if Config.KeySystem then
+		local CanLoadWindow = false
+
+		local hwid = gethwid or function()
+			return Players.LocalPlayer.UserId
+		end
+
+		local Filename = tostring(hwid())
+
+		local function loadKeysystem()
+			KeySystemModule.new(Library, Config, Filename, function(c)
+				CanLoadWindow = c
+			end)
+		end
+
+		local keyPath = (Config.Folder or "Temp") .. "/" .. Filename .. ".key"
+
+		if Config.KeySystem.KeyValidator then
+			if Config.KeySystem.SaveKey and isfile and isfile(keyPath) then
+				local savedKey = readfile(keyPath)
+				local isValid = Config.KeySystem.KeyValidator(savedKey)
+
+				if isValid then
+					CanLoadWindow = true
+				else
+					if delfile then delfile(keyPath) end
+					loadKeysystem()
+				end
+			else
+				loadKeysystem()
+			end
+		elseif not Config.KeySystem.API then
+			if Config.KeySystem.SaveKey and isfile and isfile(keyPath) then
+				local savedKey = readfile(keyPath)
+				local isKey = (type(Config.KeySystem.Key) == "table") and table.find(Config.KeySystem.Key, savedKey)
+					or tostring(Config.KeySystem.Key) == tostring(savedKey)
+
+				if isKey then
+					CanLoadWindow = true
+				else
+					if delfile then delfile(keyPath) end
+					loadKeysystem()
+				end
+			else
+				loadKeysystem()
+			end
+		else
+			if isfile and isfile(keyPath) then
+				local fileKey = readfile(keyPath)
+				local fileKeyStr = tostring(fileKey)
+				local isSuccess = false
+
+				for _, i in next, Config.KeySystem.API do
+					local serviceData = KeyServices[i.Type]
+					if serviceData then
+						local args = {}
+						for _, argName in next, serviceData.Args do
+							table.insert(args, i[argName])
+						end
+
+						local service = serviceData.New(table.unpack(args))
+						local success, _ = service.Verify(fileKeyStr)
+						if success then
+							isSuccess = true
+							break
+						end
+					end
+				end
+
+				CanLoadWindow = isSuccess
+				if not isSuccess then
+					if delfile then delfile(keyPath) end
+					loadKeysystem()
+				end
+			else
+				loadKeysystem()
+			end
+		end
+
+		repeat
+			task.wait()
+		until CanLoadWindow
+	end
 
 	if Config.Acrylic then
 		Acrylic.init()

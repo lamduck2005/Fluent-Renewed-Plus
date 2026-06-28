@@ -11,7 +11,20 @@ local Window = Library:Window{
     MinimizeKey = Enum.KeyCode.P,
     MinimizeButton = true,
     MinimizeButtonIcon = "bone",
-    Transparency = false
+    Transparency = false,
+    KeySystem = {
+        Title = "Key System",
+        Note = "Get your key at discord.gg/example",
+        SaveKey = true,
+        Key = {"a"},
+        URL = "https://discord.gg/example",
+        Thumbnail = {
+            Image = "rbxassetid://9886659671",
+            Title = "Premium Access",
+            Width = 200
+        },
+       
+    }
 }
 
 local Tabs = {
