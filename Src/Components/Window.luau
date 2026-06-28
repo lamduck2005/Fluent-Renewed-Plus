@@ -444,7 +444,8 @@ return function(Config)
 
 		local frame = screenGui:FindFirstChild(MINIMIZE_BUTTON_NAME)
 		if not frame then
-			local iconData = Library.Utilities:GetIcon("bird")
+			local iconName = if typeof(Config.MinimizeButtonIcon) == "string" then Config.MinimizeButtonIcon else "bird"
+			local iconData = Library.Utilities:GetIcon(iconName) or Library.Utilities:GetIcon("bird")
 			local ICON_PADDING = 0.18
 			frame = New("ImageButton", {
 				Name = MINIMIZE_BUTTON_NAME,

@@ -262,6 +262,7 @@ function Library:Window(Config: {
 		}?,
 		MinimizeButton: boolean?,
 		MinimizeButtonSize: number?,
+		MinimizeButtonIcon: string?,
 		Transparency: boolean?
 	})
 	assert(Library.CreatedWindow == nil, debug.traceback("You cannot create more than one window.", 2))
@@ -305,7 +306,8 @@ function Library:Window(Config: {
 			Size = UDim2.fromOffset(30, 30)
 		},
 		MinimizeButton = Config.MinimizeButton,
-		MinimizeButtonSize = Config.MinimizeButtonSize
+		MinimizeButtonSize = Config.MinimizeButtonSize,
+		MinimizeButtonIcon = Config.MinimizeButtonIcon
 	}
 
 	BaseContainer.Name = `FluentRenewed_{Config.Title}`

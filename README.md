@@ -27,6 +27,66 @@ local Library = loadstring(game:HttpGetAsync("https://github.com/ActualMasterOog
 
 [Example Script for an exploit environment](https://github.com/ActualMasterOogway/Fluent-Renewed/blob/master/Example.luau)
 
+## 📖 Window Configuration
+
+Below are the available options for `Library:Window{}`:
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `Title` | `string?` | Game name | Window title |
+| `SubTitle` | `string?` | `"Made with Fluent Renewed"` | Window subtitle |
+| `TabWidth` | `number?` | `160` | Width of the tab selector |
+| `Size` | `UDim2?` | — | Window size |
+| `MinSize` | `Vector2?` | `Vector2.new(470, 380)` | Minimum window size |
+| `Resize` | `boolean?` | `false` | Allow window resizing |
+| `MinimizeKey` | `Enum.KeyCode?` | `Enum.KeyCode.LeftControl` | Key to toggle minimize |
+| `Acrylic` | `boolean?` | `false` | Enable acrylic blur effect |
+| `Theme` | `string?` | `"Vynixu"` | UI theme name |
+| `Mobile` | `table?` | — | Mobile-specific configuration |
+| `MinimizeButton` | `boolean?` | `false` | Show a persistent floating minimize button |
+| `MinimizeButtonSize` | `number?` | `50` | Size of the minimize button in pixels |
+| `MinimizeButtonIcon` | `string?` | `"bird"` | Icon name for the minimize button (any Lucide/Phosphor icon; falls back to `"bird"` if not found) |
+| `Transparency` | `boolean?` | `true` | Enable window transparency effect |
+
+### 🔽 MinimizeButton
+
+When enabled, a small floating button is created in a separate ScreenGui that persists even when the main window is hidden. It can be clicked to toggle the window visibility, and dragged to reposition.
+
+```lua
+local Window = Library:Window{
+    Title = "My Script",
+    MinimizeButton = true,
+    MinimizeButtonSize = 50, -- optional, defaults to 50
+    MinimizeButtonIcon = "scan-eye", -- optional, defaults to "bird"
+}
+```
+
+The button position is saved per-session and will restore to the last position.
+
+### 🪟 Transparency
+
+Controls the background transparency (frosted glass effect) of the window. Set to `false` for a fully opaque background.
+
+```lua
+-- Enable transparency (default)
+local Window = Library:Window{
+    Title = "My Script",
+    Transparency = true,
+}
+
+-- Disable transparency for full opacity
+local Window = Library:Window{
+    Title = "My Script",
+    Transparency = false,
+}
+```
+
+You can also toggle it at runtime:
+```lua
+Library:ToggleTransparency(true)  -- enable
+Library:ToggleTransparency(false) -- disable
+```
+
 ## Credits
 
 - [Master Oogway](https://github.com/ActualMasterOogway/Fluent-Renewed) - The master mind behind Fluent Renewed

@@ -10,6 +10,7 @@ local Window = Library:Window{
     Theme = "Vynixu",
     MinimizeKey = Enum.KeyCode.P,
     MinimizeButton = true,
+    MinimizeButtonIcon = "bone",
     Transparency = false
 }
 
