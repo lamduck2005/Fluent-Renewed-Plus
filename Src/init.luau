@@ -54,8 +54,10 @@ local Acrylic = require(Root.Modules.Acrylic)
 local Icons = require(Root.Modules.Icons)
 local Themes = require(Root.Themes)
 local Signal = require(Root.Packages.Signal)
+local Services = require(Root.Modules.Services)
 
 local NotificationModule = require(Components.Notification)
+local KeySystem = require(Components.KeySystem)
 
 local SharedTable = shared or _G or (getgenv and getgenv()) or getfenv(1)
 local New = Creator.New
@@ -263,7 +265,31 @@ function Library:Window(Config: {
 		MinimizeButton: boolean?,
 		MinimizeButtonSize: number?,
 		MinimizeButtonIcon: string?,
-		Transparency: boolean?
+		Transparency: boolean?,
+		Folder: string?,
+		KeySystem: {
+			Title: string?,
+			Note: string?,
+			URL: string?,
+			SaveKey: boolean?,
+			Thumbnail: {
+				Image: string,
+				Title: string?,
+				Width: number?,
+			}?,
+			Key: string | { string }?,
+			KeyValidator: (string) -> boolean?,
+			API: { {
+				Type: string,
+				ServiceId: string?,
+				Secret: string?,
+				ScriptId: string?,
+				Discord: string?,
+				ApiKey: string?,
+				Provider: string?,
+				Title: string?,
+			} }?,
+		}?
 	})
 	assert(Library.CreatedWindow == nil, debug.traceback("You cannot create more than one window.", 2))
 
@@ -286,6 +312,85 @@ function Library:Window(Config: {
 
 	if Config.Acrylic then
 		Acrylic.init()
+	end
+
+	if Config.KeySystem then
+		Config.Folder = Config.Folder or "Temp"
+		local hasFileIO = isfolder and isfile and readfile and writefile
+
+		if hasFileIO and not isfolder(Config.Folder) then
+			makefolder(Config.Folder)
+		end
+
+		local hwid = gethwid and gethwid() or game:GetService("Players").LocalPlayer.UserId
+		local keyFile = Config.Folder .. "/" .. tostring(hwid) .. ".key"
+		local canLoad = false
+
+		local function showKeyDialog()
+			KeySystem.Show(Config.KeySystem, Library, function(success)
+				canLoad = success
+			end)
+		end
+
+		if Config.KeySystem.KeyValidator then
+			if Config.KeySystem.SaveKey and hasFileIO and isfile(keyFile) then
+				local savedKey = readfile(keyFile)
+				if Config.KeySystem.KeyValidator(savedKey) then
+					canLoad = true
+				else
+					showKeyDialog()
+				end
+			else
+				showKeyDialog()
+			end
+		elseif Config.KeySystem.API then
+			if hasFileIO and isfile(keyFile) then
+				local savedKey = readfile(keyFile)
+				local isValid = false
+
+				for _, entry in next, Config.KeySystem.API do
+					local serviceDef = Services[entry.Type]
+					if serviceDef then
+						local args = {}
+						for _, argName in next, serviceDef.Args do
+							table.insert(args, entry[argName])
+						end
+						local service = serviceDef.New(table.unpack(args))
+						local success = service.Verify(savedKey)
+						if success then
+							isValid = true
+							break
+						end
+					end
+				end
+
+				if isValid then
+					canLoad = true
+				else
+					showKeyDialog()
+				end
+			else
+				showKeyDialog()
+			end
+		elseif Config.KeySystem.Key then
+			if Config.KeySystem.SaveKey and hasFileIO and isfile(keyFile) then
+				local savedKey = readfile(keyFile)
+				local isMatch = type(Config.KeySystem.Key) == "table" and table.find(Config.KeySystem.Key, savedKey) or Config.KeySystem.Key == savedKey
+				if isMatch then
+					canLoad = true
+				else
+					showKeyDialog()
+				end
+			else
+				showKeyDialog()
+			end
+		else
+			showKeyDialog()
+		end
+
+		repeat
+			task.wait()
+		until canLoad
 	end
 
 	local Window = require(Components.Window){

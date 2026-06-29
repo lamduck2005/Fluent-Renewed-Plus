@@ -1,17 +1,57 @@
 local Library = require(game:GetService("ReplicatedStorage"):WaitForChild("Fluent"):WaitForChild("MainModule"))
 
 local Window = Library:Window{
-    Title = `Fluent {Library.Version}`,
-    SubTitle = "by Actual Master Oogway",
-    TabWidth = 160,
-    Size = UDim2.fromOffset(830, 525),
-    Resize = true,
-    Acrylic = true,
-    Theme = "Vynixu",
-    MinimizeKey = Enum.KeyCode.P,
-    MinimizeButton = true,
-    MinimizeButtonIcon = "bone",
-    Transparency = false
+	Title = `Fluent {Library.Version}`,
+	SubTitle = "by Actual Master Oogway",
+	TabWidth = 160,
+	Size = UDim2.fromOffset(830, 525),
+	Resize = true,
+	Acrylic = true,
+	Theme = "Vynixu",
+	MinimizeKey = Enum.KeyCode.P,
+	MinimizeButton = true,
+	MinimizeButtonIcon = "bone",
+	Transparency = false,
+
+	-- Key system (active: Mode 1 - static key. Password: "fluent")
+	-- KeySystem = {
+	-- 	Title = "Fluent Renewed",
+	-- 	Note = "Enter your key to continue.",
+	-- 	SaveKey = true,
+	-- 	Key = "fluent",
+	-- 	URL = "https://github.com/ActualMasterOogway/Fluent-Renewed",
+	-- 	Thumbnail = {
+	-- 		Image = "rbxassetid://8992230677",
+	-- 		Title = "Fluent",
+	-- 	},
+	-- },
+
+	-- Mode 2: Custom validator (comment Mode 1 above, uncomment this)
+	-- KeySystem = {
+	-- 	Title = "Fluent Renewed",
+	-- 	Note = "Enter the secret password.",
+	-- 	SaveKey = true,
+	-- 	KeyValidator = function(key)
+	-- 		return key == "mypassword"
+	-- 	end,
+	-- },
+
+	-- Mode 3: API services (comment Mode 1 above, uncomment this + fill your credentials)
+	KeySystem = {
+		Title = "Fluent Renewed",
+		Note = "24 hour key, access all scripts!",
+		SaveKey = true,
+		-- Thumbnail = {
+		-- 	Image = "rbxassetid://8992230677",
+		-- 	Title = "Premium",
+		-- },
+		API = {
+			{ Type = "platoboost", ServiceId = "your-service-id", Secret = "your-secret" },
+			{ Type = "pandadevelopment", ServiceId = "your-service-id" },
+			{ Type = "luarmor", ScriptId = "your-script-id", Discord = "discord.gg/..." },
+			{ Type = "junkiedevelopment", ServiceId = "your-service-id", ApiKey = "your-api-key", Provider = "your-provider" },
+		},
+	},
 }
 
 local Tabs = {
