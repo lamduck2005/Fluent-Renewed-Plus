@@ -1,18 +1,61 @@
-local Library = loadstring(game:HttpGetAsync("https://github.com/ActualMasterOogway/Fluent-Renewed/releases/latest/download/Fluent.luau"))()
-local SaveManager = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/ActualMasterOogway/Fluent-Renewed/master/Addons/SaveManager.luau"))()
-local InterfaceManager = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/ActualMasterOogway/Fluent-Renewed/master/Addons/InterfaceManager.luau"))()
+local Library = loadstring(game:HttpGet("https://github.com/lamduck2005/Fluent-Renewed-Plus/releases/latest/download/Fluent.luau"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/lamduck2005/Fluent-Renewed-Plus/master/Addons/SaveManager.luau"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/lamduck2005/Fluent-Renewed-Plus/master/Addons/InterfaceManager.luau"))()
  
-local Window = Library:CreateWindow{
-    Title = `Fluent {Library.Version}`,
-    SubTitle = "by Actual Master Oogway",
-    TabWidth = 160,
-    Size = UDim2.fromOffset(830, 525),
-    Resize = true, -- Resize this ^ Size according to a 1920x1080 screen, good for mobile users but may look weird on some devices
-    MinSize = Vector2.new(470, 380),
-    Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
-    Theme = "Dark",
-    MinimizeKey = Enum.KeyCode.RightControl -- Used when theres no MinimizeKeybind
+local Window = Library:Window{
+	Title = `Fluent Renewed Plus {Library.Version}`,
+	SubTitle = "by Lamduck2005",
+	TabWidth = 160,
+	Size = UDim2.fromOffset(830, 525),
+	Resize = true,
+	Acrylic = true,
+	Theme = "Vynixu",
+	MinimizeKey = Enum.KeyCode.RightControl,
+	MinimizeButton = true,
+	MinimizeButtonIcon = "bone",
+	Transparency = false,
+
+	-- Key system (active: Mode 1 - static key. Password: "fluent")
+	-- KeySystem = {
+	-- 	Title = "Fluent Renewed",
+	-- 	Note = "Enter your key to continue.",
+	-- 	SaveKey = true,
+	-- 	Key = "fluent",
+	-- 	URL = "https://github.com/lamduck2005/Fluent-Renewed-Plus",
+	-- 	Thumbnail = {
+	-- 		Image = "rbxassetid://8992230677",
+	-- 		Title = "Fluent",
+	-- 	},
+	-- },
+
+	-- Mode 2: Custom validator (comment Mode 1 above, uncomment this)
+	-- KeySystem = {
+	-- 	Title = "Fluent Renewed",
+	-- 	Note = "Enter the secret password.",
+	-- 	SaveKey = true,
+	-- 	KeyValidator = function(key)
+	-- 		return key == "mypassword"
+	-- 	end,
+	-- },
+
+	-- Mode 3: API services (comment Mode 1 above, uncomment this + fill your credentials)
+	KeySystem = {
+		Title = "Fluent Renewed",
+		Note = "24 hour key, access all scripts!",
+		SaveKey = true,
+		-- Thumbnail = {
+		-- 	Image = "rbxassetid://8992230677",
+		-- 	Title = "Premium",
+		-- },
+		API = {
+			{ Type = "platoboost", ServiceId = "your-service-id", Secret = "your-secret" },
+			{ Type = "pandadevelopment", ServiceId = "your-service-id" },
+			{ Type = "luarmor", ScriptId = "your-script-id", Discord = "discord.gg/..." },
+			{ Type = "junkiedevelopment", ServiceId = "your-service-id", ApiKey = "your-api-key", Provider = "your-provider" },
+		},
+	},
 }
+
 
 -- Fluent Renewed provides ALL 1544 Lucide 0.469.0 https://lucide.dev/icons/ Icons and ALL 9072 Phosphor 2.1.0 https://phosphoricons.com/ Icons for the tabs, icons are optional
 local Tabs = {

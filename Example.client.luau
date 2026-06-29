@@ -1,8 +1,8 @@
 local Library = require(game:GetService("ReplicatedStorage"):WaitForChild("Fluent"):WaitForChild("MainModule"))
 
 local Window = Library:Window{
-	Title = `Fluent {Library.Version}`,
-	SubTitle = "by Actual Master Oogway",
+	Title = `Fluent Renewed Plus {Library.Version}`,
+	SubTitle = "by Lamduck2005",
 	TabWidth = 160,
 	Size = UDim2.fromOffset(830, 525),
 	Resize = true,
@@ -19,7 +19,7 @@ local Window = Library:Window{
 	-- 	Note = "Enter your key to continue.",
 	-- 	SaveKey = true,
 	-- 	Key = "fluent",
-	-- 	URL = "https://github.com/ActualMasterOogway/Fluent-Renewed",
+	-- 	URL = "https://github.com/lamduck2005/Fluent-Renewed-Plus",
 	-- 	Thumbnail = {
 	-- 		Image = "rbxassetid://8992230677",
 	-- 		Title = "Fluent",
