@@ -162,7 +162,7 @@ function KeySystem.Show(Config, Library, Callback)
 		close()
 		if Config.SaveKey then
 			local hwid = gethwid and gethwid() or game:GetService("Players").LocalPlayer.UserId
-			local folder = Config.Folder or "Temp"
+			local folder = Config.KeyFolder or "FluentTemp"
 			if writefile and isfolder and not isfolder(folder) and makefolder then
 				makefolder(folder)
 			end

@@ -315,15 +315,15 @@ function Library:Window(Config: {
 	end
 
 	if Config.KeySystem then
-		Config.Folder = Config.Folder or "Temp"
+		Config.KeyFolder = Config.KeyFolder or "FluentTemp"
 		local hasFileIO = isfolder and isfile and readfile and writefile
 
-		if hasFileIO and not isfolder(Config.Folder) then
-			makefolder(Config.Folder)
+		if hasFileIO and not isfolder(Config.KeyFolder) then
+			makefolder(Config.KeyFolder)
 		end
 
 		local hwid = gethwid and gethwid() or game:GetService("Players").LocalPlayer.UserId
-		local keyFile = Config.Folder .. "/" .. tostring(hwid) .. ".key"
+		local keyFile = Config.KeyFolder .. "/" .. tostring(hwid) .. ".key"
 		local canLoad = false
 
 		local function showKeyDialog()
