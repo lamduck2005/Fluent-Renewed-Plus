@@ -390,10 +390,20 @@ function KeySystem.Show(Config, Library, Callback)
 					ItemBtn.BackgroundTransparency = 1
 				end)
 				Creator.AddSignal(ItemBtn.MouseButton1Click, function()
-					local copied = item.Instance.Copy()
+					local ok, msg = pcall(item.Instance.Copy)
+					local content
+					if item.Instance.Unavailable then
+						content = "Service unavailable in this environment."
+					elseif not ok then
+						content = "Copy failed: " .. tostring(msg)
+					elseif msg ~= nil and msg ~= true then
+						content = tostring(msg)
+					else
+						content = "Key link copied to clipboard."
+					end
 					Library:Notify({
 						Title = "Key System",
-						Content = copied ~= false and "Key link copied to clipboard." or "Clipboard not available in this environment.",
+						Content = content,
 						Duration = 3,
 					})
 				end)

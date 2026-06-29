@@ -17,6 +17,7 @@ local PandaDevelopment = {}
 function PandaDevelopment.New(serviceId: string)
 	if not fRequest then
 		return {
+			Unavailable = true,
 			Verify = function()
 				return false, "HTTP unavailable in this environment"
 			end,
@@ -64,11 +65,8 @@ function PandaDevelopment.New(serviceId: string)
 	end
 
 	local function copyLink()
-		if fSetClipboard then
-			fSetClipboard("https://new.pandadevelopment.net/getkey/" .. tostring(serviceId) .. "?hwid=" .. hwid)
-			return true
-		end
-		return false
+		fSetClipboard("https://new.pandadevelopment.net/getkey/" .. tostring(serviceId) .. "?hwid=" .. hwid)
+		return true
 	end
 
 	return {

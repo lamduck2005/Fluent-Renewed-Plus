@@ -21,6 +21,7 @@ end
 function Platoboost.New(serviceId: string, secret: string)
 	if not fRequest then
 		return {
+			Unavailable = true,
 			Verify = function()
 				return false, "HTTP unavailable in this environment"
 			end,
@@ -36,13 +37,15 @@ function Platoboost.New(serviceId: string, secret: string)
 	local cachedLink, cachedTime = "", 0
 
 	local host = "https://api.platoboost.app"
-	local hostResponse = fRequest({
-		Url = host .. "/public/connectivity",
-		Method = "GET",
-	})
-	if hostResponse.StatusCode ~= 200 and hostResponse.StatusCode ~= 429 then
-		host = "https://api.platoboost.net"
-	end
+	pcall(function()
+		local hostResponse = fRequest({
+			Url = host .. "/public/connectivity",
+			Method = "GET",
+		})
+		if hostResponse.StatusCode ~= 200 and hostResponse.StatusCode ~= 429 then
+			host = "https://api.platoboost.net"
+		end
+	end)
 	local function cacheLink()
 		if cachedTime + 10 * 60 < os.time() then
 			local response = fRequest({
@@ -74,7 +77,7 @@ function Platoboost.New(serviceId: string, secret: string)
 		return true, cachedLink
 	end
 
-	cacheLink()
+	pcall(cacheLink)
 
 	local function generateNonce()
 		local str = ""
@@ -87,13 +90,9 @@ function Platoboost.New(serviceId: string, secret: string)
 	local function copyLink()
 		local success, link = cacheLink()
 		if success then
-			if fSetClipboard then
-				fSetClipboard(link)
-				return true
-			end
-			return false
+			fSetClipboard(link)
 		end
-		return false
+		return true
 	end
 
 	local function redeemKey(key)

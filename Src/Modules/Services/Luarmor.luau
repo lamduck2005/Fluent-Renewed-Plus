@@ -5,23 +5,49 @@ local Luarmor = {}
 function Luarmor.New(scriptId: string, discord: string?)
 	local fSetClipboard = setclipboard or toclipboard
 
-	local ok, API = pcall(function()
-		local APIURL = "https://sdkapi-public.luarmor.net/library.lua"
-		local source = game.HttpGet and game:HttpGet(APIURL) or game:GetService("HttpService"):GetAsync(APIURL)
-		return loadstring(source)()
-	end)
+	local APIURL = "https://sdkapi-public.luarmor.net/library.lua"
 
-	if not ok then
+	if not fRequest then
 		return {
+			Unavailable = true,
 			Verify = function()
-				return false, "Luarmor API unavailable in this environment"
+				return false, "Luarmor SDK unavailable in this environment"
 			end,
 			Copy = function()
-				if discord and fSetClipboard then
-					fSetClipboard(tostring(discord))
-					return true
-				end
-				return false
+				if fSetClipboard then fSetClipboard(tostring(discord)) end
+				return true
+			end,
+		}
+	end
+
+	local function httpGet(url: string)
+		if game.HttpGet then
+			return game:HttpGet(url)
+		end
+		return game:GetService("HttpService"):GetAsync(url)
+	end
+
+	local initError = nil
+	local API = nil
+	local ok, result = pcall(function()
+		local source = httpGet(APIURL)
+		return loadstring(source)()
+	end)
+	if ok then
+		API = result
+	else
+		initError = tostring(result)
+	end
+
+	if not API then
+		return {
+			Unavailable = false,
+			Verify = function()
+				return false, "Luarmor SDK failed: " .. initError
+			end,
+			Copy = function()
+				fSetClipboard(tostring(discord))
+				return true
 			end,
 		}
 	end
@@ -42,11 +68,8 @@ function Luarmor.New(scriptId: string, discord: string?)
 	end
 
 	local function copyLink()
-		if fSetClipboard and discord then
-			fSetClipboard(tostring(discord))
-			return true
-		end
-		return false
+		fSetClipboard(tostring(discord))
+		return true
 	end
 
 	return {

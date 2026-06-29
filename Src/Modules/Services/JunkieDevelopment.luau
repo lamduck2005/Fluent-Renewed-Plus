@@ -5,6 +5,7 @@ local JunkieDevelopment = {}
 function JunkieDevelopment.New(serviceId: string, apiKey: string, provider: string)
 	if not JunkieProtected then
 		return {
+			Unavailable = true,
 			Verify = function()
 				return false, "JunkieProtected not available"
 			end,
@@ -34,13 +35,8 @@ function JunkieDevelopment.New(serviceId: string, apiKey: string, provider: stri
 	end
 
 	local function copyLink()
-		local link = JunkieProtected.GetKeyLink()
-		local clip = setclipboard or toclipboard
-		if clip then
-			clip(link)
-			return true
-		end
-		return false
+		setclipboard(JunkieProtected.GetKeyLink())
+		return true
 	end
 
 	return {
