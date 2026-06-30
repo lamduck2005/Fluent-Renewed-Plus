@@ -313,6 +313,7 @@ Tabs.Main:CreateButton{
 -- Hand the library over to our managers
 SaveManager:SetLibrary(Library)
 InterfaceManager:SetLibrary(Library)
+ExtraSetting:SetLibrary(Library)
 
 -- Ignore keys that are used by ThemeManager.
 -- (we dont want configs to save themes, do we?)
@@ -326,21 +327,20 @@ SaveManager:SetIgnoreIndexes{}
 -- and game configs in a separate folder per game
 InterfaceManager:SetFolder("FluentScriptHub")
 SaveManager:SetFolder("FluentScriptHub/specific-game")
+ExtraSetting:SetFolder("FluentScriptHub")
+
+-- ExtraSetting:SetWindow(Window)
+ExtraSetting.Discord = "https://discord.gg/N3uxkAHYtM"
+ExtraSetting.AutoExecuteUrl = "https://raw.githubusercontent.com/DarkNetworks/Infinite-Yield/main/latest.lua"
 
 InterfaceManager:BuildInterfaceSection(Tabs.Settings)
 SaveManager:BuildConfigSection(Tabs.Settings)
-
-ExtraSetting:SetLibrary(Library)
-ExtraSetting:SetWindow(Window)
-ExtraSetting.DiscordLink = "https://discord.gg/N3uxkAHYtM"
-ExtraSetting.AutoExecUrl = "https://raw.githubusercontent.com/DarkNetworks/Infinite-Yield/main/latest.lua"
-ExtraSetting:Init()
 ExtraSetting:BuildExtraSection(Tabs.Extra)
 
-Library:SetAFKInfo("Players", function()
+ExtraSetting:SetAFKInfo("Players", function()
 	return "Players online", #game:GetService("Players"):GetPlayers()
 end)
-Library:SetAFKInfo("Game", function()
+ExtraSetting:SetAFKInfo("Game", function()
 	return "Place ID", game.PlaceId
 end)
 

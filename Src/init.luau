@@ -355,7 +355,8 @@ function Library:Window(Config: {
 						for _, argName in next, serviceDef.Args do
 							table.insert(args, entry[argName])
 						end
-						local service = serviceDef.New(table.unpack(args))
+						local ok, service = pcall(serviceDef.New, table.unpack(args))
+						if not ok then continue end
 						local success = service.Verify(savedKey)
 						if success then
 							isValid = true

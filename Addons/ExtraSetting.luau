@@ -12,19 +12,20 @@ local ExtraSetting = {} do
 	ExtraSetting.Folder = "FluentSettings"
 	ExtraSetting.Library = nil
 	ExtraSetting.Window = nil
-	ExtraSetting.DiscordLink = nil
-	ExtraSetting.AutoExecUrl = nil
+	ExtraSetting.Discord = nil
+	ExtraSetting.AutoExecuteUrl = nil
 
 	ExtraSetting.SavedConfig = {
 		EnableUnlockFPS = false,
 		EnableFPSBoost = false,
-		EnableAFKFPSLock = true,
 		AutoAFKTime = 300,
 		EnableAutoAFK = false,
 		EnableAutoRejoin = false,
 		AutoRejoinMinutes = 60,
-		EnableAutoExec = true,
-		AutoExecUrl = "",
+		EnableAutoExecute = true,
+		AutoExecuteUrl = "",
+		EnableAntiAFK = true,
+		EnableAutoReconnect = true,
 	}
 
 	local isFPSBoostApplied = false
@@ -46,6 +47,7 @@ local ExtraSetting = {} do
 	local connErrorMessage = nil
 	local connInputBegan = nil
 	local connInputChanged = nil
+	local inited = false
 
 	local function ConfigPath()
 		return ExtraSetting.Folder .. "/settings/extra_config.json"
@@ -209,79 +211,46 @@ local ExtraSetting = {} do
 
 		afkStartTime = os.time()
 		afkInfoThread = task.spawn(function()
-			local fpsLocked = false
-			local loopTick = 0
-
 			while isAFKModeEnabled and blackoutScreenGui and blackoutScreenGui.Enabled do
 				local duration = os.time() - afkStartTime
 				local cfg = ExtraSetting.SavedConfig
+				local actualFps = math.floor(stats.Workspace.Heartbeat:GetValue())
+				local ramUsage = math.floor(stats:GetTotalMemoryUsageMb())
+				local hours = math.floor(duration / 3600)
+				local minutes = math.floor((duration % 3600) / 60)
+				local seconds = duration % 60
+				local timeStr = string.format("%02d:%02d:%02d", hours, minutes, seconds)
 
-				if cfg.EnableAFKFPSLock then
-					if duration >= 60 then
-						if not fpsLocked then
-							fpsLocked = true
-							if setfpscap then pcall(function() setfpscap(10) end) end
+				local statusParts = {}
+				if cfg.EnableAutoRejoin and isAutoRejoinTimerRunning then
+					local remain = math.max(0, (cfg.AutoRejoinMinutes * 60) - math.floor(tick() - autoRejoinTimerStartTime))
+					local rh = math.floor(remain / 3600)
+					local rm = math.floor((remain % 3600) / 60)
+					local rs = remain % 60
+					table.insert(statusParts, string.format("<font color='#FF5252'>REJOIN IN: %02d:%02d:%02d</font>", rh, rm, rs))
+				end
+				local statusLine = #statusParts > 0 and table.concat(statusParts, "   |   ") .. "\n\n" or ""
+
+				local label = blackoutScreenGui:FindFirstChild("StatusLabel", true)
+				if label then
+					local extraParts = {}
+					for _, cb in pairs(afkExtraInfo) do
+						local ok, title, val = pcall(cb)
+						if ok and title and val then
+							table.insert(extraParts, string.format("<font color='#B0BEC5'>%s:</font> <b>%s</b>", title, val))
 						end
-						if loopTick % 20 == 0 then
-							if setfpscap then pcall(function() setfpscap(10) end) end
-							pcall(function() collectgarbage("collect") end)
-						end
-					else
-						fpsLocked = false
 					end
-				else
-					fpsLocked = false
+					local extraText = #extraParts > 0 and "\n\n" .. table.concat(extraParts, "   |   ") or ""
+					label.Text = string.format(
+						"<b><font color='#00E5FF'>[ AFK MODE ACTIVE ]</font></b>\n\n" ..
+						"<font color='#B0BEC5'>TIME:</font> <b>%s</b>   |   <font color='#B0BEC5'>FPS:</font> <b><font color='#00E5FF'>%d</font></b>   |   <font color='#B0BEC5'>RAM:</font> <b><font color='#FF5252'>%d MB</font></b>%s\n\n" ..
+						"%s" ..
+						"<font color='#78909C' size='14'>(Double tap to wake)</font>",
+						timeStr, actualFps, ramUsage, extraText, statusLine
+					)
 				end
 
-				if duration < 60 or not cfg.EnableAFKFPSLock or loopTick % 10 == 0 then
-					local actualFps = math.floor(stats.Workspace.Heartbeat:GetValue())
-					local ramUsage = math.floor(stats:GetTotalMemoryUsageMb())
-					local hours = math.floor(duration / 3600)
-					local minutes = math.floor((duration % 3600) / 60)
-					local seconds = duration % 60
-					local timeStr = string.format("%02d:%02d:%02d", hours, minutes, seconds)
-
-					local statusParts = {}
-					if cfg.EnableAFKFPSLock then
-						if duration < 60 then
-							table.insert(statusParts, string.format("<font color='#FFB300'>FPS LOCK IN: %ds</font>", 60 - duration))
-						else
-							table.insert(statusParts, "<font color='#00E676'>FPS LOCKED</font>")
-						end
-					end
-					if cfg.EnableAutoRejoin and isAutoRejoinTimerRunning then
-						local remain = math.max(0, (cfg.AutoRejoinMinutes * 60) - math.floor(tick() - autoRejoinTimerStartTime))
-						local rh = math.floor(remain / 3600)
-						local rm = math.floor((remain % 3600) / 60)
-						local rs = remain % 60
-						table.insert(statusParts, string.format("<font color='#FF5252'>REJOIN IN: %02d:%02d:%02d</font>", rh, rm, rs))
-					end
-					local execColor = cfg.EnableAutoExec and "#00E676" or "#FF5252"
-					local execText = cfg.EnableAutoExec and "ON" or "OFF"
-					table.insert(statusParts, string.format("<font color='%s'>AUTO EXEC: %s</font>", execColor, execText))
-					local statusLine = #statusParts > 0 and table.concat(statusParts, "   |   ") or ""
-
-					local label = blackoutScreenGui:FindFirstChild("StatusLabel", true)
-					if label then
-						local extraParts = {}
-						for _, cb in pairs(afkExtraInfo) do
-							local ok, title, val = pcall(cb)
-							if ok and title and val then
-								table.insert(extraParts, string.format("<font color='#B0BEC5'>%s:</font> <b>%s</b>", title, val))
-							end
-						end
-						local extraText = #extraParts > 0 and "\n\n" .. table.concat(extraParts, "   |   ") or ""
-						label.Text = string.format(
-							"<b><font color='#00E5FF'>[ AFK MODE ACTIVE ]</font></b>\n\n" ..
-							"<font color='#B0BEC5'>TIME:</font> <b>%s</b>   |   <font color='#B0BEC5'>FPS:</font> <b><font color='#00E5FF'>%d</font></b>   |   <font color='#B0BEC5'>RAM:</font> <b><font color='#FF5252'>%d MB</font></b>%s\n\n" ..
-							"%s\n\n" ..
-							"<font color='#78909C' size='14'>(Double tap to wake)</font>",
-							timeStr, actualFps, ramUsage, extraText, statusLine
-						)
-					end
-				end
-
-				loopTick = loopTick + 1
+				pcall(function() collectgarbage("collect") end)
 				task.wait(1)
 			end
 		end)
@@ -382,7 +351,7 @@ local ExtraSetting = {} do
 	end
 
 	local function SetupQueueOnTeleport()
-		if not ExtraSetting.AutoExecUrl then return end
+		if not ExtraSetting.AutoExecuteUrl then return end
 		local q = queue_on_teleport or (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport)
 		if not q then return end
 		local code = string.format([[
@@ -390,12 +359,16 @@ local ExtraSetting = {} do
 				local fs = readfile("%s/settings/extra_config.json")
 				return game:GetService("HttpService"):JSONDecode(fs)
 			end)
-			if ok and data and data.EnableAutoExec and data.AutoExecUrl ~= "" then
-				local s, r = pcall(function() return game:HttpGet(data.AutoExecUrl) end)
+			if ok and data and data.EnableAutoExecute then
+				local s, r = pcall(function() return game:HttpGet("%s") end)
 				if s and r then loadstring(r)() end
 			end
-		]], ExtraSetting.Folder)
+		]], ExtraSetting.Folder, ExtraSetting.AutoExecuteUrl)
 		q(code)
+	end
+
+	function ExtraSetting:SetWindow(win)
+		self.Window = win
 	end
 
 	function ExtraSetting:SetLibrary(lib)
@@ -403,22 +376,34 @@ local ExtraSetting = {} do
 		function lib:Rejoin()
 			ExecuteRejoin()
 		end
-		function lib:SetAFKInfo(key, cb)
-			afkExtraInfo[key] = cb
-		end
-		function lib:RemoveAFKInfo(key)
-			afkExtraInfo[key] = nil
-		end
+	end
+
+	function ExtraSetting:SetAFKInfo(key, cb)
+		afkExtraInfo[key] = cb
+	end
+
+	function ExtraSetting:RemoveAFKInfo(key)
+		afkExtraInfo[key] = nil
+	end
+
+	function ExtraSetting:SetFolder(folder)
+		self.Folder = folder
 	end
 
 	function ExtraSetting:Init()
+		if inited then return end
+		inited = true
 		LoadConfig()
 
 		autoAFKTimeThreshold = self.SavedConfig.AutoAFKTime
 		isAutoAFKEnabled = self.SavedConfig.EnableAutoAFK
 
-		InitAntiAFK()
-		InitAutoRejoin()
+		if self.SavedConfig.EnableAntiAFK then
+			InitAntiAFK()
+		end
+		if self.SavedConfig.EnableAutoReconnect then
+			InitAutoRejoin()
+		end
 		InitActivityTracking()
 		SetupQueueOnTeleport()
 
@@ -428,7 +413,14 @@ local ExtraSetting = {} do
 
 		if self.SavedConfig.EnableFPSBoost then
 			isFPSBoostApplied = true
-			ApplyFPSBoost()
+			task.spawn(function()
+				task.wait(5)
+				ApplyFPSBoost()
+				local lib = self.Library
+				if lib then
+					lib:Notify({ Title = "Performance", Content = "FPS Boost applied!", Duration = 3 })
+				end
+			end)
 		end
 
 		if self.SavedConfig.EnableAutoAFK then
@@ -442,15 +434,16 @@ local ExtraSetting = {} do
 
 	function ExtraSetting:BuildExtraSection(tab)
 		assert(self.Library, "Must set ExtraSetting.Library")
+		if not inited then self:Init() end
 		local lib = self.Library
 		local cfg = self.SavedConfig
 
-		if self.DiscordLink then
+		if self.Discord then
 			local section = tab:AddSection("Discord")
 			section:AddButton({
 				Title = "Join Discord",
 				Callback = function()
-					local ok = pcall(function() setclipboard(self.DiscordLink) end)
+					local ok = pcall(function() setclipboard(self.Discord) end)
 					lib:Notify({
 						Title = "Discord",
 						Content = ok and "Link copied to clipboard!" or "Clipboard not available",
@@ -461,18 +454,55 @@ local ExtraSetting = {} do
 		end
 
 		do
-			local section = tab:AddSection("Performance & AFK")
+			local section = tab:AddSection("Anti-AFK")
+
+			section:AddToggle("ExtraSetting_AntiAFK", {
+				Title = "Anti-AFK",
+				Description = "Prevents Roblox from kicking you for being idle",
+				Default = cfg.EnableAntiAFK,
+				Callback = function(v)
+					cfg.EnableAntiAFK = v
+					SaveConfig()
+					if v then
+						InitAntiAFK()
+					elseif connIdled then
+						connIdled:Disconnect()
+						connIdled = nil
+					end
+				end,
+			})
+
+			section:AddToggle("ExtraSetting_AutoReconnect", {
+				Title = "Auto Reconnect",
+				Description = "Automatically rejoins when disconnected due to error (e.g. kicked, server closed)",
+				Default = cfg.EnableAutoReconnect,
+				Callback = function(v)
+					cfg.EnableAutoReconnect = v
+					SaveConfig()
+					if v then
+						InitAutoRejoin()
+					elseif connErrorMessage then
+						connErrorMessage:Disconnect()
+						connErrorMessage = nil
+					end
+				end,
+			})
+		end
+
+		do
+			local section = tab:AddSection("Performance")
 
 			if setfpscap then
 				section:AddToggle("ExtraSetting_UnlockFPS", {
 					Title = "Unlock FPS",
-					Description = "Remove FPS cap (setfpscap(999))",
 					Default = cfg.EnableUnlockFPS,
 					Callback = function(v)
 						cfg.EnableUnlockFPS = v
 						SaveConfig()
 						if v then
 							pcall(function() setfpscap(999) end)
+						else
+							pcall(function() setfpscap(60) end)
 						end
 					end,
 				})
@@ -484,29 +514,11 @@ local ExtraSetting = {} do
 				Callback = function(v)
 					if v then
 						if not isFPSBoostApplied then
-							assert(self.Window, "ExtraSetting.Window must be set for dialog")
-							self.Window:Dialog({
-								Title = "Confirm FPS Boost",
-								Content = "Apply FPS Boost? This will remove all textures and shadows. You must Rejoin to undo this.",
-								Buttons = {
-									{
-										Title = "Confirm",
-										Callback = function()
-											isFPSBoostApplied = true
-											cfg.EnableFPSBoost = true
-											SaveConfig()
-											ApplyFPSBoost()
-											lib:Notify({ Title = "Performance", Content = "FPS Boost applied!", Duration = 3 })
-										end,
-									},
-									{
-										Title = "Cancel",
-										Callback = function()
-											lib.Options.ExtraSetting_FPSBoost:SetValue(false)
-										end,
-									},
-								},
-							})
+							isFPSBoostApplied = true
+							cfg.EnableFPSBoost = true
+							SaveConfig()
+							ApplyFPSBoost()
+							lib:Notify({ Title = "Performance", Content = "FPS Boost applied!", Duration = 3 })
 						end
 					else
 						cfg.EnableFPSBoost = false
@@ -517,6 +529,10 @@ local ExtraSetting = {} do
 					end
 				end,
 			})
+		end
+
+		do
+			local section = tab:AddSection("AFK Mode")
 
 			local afkToggle = section:AddToggle("ExtraSetting_AFKMode", {
 				Title = "Enable AFK Mode",
@@ -527,15 +543,6 @@ local ExtraSetting = {} do
 				end,
 			})
 			afkToggleRef = afkToggle
-
-			section:AddToggle("ExtraSetting_AFKFPSLock", {
-				Title = "Lock FPS when AFK",
-				Default = cfg.EnableAFKFPSLock,
-				Callback = function(v)
-					cfg.EnableAFKFPSLock = v
-					SaveConfig()
-				end,
-			})
 
 			section:AddInput("ExtraSetting_AutoAFKTime", {
 				Title = "Auto AFK Time",
@@ -568,7 +575,7 @@ local ExtraSetting = {} do
 		end
 
 		do
-			local section = tab:AddSection("Auto Rejoin & Exec")
+			local section = tab:AddSection("Auto Rejoin - Exectute")
 
 			section:AddInput("ExtraSetting_AutoRejoinTime", {
 				Title = "Auto Rejoin Time",
@@ -600,22 +607,13 @@ local ExtraSetting = {} do
 				end,
 			})
 
-			if self.AutoExecUrl then
-				section:AddToggle("ExtraSetting_AutoExec", {
+			local hasQueue = queue_on_teleport or (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport)
+			if hasQueue and ExtraSetting.AutoExecuteUrl then
+				section:AddToggle("ExtraSetting_AutoExecute", {
 					Title = "Auto Execute on Rejoin",
-					Default = cfg.EnableAutoExec,
+					Default = cfg.EnableAutoExecute,
 					Callback = function(v)
-						cfg.EnableAutoExec = v
-						SaveConfig()
-					end,
-				})
-
-				section:AddInput("ExtraSetting_AutoExecUrl", {
-					Title = "Script URL",
-					Placeholder = self.AutoExecUrl,
-					Default = cfg.AutoExecUrl ~= "" and cfg.AutoExecUrl or self.AutoExecUrl,
-					Callback = function(val)
-						cfg.AutoExecUrl = val
+						cfg.EnableAutoExecute = v
 						SaveConfig()
 					end,
 				})
@@ -623,12 +621,6 @@ local ExtraSetting = {} do
 		end
 	end
 
-	do
-		local path = ExtraSetting.Folder .. "/settings"
-		if not isfolder(path) then
-			makefolder(path)
-		end
-	end
 end
 
 return ExtraSetting
