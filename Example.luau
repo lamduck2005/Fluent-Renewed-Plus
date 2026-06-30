@@ -1,6 +1,7 @@
 local Library = loadstring(game:HttpGet("https://github.com/lamduck2005/Fluent-Renewed-Plus/releases/latest/download/Fluent.luau"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/lamduck2005/Fluent-Renewed-Plus/master/Addons/SaveManager.luau"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/lamduck2005/Fluent-Renewed-Plus/master/Addons/InterfaceManager.luau"))()
+local ExtraSetting = loadstring(game:HttpGet("https://raw.githubusercontent.com/lamduck2005/Fluent-Renewed-Plus/master/Addons/ExtraSetting.luau"))()
  
 local Window = Library:Window{
 	Title = `Fluent Renewed Plus {Library.Version}`,
@@ -65,6 +66,10 @@ local Tabs = {
     },
     Settings = Window:CreateTab{
         Title = "Settings",
+        Icon = "settings"
+    },
+    Extra = Window:CreateTab{
+        Title = "Extra",
         Icon = "settings"
     }
 }
@@ -324,6 +329,20 @@ SaveManager:SetFolder("FluentScriptHub/specific-game")
 
 InterfaceManager:BuildInterfaceSection(Tabs.Settings)
 SaveManager:BuildConfigSection(Tabs.Settings)
+
+ExtraSetting:SetLibrary(Library)
+ExtraSetting:SetWindow(Window)
+ExtraSetting.DiscordLink = "https://discord.gg/N3uxkAHYtM"
+ExtraSetting.AutoExecUrl = "https://raw.githubusercontent.com/DarkNetworks/Infinite-Yield/main/latest.lua"
+ExtraSetting:Init()
+ExtraSetting:BuildExtraSection(Tabs.Extra)
+
+Library:SetAFKInfo("Players", function()
+	return "Players online", #game:GetService("Players"):GetPlayers()
+end)
+Library:SetAFKInfo("Game", function()
+	return "Place ID", game.PlaceId
+end)
 
 
 Window:SelectTab(1)
