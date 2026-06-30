@@ -84,7 +84,7 @@ function Platoboost.New(serviceId: string, secret: string)
 		return str
 	end
 
-	local nonceOk = pcall(function()
+	pcall(function()
 		for _ = 1, 5 do
 			local oNonce = generateNonce()
 			task.wait(0.2)

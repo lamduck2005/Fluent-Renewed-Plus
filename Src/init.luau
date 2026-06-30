@@ -315,7 +315,7 @@ function Library:Window(Config: {
 	end
 
 	if Config.KeySystem then
-		Config.KeyFolder = Config.KeyFolder or "FluentTemp"
+		Config.KeyFolder = (Config.KeySystem and Config.KeySystem.KeyFolder) or Config.KeyFolder or "FluentTemp"
 		local hasFileIO = isfolder and isfile and readfile and writefile
 
 		if hasFileIO and not isfolder(Config.KeyFolder) then
