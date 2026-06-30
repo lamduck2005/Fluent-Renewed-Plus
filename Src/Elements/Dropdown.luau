@@ -4,7 +4,6 @@ local Camera = game:GetService("Workspace").CurrentCamera
 
 local Root = script.Parent.Parent
 local Creator = require(Root.Modules.Creator)
-local Flipper = require(Root.Packages.Flipper)
 
 local New = Creator.New
 local Components = Root.Components
@@ -15,6 +14,9 @@ Element.__type = "Dropdown"
 
 function Element:New(Idx, Config)
 	local Library = self.Library
+
+	local dropdownConns = {}
+	local optionCleanup = {}
 
 	local Dropdown = {
 		Values = (function()
@@ -250,20 +252,15 @@ function Element:New(Idx, Config)
 	RecalculateListPosition()
 	RecalculateListSize()
 
-	Creator.AddSignal(DropdownInner:GetPropertyChangedSignal("AbsolutePosition"), RecalculateListPosition)
-	Creator.AddSignal(SearchBox:GetPropertyChangedSignal("Text"), RepopulateDropdownList)
+	dropdownConns[#dropdownConns + 1] = DropdownInner:GetPropertyChangedSignal("AbsolutePosition"):Connect(RecalculateListPosition)
+	dropdownConns[#dropdownConns + 1] = SearchBox:GetPropertyChangedSignal("Text"):Connect(RepopulateDropdownList)
 
 	local ScrollFrame = self.ScrollFrame
 	function Dropdown:Open()
 		Dropdown.Opened = true
 		ScrollFrame.ScrollingEnabled = false
 		DropdownHolderCanvas.Visible = true
-		DropdownHolderFrame:TweenSize(
-			UDim2.fromScale(1, 1),
-			Enum.EasingDirection.Out,
-			Enum.EasingStyle.Quart,
-			.2
-		)
+		DropdownHolderFrame.Size = UDim2.fromScale(1, 1)
 
 		if Dropdown.Searchable then
 			SearchBox.Text = ""
@@ -286,11 +283,11 @@ function Element:New(Idx, Config)
 		end
 	end
 
-	Creator.AddSignal(DropdownInner.MouseButton1Click, function()
+	dropdownConns[#dropdownConns + 1] = DropdownInner.MouseButton1Click:Connect(function()
 		Dropdown:Open()
 	end)
 
-	Creator.AddSignal(UserInputService.InputBegan, function(Input)
+	dropdownConns[#dropdownConns + 1] = UserInputService.InputBegan:Connect(function(Input)
 		if
 			Input.UserInputType == Enum.UserInputType.MouseButton1
 			or Input.UserInputType == Enum.UserInputType.Touch
@@ -345,6 +342,13 @@ function Element:New(Idx, Config)
 
 		for _, Element in next, DropdownScrollFrame:GetChildren() do
 			if not Element:IsA("UIListLayout") then
+				local data = optionCleanup[Element]
+				if data then
+					for _, obj in data.registry do
+						Creator.Registry[obj] = nil
+					end
+					optionCleanup[Element] = nil
+				end
 				Element:Destroy()
 			end
 		end
@@ -368,10 +372,6 @@ function Element:New(Idx, Config)
 			local Button = Button_BuildList:Clone()
 			local ButtonSelector, ButtonLabel = Button.Frame, Button.ButtonLabel
 
-			-- AddThemeObject causes some small stuttering, the reason for that is because of 'Creator.UpdateTheme'
-			-- which is called every single time a dropdown is (re)built.
-			-- I have no idea how to optimize this so suggestions are welcome.
-
 			Creator.AddThemeObject(Button, {
 				BackgroundColor3 = "DropdownOption"
 			})
@@ -390,27 +390,27 @@ function Element:New(Idx, Config)
 				Selected = Dropdown.Value == Value
 			end
 
-			local BackMotor, SetBackTransparency = Creator.SpringMotor(1, Button, "BackgroundTransparency")
-			local SelMotor, SetSelTransparency = Creator.SpringMotor(1, ButtonSelector, "BackgroundTransparency")
-			local SelectorSizeMotor = Flipper.SingleMotor.new(6)
+			local function SetBackTransparency(val)
+				Button.BackgroundTransparency = val
+			end
+			local function SetSelTransparency(val)
+				ButtonSelector.BackgroundTransparency = val
+			end
+			local function SetSelectorSize(val)
+				ButtonSelector.Size = UDim2.new(0, 4, 0, val)
+			end
 
-			SelectorSizeMotor:onStep(function(value)
-				ButtonSelector.Size = UDim2.new(0, 4, 0, value)
-			end)
-
-			Creator.AddSignal(Button.MouseEnter, function()
+			local optionConns = {}
+			optionConns[#optionConns + 1] = Button.MouseEnter:Connect(function()
 				SetBackTransparency(Selected and 0.85 or 0.89)
 			end)
-
-			Creator.AddSignal(Button.MouseLeave, function()
+			optionConns[#optionConns + 1] = Button.MouseLeave:Connect(function()
 				SetBackTransparency(Selected and 0.89 or 1)
 			end)
-
-			Creator.AddSignal(Button.MouseButton1Down, function()
+			optionConns[#optionConns + 1] = Button.MouseButton1Down:Connect(function()
 				SetBackTransparency(0.92)
 			end)
-
-			Creator.AddSignal(Button.MouseButton1Up, function()
+			optionConns[#optionConns + 1] = Button.MouseButton1Up:Connect(function()
 				SetBackTransparency(Selected and 0.85 or 0.89)
 			end)
 
@@ -425,11 +425,11 @@ function Element:New(Idx, Config)
 					SetBackTransparency(Selected and 0.89 or 1)
 				end
 
-				SelectorSizeMotor:setGoal(Flipper.Spring.new(Selected and 14 or 6, { frequency = 6 }))
+				SetSelectorSize(Selected and 14 or 6)
 				SetSelTransparency(Selected and 0 or 1)
 			end
 
-			ButtonLabel.InputBegan:Connect(function(Input)
+			optionConns[#optionConns + 1] = ButtonLabel.InputBegan:Connect(function(Input)
 				if
 					Input.UserInputType == Enum.UserInputType.MouseButton1
 					or Input.UserInputType == Enum.UserInputType.Touch
@@ -462,6 +462,11 @@ function Element:New(Idx, Config)
 					end
 				end
 			end)
+
+			optionCleanup[Button] = {
+				registry = { Button, ButtonSelector, ButtonLabel },
+				conns = optionConns,
+			}
 
 			ButtonLabel.Text = Dropdown.Displayer(Value)
 			Button.Parent = DropdownScrollFrame
@@ -531,6 +536,30 @@ function Element:New(Idx, Config)
 	end
 
 	function Dropdown:Destroy()
+		for _, conn in dropdownConns do
+			conn:Disconnect()
+		end
+		table.clear(dropdownConns)
+
+		for btn, data in optionCleanup do
+			for _, obj in data.registry do
+				Creator.Registry[obj] = nil
+			end
+			for _, conn in data.conns do
+				conn:Disconnect()
+			end
+			optionCleanup[btn] = nil
+		end
+		table.clear(optionCleanup)
+
+		for i, v in ipairs(Library.OpenFrames) do
+			if v == DropdownHolderCanvas then
+				table.remove(Library.OpenFrames, i)
+				break
+			end
+		end
+
+		DropdownHolderCanvas:Destroy()
 		DropdownFrame:Destroy()
 		Library.Options[Idx] = nil
 	end
@@ -548,7 +577,6 @@ function Element:New(Idx, Config)
 				Defaults[#Defaults + 1] = Indx
 			end
 		end
-		table.clear(Config.Default)
 	elseif type(Config.Default) == "number" and Dropdown.Values[Config.Default] ~= nil then
 		Defaults[#Defaults + 1] = Config.Default
 	else
