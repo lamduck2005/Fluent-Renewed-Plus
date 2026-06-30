@@ -41,9 +41,6 @@ function Notification:New(Config)
 	Config.Buttons = Config.Buttons or {}
 	Config.Sound = Config.Sound or {}
 
-	Config.Sound.Parent = SoundService
-	Config.Sound.PlayOnRemove = true
-
 	NewNotification.AcrylicPaint = Acrylic.AcrylicPaint()
 
 	NewNotification.Title = New("TextLabel", {
@@ -111,6 +108,17 @@ function Notification:New(Config)
 		NewNotification.SubContentLabel,
 	})
 
+	NewNotification.CloseIcon = New("ImageLabel", {
+		Image = require(script.Parent.Assets).Close,
+		Size = UDim2.fromOffset(16, 16),
+		Position = UDim2.fromScale(0.5, 0.5),
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		BackgroundTransparency = 1,
+		ThemeTag = {
+			ImageColor3 = "Text",
+		},
+	})
+
 	NewNotification.CloseButton = New("TextButton", {
 		Text = "",
 		Position = UDim2.new(1, -14, 0, 13),
@@ -118,16 +126,7 @@ function Notification:New(Config)
 		AnchorPoint = Vector2.new(1, 0),
 		BackgroundTransparency = 1,
 	}, {
-		New("ImageLabel", {
-			Image = require(script.Parent.Assets).Close,
-			Size = UDim2.fromOffset(16, 16),
-			Position = UDim2.fromScale(0.5, 0.5),
-			AnchorPoint = Vector2.new(0.5, 0.5),
-			BackgroundTransparency = 1,
-			ThemeTag = {
-				ImageColor3 = "Text",
-			},
-		}),
+		NewNotification.CloseIcon,
 	})
 
 	NewNotification.Root = New("Frame", {
@@ -166,7 +165,7 @@ function Notification:New(Config)
 		NewNotification.Root.Position = UDim2.new(Values.Scale, Values.Offset, 0, 0)
 	end)
 
-	Creator.AddSignal(NewNotification.CloseButton.MouseButton1Click, function()
+	local closeConn = NewNotification.CloseButton.MouseButton1Click:Connect(function()
 		NewNotification:Close()
 	end)
 
@@ -175,14 +174,24 @@ function Notification:New(Config)
 		NewNotification.Holder.Size = UDim2.new(1, 0, 0, 58 + ContentSize)
 
 		if Config.Sound.SoundId then
-			NewNotification.Sound = New("Sound", Config.Sound)
-
-			if not NewNotification.Sound.IsLoaded then
-				NewNotification.Sound.Loaded:Wait()
-			end
-
-			NewNotification.Sound:Destroy()
-			NewNotification.Sound = nil
+			local sound = New("Sound", {
+				SoundId = Config.Sound.SoundId,
+				Parent = SoundService,
+				PlayOnRemove = true,
+			})
+			task.spawn(function()
+				local ok = pcall(function()
+					sound.Loaded:Wait()
+				end)
+				if ok then
+					sound:Destroy()
+				end
+			end)
+			task.delay(5, function()
+				if sound and sound.Parent then
+					sound:Destroy()
+				end
+			end)
 		end
 
 		RootMotor:setGoal({
@@ -194,15 +203,24 @@ function Notification:New(Config)
 	function NewNotification:Close()
 		if not NewNotification.Closed then
 			NewNotification.Closed = true
+
+			closeConn:Disconnect()
+
+			Creator.Registry[NewNotification.Title] = nil
+			Creator.Registry[NewNotification.ContentLabel] = nil
+			Creator.Registry[NewNotification.SubContentLabel] = nil
+			Creator.Registry[NewNotification.CloseIcon] = nil
+
+			if NewNotification.AcrylicPaint then
+				NewNotification.AcrylicPaint.Model:Destroy()
+			end
+
 			task.spawn(function()
 				RootMotor:setGoal({
 					Scale = Spring(1, { frequency = 5 }),
 					Offset = Spring(60, { frequency = 5 }),
 				})
 				task.wait(0.4)
-				if require(Root).UseAcrylic then
-					NewNotification.AcrylicPaint.Model:Destroy()
-				end
 				NewNotification.Holder:Destroy()
 			end)
 		end
