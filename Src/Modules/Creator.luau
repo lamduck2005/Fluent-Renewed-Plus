@@ -163,14 +163,15 @@ function Creator.UpdateTheme(RegistryIndex: Instance?)
 end
 
 function Creator.AddThemeObject(Object: Instance, Properties:{ [string]: any })
-	local Idx = #Creator.Registry + 1
 	local Data = {
 		Object = Object,
 		Properties = Properties,
-		Idx = Idx,
 	}
 
 	Creator.Registry[Object] = Data
+	Object.Destroying:Once(function()
+		Creator.Registry[Object] = nil
+	end)
 	Creator.UpdateTheme(Object)
 
 	return Object

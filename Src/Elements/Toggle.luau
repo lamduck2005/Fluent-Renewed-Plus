@@ -252,7 +252,7 @@ function Element:New(Idx, Config)
 					Picking = true
 					KeybindDisplayLabel.Text = "..."
 		
-					wait(0.2)
+					task.wait(0.2)
 		
 					UserInputService.InputBegan:Once(function(Input)
 						local Key

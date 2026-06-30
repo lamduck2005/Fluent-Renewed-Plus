@@ -512,6 +512,7 @@ return function(Config)
 		local DRAG_THRESHOLD = 5
 		local LERP_SPEED = 0.5
 		local targetPosition = frame.Position
+		local renderSteppedConn = nil
 
 		Window._minBtnHovering = false
 		Window._minBtnDragging = false
@@ -541,6 +542,16 @@ return function(Config)
 				dragStart = Vector2.new(input.Position.X, input.Position.Y)
 				startPos = frame.Position
 				totalDragDistance = 0
+				if not renderSteppedConn then
+					renderSteppedConn = RunService.RenderStepped:Connect(function()
+						if dragging then
+							local currentPos = frame.Position
+							local newX = currentPos.X.Offset + (targetPosition.X.Offset - currentPos.X.Offset) * LERP_SPEED
+							local newY = currentPos.Y.Offset + (targetPosition.Y.Offset - currentPos.Y.Offset) * LERP_SPEED
+							frame.Position = UDim2.new(targetPosition.X.Scale, newX, targetPosition.Y.Scale, newY)
+						end
+					end)
+				end
 				frame.BackgroundTransparency = 0
 				if cachedIcon then cachedIcon.ImageColor3 = Color3.new(1, 1, 1) end
 				if cachedStroke then cachedStroke.Color = Color3.new(1, 1, 1) end
@@ -567,6 +578,12 @@ return function(Config)
 				if dragging then
 					dragging = false
 					Window._minBtnDragging = false
+
+					if renderSteppedConn then
+						renderSteppedConn:Disconnect()
+						renderSteppedConn = nil
+					end
+
 					if totalDragDistance < DRAG_THRESHOLD then
 						Window:Minimize()
 					end
@@ -587,21 +604,6 @@ return function(Config)
 						if cachedStroke then cachedStroke.Color = getAccent() end
 					end
 				end
-			end
-		end)
-
-		Creator.AddSignal(RunService.RenderStepped, function()
-			if dragging then
-				local currentPos = frame.Position
-				local newX = currentPos.X.Offset + (targetPosition.X.Offset - currentPos.X.Offset) * LERP_SPEED
-				local newY = currentPos.Y.Offset + (targetPosition.Y.Offset - currentPos.Y.Offset) * LERP_SPEED
-
-				frame.Position = UDim2.new(
-					targetPosition.X.Scale,
-					newX,
-					targetPosition.Y.Scale,
-					newY
-				)
 			end
 		end)
 
