@@ -37,21 +37,21 @@ local Window = Library:Window{
 	-- },
 
 	-- Mode 3: API services (comment Mode 1 above, uncomment this + fill your credentials)
-	KeySystem = {
-		Title = "Fluent Renewed",
-		Note = "24 hour key, access all scripts!",
-		SaveKey = true,
-		-- Thumbnail = {
-		-- 	Image = "rbxassetid://8992230677",
-		-- 	Title = "Premium",
-		-- },
-		API = {
-			{ Type = "platoboost", ServiceId = "your-service-id", Secret = "your-secret" },
-			{ Type = "pandadevelopment", ServiceId = "your-service-id" },
-			{ Type = "luarmor", ScriptId = "your-script-id", Discord = "discord.gg/..." },
-			{ Type = "junkiedevelopment", ServiceId = "your-service-id", ApiKey = "your-api-key", Provider = "your-provider" },
-		},
-	},
+	-- KeySystem = {
+	-- 	Title = "Fluent Renewed",
+	-- 	Note = "24 hour key, access all scripts!",
+	-- 	SaveKey = true,
+	-- 	-- Thumbnail = {
+	-- 	-- 	Image = "rbxassetid://8992230677",
+	-- 	-- 	Title = "Premium",
+	-- 	-- },
+	-- 	API = {
+	-- 		{ Type = "platoboost", ServiceId = "your-service-id", Secret = "your-secret" },
+	-- 		{ Type = "pandadevelopment", ServiceId = "your-service-id" },
+	-- 		{ Type = "luarmor", ScriptId = "your-script-id", Discord = "discord.gg/..." },
+	-- 		{ Type = "junkiedevelopment", ServiceId = "your-service-id", ApiKey = "your-api-key", Provider = "your-provider" },
+	-- 	},
+	-- },
 }
 
 local Tabs = {
@@ -434,4 +434,192 @@ Library:Notify({
     Sound = {
         SoundId = "rbxassetid://8486683243"
     }
+})
+
+-- ======== STRESS TEST SUITE ========
+
+local RunService = game:GetService("RunService")
+local PlayerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+
+-- FPS overlay
+local FpsGui = Instance.new("ScreenGui")
+FpsGui.Name = "FluentFPSMonitor"
+FpsGui.ResetOnSpawn = false
+FpsGui.Enabled = false
+
+local FpsBg = Instance.new("Frame")
+FpsBg.Size = UDim2.fromOffset(280, 24)
+FpsBg.Position = UDim2.fromOffset(10, 10)
+FpsBg.BackgroundColor3 = Color3.new(0, 0, 0)
+FpsBg.BackgroundTransparency = 0.35
+FpsBg.BorderSizePixel = 0
+FpsBg.Parent = FpsGui
+
+local FpsLabel = Instance.new("TextLabel")
+FpsLabel.Size = UDim2.fromScale(1, 1)
+FpsLabel.BackgroundTransparency = 1
+FpsLabel.TextColor3 = Color3.new(1, 1, 1)
+FpsLabel.TextSize = 13
+FpsLabel.Font = Enum.Font.Code
+FpsLabel.TextXAlignment = Enum.TextXAlignment.Left
+FpsLabel.Position = UDim2.fromOffset(4, 0)
+FpsLabel.Text = "FPS: -- | Mem: -- KB"
+FpsLabel.Parent = FpsBg
+FpsGui.Parent = PlayerGui
+
+local fpsCount, fpsTime, currentFps = 0, os.clock(), 0
+RunService.RenderStepped:Connect(function()
+	fpsCount += 1
+	local now = os.clock()
+	if now - fpsTime >= 0.5 then
+		currentFps = math.floor(fpsCount * 2)
+		fpsCount, fpsTime = 0, now
+		FpsLabel.Text = string.format("FPS: %d | Mem: %.1f KB", currentFps, collectgarbage("count"))
+	end
+end)
+
+local StressTab = Window:Tab({
+	Title = "Stress",
+	Icon = "phosphor-gauge-bold",
+})
+
+StressTab:Toggle("FpsMonitorToggle", {
+	Title = "FPS Monitor",
+	Description = "Show FPS + memory overlay",
+	Default = false,
+	Callback = function(v)
+		FpsGui.Enabled = v
+	end,
+})
+
+local BenchSection = StressTab:Section("Benchmarks")
+
+-- 1) 2000 dropdown options
+local stressDropdownsRef = {}
+local stressSpawnCount = 0
+BenchSection:Button({
+	Title = "Spawn 2000 Dropdown Options",
+	Description = "20 dropdowns × 100 values each. Measures total load time.",
+	Callback = function()
+		local start = os.clock()
+		stressSpawnCount += 1
+
+		for d = 1, 20 do
+			local vals = {}
+			for v = 1, 100 do
+				vals[v] = "Opt " .. d .. "-" .. v
+			end
+
+			local dd = StressTab:Dropdown("StressDD_" .. stressSpawnCount .. "_" .. d, {
+				Title = "Dropdown " .. d .. " (100 options)",
+				Values = vals,
+				Default = 1,
+			})
+			stressDropdownsRef[#stressDropdownsRef + 1] = dd
+
+			if d % 5 == 0 then
+				task.wait()
+			end
+		end
+
+		local elapsed = os.clock() - start
+		print(string.format("[Stress] 2000 options created in %.2fs | Mem: %.1f KB", elapsed, collectgarbage("count")))
+	end,
+})
+
+BenchSection:Button({
+	Title = "Cleanup All Stress Dropdowns",
+	Description = "Destroys every spawned dropdown + section from all spawns",
+	Callback = function()
+		local ddCount = #stressDropdownsRef
+		for _, dd in stressDropdownsRef do
+			if dd and dd.Destroy then
+				dd:Destroy()
+			end
+		end
+		table.clear(stressDropdownsRef)
+
+		print(string.format("[Stress] %d dropdowns cleaned | Mem: %.1f KB", ddCount, collectgarbage("count")))
+	end,
+})
+
+-- 2) Notification flood
+BenchSection:Button({
+	Title = "Notification Flood (50)",
+	Description = "Creates 50 notifications at once",
+	Callback = function()
+		local start = os.clock()
+		for i = 1, 50 do
+			Library:Notify({
+				Title = "Flood #" .. i,
+				Content = "Stress notification " .. i,
+				Duration = 4,
+			})
+		end
+		print(string.format("[Stress] 50 notifications in %.3fs | Mem: %.1f KB", os.clock() - start, collectgarbage("count")))
+	end,
+})
+
+-- 3) Dropdown rebuild spam
+local RebuildDD = StressTab:Dropdown("RebuildTargetDD", {
+	Title = "Rebuild Target",
+	Values = {"a", "b", "c"},
+	Default = 1,
+})
+BenchSection:Button({
+	Title = "Rebuild Spam (100×50)",
+	Description = "Rebuilds dropdown 100 times, 50 values each",
+	Callback = function()
+		local start = os.clock()
+		for i = 1, 100 do
+			local vals = {}
+			for j = 1, 50 do
+				vals[j] = "v" .. i .. "-" .. j
+			end
+			RebuildDD:SetValues(vals)
+			if i % 10 == 0 then
+				task.wait()
+			end
+		end
+		print(string.format("[Stress] 100 rebuilds in %.3fs | Mem: %.1f KB", os.clock() - start, collectgarbage("count")))
+	end,
+})
+
+-- 4) Create / destroy loop
+BenchSection:Button({
+	Title = "Create / Destroy Loop (100×5)",
+	Description = "Create 100 toggles in tab, destroy, repeat 5×. Watch memory after GC.",
+	Callback = function()
+		local start = os.clock()
+
+		for cycle = 1, 5 do
+			local els = {}
+			for i = 1, 100 do
+				els[i] = StressTab:Toggle("CDTog_" .. cycle .. "_" .. i, {
+					Title = "CD " .. cycle .. "-" .. i,
+					Default = false,
+				})
+			end
+			task.wait()
+			for i = 1, 100 do
+				if els[i] and els[i].Destroy then
+					els[i]:Destroy()
+				end
+			end
+			table.clear(els)
+			task.wait()
+		end
+
+		print(string.format("[Stress] 5 cycles of 100 create/destroy in %.3fs | Mem: %.1f KB", os.clock() - start, collectgarbage("count")))
+	end,
+})
+
+-- 5) Memory report + quick GC
+BenchSection:Button({
+	Title = "Memory Report",
+	Description = "Prints memory & FPS to console",
+	Callback = function()
+		local mem = collectgarbage("count")
+		print(string.format("[Stress] Mem: %.1f KB | FPS: %d", mem, currentFps))
+	end,
 })
