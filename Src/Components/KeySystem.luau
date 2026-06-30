@@ -211,9 +211,9 @@ function KeySystem.Show(Config, Library, Callback)
 					result = verifyMsg or ""
 					break
 				elseif pcallOk then
-					result = verifyMsg or "Key validation failed."
+					result = (verifyMsg and #verifyMsg > 0) and verifyMsg or "Key validation failed."
 				else
-					result = "Service error."
+					result = "API error: " .. tostring(verifyOk)
 				end
 			end
 			if isSuccess then
