@@ -211,7 +211,7 @@ function Notification:New(Config)
 			Creator.Registry[NewNotification.SubContentLabel] = nil
 			Creator.Registry[NewNotification.CloseIcon] = nil
 
-			if NewNotification.AcrylicPaint then
+			if NewNotification.AcrylicPaint and NewNotification.AcrylicPaint.Model then
 				NewNotification.AcrylicPaint.Model:Destroy()
 			end
 
