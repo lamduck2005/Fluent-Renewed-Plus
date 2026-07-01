@@ -17,6 +17,7 @@ local ExtraSetting = {} do
 	ExtraSetting.SavedConfig = {
 		EnableUnlockFPS = false,
 		EnableFPSBoost = false,
+		EnableFPSOverlay = false,
 		AutoAFKTime = 300,
 		EnableAutoAFK = false,
 		EnableAutoRejoin = false,
@@ -46,6 +47,10 @@ local ExtraSetting = {} do
 	local connErrorMessage = nil
 	local connInputBegan = nil
 	local connInputChanged = nil
+	local fpsOverlayConn
+	local fpsCount, fpsTime, currentFps = 0, 0, 0
+	local fpsOverlayGui
+	local fpsOverlayLabel
 	local inited = false
 
 	local function ConfigPath()
@@ -331,6 +336,79 @@ local ExtraSetting = {} do
 		end)
 	end
 
+	local function SetFpsOverlay(enabled)
+		if not fpsOverlayGui then return end
+		fpsOverlayGui.Enabled = enabled
+		if enabled then
+			if fpsOverlayConn then return end
+			fpsCount, fpsTime = 0, tick()
+			fpsOverlayConn = runService.RenderStepped:Connect(function()
+				fpsCount += 1
+				local now = tick()
+				if now - fpsTime >= 1 then
+					currentFps = math.floor(fpsCount / (now - fpsTime))
+					fpsCount, fpsTime = 0, now
+					fpsOverlayLabel.Text = string.format("FPS: %d | Mem: %d MB", currentFps, math.floor(collectgarbage("count") / 1024))
+				end
+			end)
+		elseif fpsOverlayConn then
+			fpsOverlayConn:Disconnect()
+			fpsOverlayConn = nil
+		end
+	end
+
+	local function Cleanup()
+		if fpsOverlayGui then
+			fpsOverlayGui:Destroy()
+			fpsOverlayGui = nil
+		end
+		if fpsOverlayConn then
+			fpsOverlayConn:Disconnect()
+			fpsOverlayConn = nil
+		end
+
+		if afkInfoThread then
+			pcall(task.cancel, afkInfoThread)
+			afkInfoThread = nil
+		end
+
+		if connIdled then
+			connIdled:Disconnect()
+			connIdled = nil
+		end
+		if connErrorMessage then
+			connErrorMessage:Disconnect()
+			connErrorMessage = nil
+		end
+		if connInputBegan then
+			connInputBegan:Disconnect()
+			connInputBegan = nil
+		end
+		if connInputChanged then
+			connInputChanged:Disconnect()
+			connInputChanged = nil
+		end
+
+		pcall(function()
+			local pg = player:FindFirstChild("PlayerGui")
+			if pg then
+				local b = pg:FindFirstChild("AFKBlackoutScreenGui")
+				if b then b:Destroy() end
+			end
+		end)
+		pcall(function()
+			runService:Set3dRenderingEnabled(true)
+		end)
+
+		isAutoAFKLoopRunning = false
+		isAutoAFKEnabled = false
+		isAFKModeEnabled = false
+		isAutoRejoinTimerRunning = false
+		isAntiAfkFiring = false
+		isFPSBoostApplied = false
+		inited = false
+	end
+
 	local function InitActivityTracking()
 		connInputBegan = userInputService.InputBegan:Connect(function(input, processed)
 			if not processed and not isAntiAfkFiring then
@@ -401,6 +479,41 @@ local ExtraSetting = {} do
 		InitActivityTracking()
 		SetupQueueOnTeleport()
 
+		pcall(function()
+			local playerGui = player:FindFirstChild("PlayerGui")
+			if not playerGui then return end
+			fpsOverlayGui = Instance.new("ScreenGui")
+			fpsOverlayGui.Name = "FluentFPSOverlay"
+			fpsOverlayGui.ResetOnSpawn = false
+			fpsOverlayGui.Enabled = false
+
+			local bg = Instance.new("Frame")
+			bg.Size = UDim2.fromOffset(175, 22)
+			bg.Position = UDim2.new(1, -10, 0, 10)
+			bg.AnchorPoint = Vector2.new(1, 0)
+			bg.BackgroundColor3 = Color3.new(0, 0, 0)
+			bg.BackgroundTransparency = 0.35
+			bg.BorderSizePixel = 0
+			bg.Parent = fpsOverlayGui
+
+			fpsOverlayLabel = Instance.new("TextLabel")
+			fpsOverlayLabel.Size = UDim2.fromScale(1, 1)
+			fpsOverlayLabel.BackgroundTransparency = 1
+			fpsOverlayLabel.TextColor3 = Color3.new(1, 1, 1)
+			fpsOverlayLabel.TextSize = 13
+			fpsOverlayLabel.Font = Enum.Font.Code
+			fpsOverlayLabel.TextXAlignment = Enum.TextXAlignment.Right
+			fpsOverlayLabel.Position = UDim2.fromOffset(0, 0)
+			fpsOverlayLabel.Text = "FPS: -- | MEM: -- MB"
+			fpsOverlayLabel.Parent = bg
+
+			fpsOverlayGui.Parent = playerGui
+		end)
+
+		if self.SavedConfig.EnableFPSOverlay then
+			SetFpsOverlay(true)
+		end
+
 		if self.SavedConfig.EnableUnlockFPS and setfpscap then
 			pcall(function() setfpscap(999) end)
 		end
@@ -423,6 +536,10 @@ local ExtraSetting = {} do
 
 		if self.SavedConfig.EnableAutoRejoin then
 			StartAutoRejoinTimerLoop()
+		end
+
+		if self.Library and self.Library.OnUnload then
+			self.Library.OnUnload:Connect(Cleanup)
 		end
 	end
 
@@ -537,6 +654,17 @@ local ExtraSetting = {} do
 							lib:Notify({ Title = "Performance", Content = "Please Rejoin to restore graphics.", Duration = 4 })
 						end
 					end
+				end,
+			})
+
+			section:AddToggle("ExtraSetting_FPSOverlay", {
+				Title = "FPS Overlay",
+				Description = "Shows FPS and Lua memory usage on screen",
+				Default = cfg.EnableFPSOverlay,
+				Callback = function(v)
+					cfg.EnableFPSOverlay = v
+					SaveConfig()
+					SetFpsOverlay(v)
 				end,
 			})
 		end
