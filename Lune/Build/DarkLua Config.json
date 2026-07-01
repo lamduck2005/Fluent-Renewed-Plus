@@ -3,9 +3,8 @@
 		"name": "dense",
 		"column_span": 9999999999
 	},
-	"rules": [
-		"compute_expression",
-		"filter_after_early_return",
+"rules": [
+    "filter_after_early_return",
 		"group_local_assignment",
 		"remove_comments",
 		"remove_empty_do",
