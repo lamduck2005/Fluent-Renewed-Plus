@@ -3,217 +3,38 @@
 ![Fluent Renewed Plus Title](Assets/darkmode.png#gh-dark-mode-only)
 ![Fluent Renewed Plus Title](Assets/darkmode.png#gh-light-mode-only)
 
-## ⚡ Features
+A modern, customizable Roblox GUI library with 61 themes, 10,000+ icons, a built-in key system, acrylic blur effects, and powerful addons.
 
-- Modern design
-- Many customization options
-- Almost any UI Element you would ever need
-- Built-in key system with 4 service providers (Platoboost, Panda Development, Luarmor, Junkie Development)
-
-## 🔌 Installation
-
-Load Fluent Renewed Plus via `loadstring`:
+## Installation
 
 ```lua
 local Library = loadstring(game:HttpGet("https://github.com/lamduck2005/Fluent-Renewed-Plus/releases/latest/download/Fluent.luau"))()
 ```
 
-## 📜 Usage
+Forked from [ActualMasterOogway/Fluent-Renewed](https://github.com/ActualMasterOogway/Fluent-Renewed), originally by [dawid-scripts/Fluent](https://github.com/dawid-scripts/Fluent).
 
-[Example Script for studio environment](https://github.com/lamduck2005/Fluent-Renewed-Plus/blob/master/Example.client.luau)
+## Differences From Original
 
-[Example Script for exploit environment](https://github.com/lamduck2005/Fluent-Renewed-Plus/blob/master/Example.luau)
+- **61 themes** instead of 6 (default: Vynixu)
+- **Key system** with 3 modes: static key, custom validator, API services (Platoboost, PandaDevelopment, Luarmor, JunkieDevelopment)
+- **10,000+ icons** (original: ~900) — Lucide 0.469.0 + Phosphor 2.1.0
+- **Floating minimize button** with drag support and customizable icon/size
+- **Window resizing** option
+- **Glass transparency** option
+- **ExtraSetting addon** — AFK mode, FPS overlay/boost, anti-AFK, auto rejoin
+- **Enhanced elements**: searchable dropdowns, UpdateOnChange colorpicker, MaxLength input, embedded keybind in toggle
+- **Acrylic** uses DepthOfFieldEffect (more reliable)
+- **Lune build system** for compilation and publishing
 
-Quick test in your executor:
+## Documentation
+
+[**View Full Documentation →**](documentation.md)
+
+## Quick Test
+
 ```lua
 loadstring(game:HttpGet("https://raw.githubusercontent.com/lamduck2005/Fluent-Renewed-Plus/master/Example.luau"))()
 ```
 
-## 📖 Window Configuration
-
-Below are the available options for `Library:Window{}`:
-
-| Option | Type | Default | Description |
-|---|---|---|---|
-| `Title` | `string?` | Game name | Window title |
-| `SubTitle` | `string?` | `"Made with Fluent Renewed Plus"` | Window subtitle |
-| `TabWidth` | `number?` | `160` | Width of the tab selector |
-| `Size` | `UDim2?` | `UDim2.fromOffset(470, 380)` | Window size |
-| `MinSize` | `Vector2?` | `Vector2.new(470, 380)` | Minimum window size |
-| `Resize` | `boolean?` | `false` | Allow window resizing |
-| `MinimizeKey` | `Enum.KeyCode?` | `Enum.KeyCode.RightControl` | Key to toggle minimize |
-| `Acrylic` | `boolean?` | `false` | Enable acrylic blur effect |
-| `Theme` | `string?` | `"Vynixu"` | UI theme name |
-| `Mobile` | `table?` | — | Mobile-specific configuration |
-| `MinimizeButton` | `boolean?` | `true` | Show a persistent floating minimize button |
-| `MinimizeButtonSize` | `number?` | `50` | Size of the minimize button in pixels |
-| `MinimizeButtonIcon` | `string?` | `"cat"` | Icon name (any Lucide/Phosphor icon) |
-| `Transparency` | `boolean?` | `false` | Enable window transparency effect |
-| `KeySystem` | `table?` | — | Key system configuration (omit to skip) |
-| `KeyFolder` | `string?` | `"FluentTemp"` | Folder to store saved keys |
-
-### MinimizeButton
-
-A floating button persists when the window is hidden. Click to toggle, drag to reposition. Position is saved per-session.
-
-```lua
-local Window = Library:Window{
-    Title = "My Script",
-    MinimizeButton = true,          -- enabled by default
-    MinimizeButtonSize = 50,        -- optional
-    MinimizeButtonIcon = "scan-eye", -- optional, defaults to "cat"
-}
-```
-
-### Transparency
-
-Controls the background transparency (frosted glass). Enable for a glass effect, disable for fully opaque background.
-
-```lua
-local Window = Library:Window{
-    Title = "My Script",
-    Transparency = true, -- enable glass
-}
-```
-
-Toggle at runtime:
-```lua
-Library:ToggleTransparency(true)  -- enable
-Library:ToggleTransparency(false) -- disable
-```
-
-## ExtraSetting Addon
-
-ExtraSetting provides common utility toggles in an "Extra" tab. Load it alongside the library:
-
-```lua
-local ExtraSetting = loadstring(game:HttpGet("https://raw.githubusercontent.com/lamduck2005/Fluent-Renewed-Plus/main/Addons/ExtraSetting.luau"))()
-ExtraSetting:SetLibrary(Library)
-ExtraSetting:SetFolder("MyScriptHub")     -- config folder, defaults to "FluentSettings"
-ExtraSetting.AutoExecuteUrl = "https://raw.githubusercontent.com/..."  -- optional
--- ExtraSetting.Discord = "https://discord.gg/..."  -- optional
-
-ExtraSetting:BuildExtraSection(Tabs.Extra)
-```
-
-### Sections
-
-| Section | Features |
-|---------|----------|
-| **Links** | GitHub button (always), Discord button (if `Discord` is set) |
-| **Anti-AFK & Reconnect** | Prevent idle disconnect |
-| **Performance** | FPS Boost (auto 5s), Unlock FPS (999/60), FPS Overlay (top-right) |
-| **AFK Mode** | Farming mode (disables 3D), auto AFK after 10 min idle, custom info via `:SetAFKInfo()` |
-| **Auto Rejoin & Exec** | Rejoin on disconnect, auto-execute on teleport |
-
-### Methods
-
-- `:SetAFKInfo(name, callback)` — add a line to AFK info display
-- `:RemoveAFKInfo(name)` — remove a previously added info line
-
-## 🔑 Key System
-
-Fluent Renewed Plus includes a built-in key system supporting three validation modes and four API service providers.
-
-### KeySystem Options
-
-| Option | Type | Default | Description |
-|---|---|---|---|
-| `Title` | `string?` | `"Key System"` | Dialog title |
-| `Note` | `string?` | — | Description text below the title |
-| `SaveKey` | `boolean?` | `false` | Save the validated key to disk for auto-login |
-| `Key` | `string \| {string}` | — | Static key(s) — Mode 1 |
-| `KeyValidator` | `function` | — | Custom validation function — Mode 2 |
-| `API` | `{table}` | — | API service list — Mode 3 |
-| `URL` | `string?` | — | Link for the "Get Key" button |
-| `Thumbnail` | `table?` | — | Side thumbnail (`Image`, `Width`, `Title`) |
-
-### Mode 1: Static Key
-
-Provide a single key or a list of accepted keys. Users must enter one of them.
-
-```lua
-local Window = Library:Window{
-    Title = "My Script",
-    KeySystem = {
-        Title = "Welcome",
-        Note = "Enter the password to continue.",
-        SaveKey = true,
-        Key = "mypassword",
-        -- Key = {"key1", "key2"}, -- multiple keys
-        Thumbnail = {
-            Image = "rbxassetid://8992230677",
-            Title = "Premium",
-        },
-    },
-}
-```
-
-### Mode 2: Custom Validator
-
-Supply your own validation function that receives the entered key and returns `true` or `false`.
-
-```lua
-local Window = Library:Window{
-    Title = "My Script",
-    KeySystem = {
-        Title = "Authentication",
-        SaveKey = true,
-        KeyValidator = function(key)
-            -- Custom logic (e.g. check against a remote server)
-            return key == "secret123"
-        end,
-    },
-}
-```
-
-### Mode 3: API Services
-
-Validate keys against one or more third-party whitelist services. When multiple services are configured, the key is checked against all of them — the first successful validation wins.
-
-```lua
-local Window = Library:Window{
-    Title = "My Script",
-    KeySystem = {
-        Title = "Premium Access",
-        Note = "24 hour key, access all features!",
-        SaveKey = true,
-        URL = "https://discord.gg/example",
-        API = {
-            { Type = "platoboost", ServiceId = "...", Secret = "..." },
-            { Type = "pandadevelopment", ServiceId = "..." },
-            { Type = "luarmor", ScriptId = "...", Discord = "discord.gg/..." },
-            { Type = "junkiedevelopment", ServiceId = "...", ApiKey = "...", Provider = "..." },
-        },
-        Thumbnail = {
-            Image = "rbxassetid://8992230677",
-            Title = "Premium",
-        },
-    },
-}
-```
-
-#### Service Provider Reference
-
-| Service | Required Fields | Website |
-|---|---|---|
-| `platoboost` | `ServiceId`, `Secret` | [platoboost.com](https://platoboost.com) |
-| `pandadevelopment` | `ServiceId` | [pandadevelopment.net](https://pandadevelopment.net) |
-| `luarmor` | `ScriptId`, `Discord` (optional) | [luarmor.net](https://luarmor.net) |
-| `junkiedevelopment` | `ServiceId`, `ApiKey`, `Provider` | Junkie Development |
-
-### SaveKey & KeyFolder
-
-When `SaveKey = true`, the validated key is written to `{KeyFolder}/{UserId}.key`. Default folder is `FluentTemp`. Use unique `KeyFolder` per script to avoid key collisions:
-
-```lua
-local Window = Library:Window{
-    Title = "My Script",
-    KeyFolder = "MyScript_Keys",
-    KeySystem = {
-        SaveKey = true,
-        Key = "password123",
-    },
-}
-```
-
+- [Example Script (Studio)](https://github.com/lamduck2005/Fluent-Renewed-Plus/blob/master/Example.client.luau)
+- [Example Script (Executor)](https://github.com/lamduck2005/Fluent-Renewed-Plus/blob/master/Example.luau)

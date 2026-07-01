@@ -1,1931 +1,354 @@
-# Table of Contents
+﻿# Fluent Renewed Plus
 
-- [Fluent | Fluent GUI](#fluent-fluent-gui)
-- [Fluent Library | Fluent GUI](#fluent-library-fluent-gui)
-- [Documentation | Fluent GUI](#documentation-fluent-gui)
-- [Guide | Fluent GUI](#guide-fluent-gui)
-- [Interface Manager | Fluent GUI](#interface-manager-fluent-gui)
-- [Quick Start | Fluent GUI](#quick-start-fluent-gui)
-- [Save Manager | Fluent GUI](#save-manager-fluent-gui)
-- [Fluent | Fluent GUI](#fluent-fluent-gui)
-- [Hints | Fluent GUI](#hints-fluent-gui)
-- [Examples | Fluent GUI](#examples-fluent-gui)
-- [Unknown](#unknown)
-- [Unknown](#unknown)
-- [Unknown](#unknown)
-- [Unknown](#unknown)
-- [Unknown](#unknown)
-- [Unknown](#unknown)
-- [Unknown](#unknown)
-- [Unknown](#unknown)
-- [Unknown](#unknown)
-- [Unknown](#unknown)
-- [Guide | Fluent GUI](#guide-fluent-gui)
-- [Unknown](#unknown)
+Fluent Renewed Plus is a modern, customizable Roblox GUI library with an extensive range of UI elements, 61 themes, over 10,000 icons, a built-in key system, acrylic blur effects, and powerful addons for configuration management and utility features.
+
+## Features
+
+- Modern design with smooth spring animations
+- 8 UI element types: Button, Toggle, Slider, Dropdown, Colorpicker, Keybind, Input, Paragraph
+- 61 built-in themes
+- Over 10,000 icons (Lucide 0.469.0 + Phosphor 2.1.0)
+- Acrylic frosted glass blur effect
+- Glass transparency mode
+- Floating minimize button (draggable, customizable)
+- Window resizing
+- Built-in key system with 3 validation modes and 4 API services
+- Notification system with buttons and sounds
+- Dialog system
+- Addons: SaveManager, InterfaceManager, ExtraSetting
+- Mobile support
+- Strict Luau types
+
+## Differences From Original Fluent
+
+- 61 themes instead of 6 (default: Vynixu)
+- Key system with 3 modes: static key, custom validator, API services (Platoboost, PandaDevelopment, Luarmor, JunkieDevelopment)
+- Floating minimize button with drag support and customizable icon/size
+- Window resizing option
+- Glass transparency option
+- Mobile configuration support
+- ExtraSetting addon: AFK mode, FPS overlay/boost, anti-AFK, auto rejoin
+- Over 10,000 icons (original: ~900)
+- Dropdown: searchable, multi-select with any value type, AllowNull, AutoDeselect
+- Colorpicker: UpdateOnChange for live preview
+- Input: MaxLength, ClearOnFocusLost
+- Toggle: embedded Keybind inside toggle row
+- Paragraph: TitleAlignment, ContentAlignment
+- Acrylic: uses DepthOfFieldEffect (more reliable)
+- Lune build system for compilation and publishing
 
 ---
 
-# Fluent | Fluent GUI
+# Installation
 
-For the complete documentation index, see [llms.txt](https://forgenet.gitbook.io/fluent-documentation/llms.txt)
-. This page is also available as [Markdown](https://forgenet.gitbook.io/fluent-documentation/documentation/documentation/fluent.md)
-.
+## Loadstring (Executor)
 
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/documentation/fluent#library)
+```lua
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+```
 
-Library
+## Wally (Roblox Studio)
 
-
-------------------------------------------------------------------------------------------------------------
-
-### 
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/documentation/fluent#properties)
-
-Properties
-
-Property
-
-Type
-
-Description
-
-Version
-
-[string](https://www.lua.org/pil/2.4.html)
-
-Contains the library version
-
-OpenFrames
-
-[table](https://www.lua.org/pil/2.5.html)
-
-\[?\]
-
-Options
-
-[table](https://www.lua.org/pil/2.5.html)
-
-Contains library options and elements
-
-Themes
-
-[table](https://www.lua.org/pil/2.5.html)
-
-Contains library [themes](https://forgenet.gitbook.io/fluent-documentation/documentation/documentation/fluent#themes)
-
-Window
-
-[Window](https://forgenet.gitbook.io/fluent-documentation/documentation/documentation/fluent#creating-window)
-
-Contains created window
-
-WindowFrame
-
-[Frame](https://create.roblox.com/docs/reference/engine/classes/Frame)
-
-Contains window gui frame
-
-Unloaded
-
-[boolean](https://www.lua.org/pil/2.2.html)
-
-Is fluent unloaded
-
-Theme
-
-[string](https://www.lua.org/pil/2.4.html)
-
-Contains selected theme
-
-DialogOpen
-
-[boolean](https://www.lua.org/pil/2.2.html)
-
-Is dialog open
-
-UseAcrylic
-
-[boolean](https://www.lua.org/pil/2.2.html)
-
-Is acrylic enabled
-
-Acrylic
-
-[boolean](https://www.lua.org/pil/2.2.html)
-
-\[?\]
-
-Transparency
-
-[boolean](https://www.lua.org/pil/2.2.html)
-
-Is transparency enabled
-
-MinimizeKeybind
-
-[KeyCode](https://create.roblox.com/docs/reference/engine/enums/KeyCode)
-
-Contains keybind to minimize window
-
-MinimizeKey
-
-[KeyCode](https://create.roblox.com/docs/reference/engine/enums/KeyCode)
-
-\[?\]
-
-GUI
-
-[ScreenGui](https://create.roblox.com/docs/reference/engine/classes/ScreenGui)
-
-Contains library ScreenGui
-
-### 
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/documentation/fluent#methods)
-
-Methods
-
-Method
-
-Arguments
-
-Description
-
-CreateWindow(Config)
-
-Config: [table](https://www.lua.org/pil/2.5.html)
-
-[Creates window](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#creating-window)
-
-SetTheme(Theme)
-
-Theme\*: [string](https://www.lua.org/pil/2.4.html)
-
-Sets the specified GUI theme
-
-Destroy()
-
-Destroys window
-
-ToggleAcrylic(State)
-
-State: [boolean](https://www.lua.org/pil/2.2.html)
-
-Toggles acrylic rendering
-
-ToggleTransparency(State)
-
-State: [boolean](https://www.lua.org/pil/2.2.html)
-
-Toggles transparency rendering
-
-Notify(Config)
-
-Config: [table](https://www.lua.org/pil/2.5.html)
-
-[Creates notification](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#creating-notification)
-
-[PreviousDocumentation](https://forgenet.gitbook.io/fluent-documentation/documentation/documentation)
-[NextExamples](https://forgenet.gitbook.io/fluent-documentation/documentation/examples)
-
-Last updated 2 years ago
+```toml
+[dependencies]
+Fluent = "dawid-scripts/fluent@1.0.5"
+```
 
 ---
-
-# Fluent Library | Fluent GUI
-
-For the complete documentation index, see [llms.txt](https://forgenet.gitbook.io/fluent-documentation/llms.txt)
-. This page is also available as [Markdown](https://forgenet.gitbook.io/fluent-documentation/fluent-library.md)
-.
-
-![](https://forgenet.gitbook.io/fluent-documentation/~gitbook/image?url=https%3A%2F%2F1481849050-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FqTYspa6M7hcHjeBMoysI%252Fuploads%252FDgmBN3trLINFncdvGN99%252Flogodark.png%3Falt%3Dmedia%26token%3Dcd8430d9-e0d2-4d17-8f18-0d9fb33bbeba&width=768&dpr=3&quality=100&sign=90acdcc4&sv=2)
-
-[](https://forgenet.gitbook.io/fluent-documentation#description)
-
-\[📰\] Description
-
-
-----------------------------------------------------------------------------------------
-
-Fluent Roblox GUI Lib is the ultimate solution for creating stunning user interfaces that are both modern and customizable. With an extensive range of UI elements to choose from, you can easily create menus and other interfaces that are tailored to your specific needs. The library offers a sleek and intuitive design, making it easy for anyone to get started. With its comprehensive documentation, you'll be able to create amazing interfaces in no time. Fluent has everything you need to bring your ideas to life.
-
-[](https://forgenet.gitbook.io/fluent-documentation#features)
-
-\[🔥\] Features
-
-
-----------------------------------------------------------------------------------
-
-*   Modern design
-    
-*   Many customization options
-    
-*   Almost any UI Element you would ever need
-    
-
-[](https://forgenet.gitbook.io/fluent-documentation#installation)
-
-\[🔧\] Installation
-
-
-------------------------------------------------------------------------------------------
-
-You can load Fluent through a GitHub Release:
-
-Copy
-
-    local Library = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
-
-[](https://forgenet.gitbook.io/fluent-documentation#links)
-
-\[📌\] Links
-
-
-----------------------------------------------------------------------------
-
-[![Logo](https://forgenet.gitbook.io/fluent-documentation/~gitbook/image?url=https%3A%2F%2Fgithub.com%2Ffluidicon.png&width=20&dpr=3&quality=100&sign=3e4fd8cc&sv=2)GitHub - dawid-scripts/Fluent: :3GitHub](https://github.com/dawid-scripts/Fluent)
-
-Github Page
-
-[![Logo](https://forgenet.gitbook.io/fluent-documentation/~gitbook/image?url=https%3A%2F%2Fgithub.com%2Ffluidicon.png&width=20&dpr=3&quality=100&sign=3e4fd8cc&sv=2)Fluent/Example.lua at master · dawid-scripts/FluentGitHub](https://github.com/dawid-scripts/Fluent/blob/master/Example.lua)
-
-Example Script
-
-[![Logo](https://forgenet.gitbook.io/fluent-documentation/~gitbook/image?url=https%3A%2F%2Fgithub.com%2Ffluidicon.png&width=20&dpr=3&quality=100&sign=3e4fd8cc&sv=2)Fluent/Example.client.lua at master · dawid-scripts/FluentGitHub](https://github.com/dawid-scripts/Fluent/blob/master/Example.client.lua)
-
-Example Script
-
-[NextQuick Start](https://forgenet.gitbook.io/fluent-documentation/quick-start)
-
-Last updated 2 years ago
-
----
-
-# Documentation | Fluent GUI
-
-For the complete documentation index, see [llms.txt](https://forgenet.gitbook.io/fluent-documentation/llms.txt)
-. This page is also available as [Markdown](https://forgenet.gitbook.io/fluent-documentation/documentation/documentation.md)
-.
-
-All types have a link to the documentation, for example: [string](https://www.lua.org/pil/2.4.html)
-
-Mandatory method argument is marked with "\*"
-
-**Example:** Agrument\*: [type](https://www.lua.org/pil/2.html)
-
-Missing info is marked with "\[?\]"
-
-[PreviousHints](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/hints)
-[NextFluent](https://forgenet.gitbook.io/fluent-documentation/documentation/documentation/fluent)
-
-Last updated 2 years ago
-
----
-
-# Guide | Fluent GUI
-
-![Page cover](https://forgenet.gitbook.io/fluent-documentation/~gitbook/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1569982175971-d92b01cf8694%3Fcrop%3Dentropy%26cs%3Dsrgb%26fm%3Djpg%26ixid%3DM3wxOTcwMjR8MHwxfHNlYXJjaHw3fHxncmFkaWVudHxlbnwwfHx8fDE2OTM3NjMxMzV8MA%26ixlib%3Drb-4.0.3%26q%3D85&width=1248&dpr=3&quality=100&sign=99d9d6a6&sv=2)
-
-For the complete documentation index, see [llms.txt](https://forgenet.gitbook.io/fluent-documentation/llms.txt)
-. This page is also available as [Markdown](https://forgenet.gitbook.io/fluent-documentation/documentation/guide.md)
-.
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide#fluent)
-
-Fluent
-
-
--------------------------------------------------------------------------------------------
-
-Information about using the gui library
-
-[📄Fluent](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent)
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide#save-manager)
-
-Save Manager
-
-
--------------------------------------------------------------------------------------------------------
-
-Information about using the save manager
-
-[📄Save Manager](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/save-manager)
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide#interface-manager)
-
-Interface Manager
-
-
------------------------------------------------------------------------------------------------------------------
-
-Information about using the interface manager
-
-[📄Interface Manager](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/interface-manager)
-
-[PreviousQuick Start](https://forgenet.gitbook.io/fluent-documentation/quick-start)
-[NextFluent](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent)
-
-Last updated 2 years ago
-
----
-
-# Interface Manager | Fluent GUI
-
-![Page cover](https://forgenet.gitbook.io/fluent-documentation/~gitbook/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1569982175971-d92b01cf8694%3Fcrop%3Dentropy%26cs%3Dsrgb%26fm%3Djpg%26ixid%3DM3wxOTcwMjR8MHwxfHNlYXJjaHw3fHxncmFkaWVudHxlbnwwfHx8fDE2OTM3NjMxMzV8MA%26ixlib%3Drb-4.0.3%26q%3D85&width=1248&dpr=3&quality=100&sign=99d9d6a6&sv=2)
-
-For the complete documentation index, see [llms.txt](https://forgenet.gitbook.io/fluent-documentation/llms.txt)
-. This page is also available as [Markdown](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/interface-manager.md)
-.
-
-[PreviousSave Manager](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/save-manager)
-[NextHints](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/hints)
-
----
-
-# Quick Start | Fluent GUI
-
-For the complete documentation index, see [llms.txt](https://forgenet.gitbook.io/fluent-documentation/llms.txt)
-. This page is also available as [Markdown](https://forgenet.gitbook.io/fluent-documentation/quick-start.md)
-.
-
-How to use Fluent: [Fluent](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent)
-
-Detailed documentation: [Documentation](https://forgenet.gitbook.io/fluent-documentation/documentation/documentation)
-
-Examples: [Examples](https://forgenet.gitbook.io/fluent-documentation/documentation/examples)
-
-[PreviousFluent Library](https://forgenet.gitbook.io/fluent-documentation)
-[NextGuide](https://forgenet.gitbook.io/fluent-documentation/documentation/guide)
-
-Last updated 2 years ago
-
----
-
-# Save Manager | Fluent GUI
-
-![Page cover](https://forgenet.gitbook.io/fluent-documentation/~gitbook/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1569982175971-d92b01cf8694%3Fcrop%3Dentropy%26cs%3Dsrgb%26fm%3Djpg%26ixid%3DM3wxOTcwMjR8MHwxfHNlYXJjaHw3fHxncmFkaWVudHxlbnwwfHx8fDE2OTM3NjMxMzV8MA%26ixlib%3Drb-4.0.3%26q%3D85&width=1248&dpr=3&quality=100&sign=99d9d6a6&sv=2)
-
-For the complete documentation index, see [llms.txt](https://forgenet.gitbook.io/fluent-documentation/llms.txt)
-. This page is also available as [Markdown](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/save-manager.md)
-.
-
-### 
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/save-manager#creating-save-manager)
-
-Creating Save Manager
-
-Copy
-
-    local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
-
-### 
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/save-manager#auto-load-config)
-
-Auto Load Config
-
-Copy
-
-    SaveManager:LoadAutoloadConfig()
-
-[PreviousFluent](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent)
-[NextInterface Manager](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/interface-manager)
-
-Last updated 2 years ago
-
----
-
-# Fluent | Fluent GUI
-
-For the complete documentation index, see [llms.txt](https://forgenet.gitbook.io/fluent-documentation/llms.txt)
-. This page is also available as [Markdown](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent.md)
-.
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#creating-library)
-
-Creating Library
-
-
-----------------------------------------------------------------------------------------------------------------------
-
-Copy
-
-    local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
-
-### 
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#accessibility)
-
-Accessibility
-
-Fluent is accessible from any function
-
-Copy
-
-    function Init()
-        local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
-    end
-    
-    function Test()
-        print(Fluent.Options)
-    end
-    
-    Init()
-    Test()
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#creating-window)
-
-Creating Window
-
-
---------------------------------------------------------------------------------------------------------------------
-
-Copy
-
-    local Window = Fluent:CreateWindow({
-        Title = "Fluent " .. Fluent.Version,
-        SubTitle = "by dawid",
-        TabWidth = 160,
-        Size = UDim2.fromOffset(580, 460),
-        Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
-        Theme = "Dark",
-        MinimizeKey = Enum.KeyCode.LeftControl -- Used when theres no MinimizeKeybind
-    })
-
-### 
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#themes)
-
-Themes
-
-[](https://github.com/dawid-scripts/Fluent/blob/master/src/Themes/Amethyst.lua)
-
-![Cover](https://forgenet.gitbook.io/fluent-documentation/~gitbook/image?url=https%3A%2F%2F1481849050-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FqTYspa6M7hcHjeBMoysI%252Fuploads%252FdBM3mnKDhW6nGM8arRB3%252Fpreview-amethyst.png%3Falt%3Dmedia%26token%3D3663aea2-6398-4ffa-a96d-4a6c6a4b67be&width=490&dpr=3&quality=100&sign=f08aa627&sv=2)
-
-Amethyst
-
-[](https://github.com/dawid-scripts/Fluent/blob/master/src/Themes/Aqua.lua)
-
-![Cover](https://forgenet.gitbook.io/fluent-documentation/~gitbook/image?url=https%3A%2F%2F1481849050-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FqTYspa6M7hcHjeBMoysI%252Fuploads%252Fa4cq3HnfrwMST6VJXmrD%252Fpreview-aqua.png%3Falt%3Dmedia%26token%3Dc851266a-21d8-4e14-a94a-86a2eb40663b&width=490&dpr=3&quality=100&sign=d2e63891&sv=2)
-
-Aqua
-
-[](https://github.com/dawid-scripts/Fluent/blob/master/src/Themes/Rose.lua)
-
-![Cover](https://forgenet.gitbook.io/fluent-documentation/~gitbook/image?url=https%3A%2F%2F1481849050-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FqTYspa6M7hcHjeBMoysI%252Fuploads%252FtdBbjnWxhLvsRFChge2o%252Fpreview-rose.png%3Falt%3Dmedia%26token%3Db18792bc-d9cf-4b18-a7e8-810295e9ae68&width=490&dpr=3&quality=100&sign=fc3fcc6e&sv=2)
-
-Rose
-
-[](https://github.com/dawid-scripts/Fluent/blob/master/src/Themes/Light.lua)
-
-![Cover](https://forgenet.gitbook.io/fluent-documentation/~gitbook/image?url=https%3A%2F%2F1481849050-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FqTYspa6M7hcHjeBMoysI%252Fuploads%252FHR3EqFEUzvFSX2Lm7485%252Fpreview-light.png%3Falt%3Dmedia%26token%3D45e4e1a6-418d-4956-9942-9ca777d17d17&width=490&dpr=3&quality=100&sign=588fab43&sv=2)
-
-Light
-
-[](https://github.com/dawid-scripts/Fluent/blob/master/src/Themes/Dark.lua)
-
-![Cover](https://forgenet.gitbook.io/fluent-documentation/~gitbook/image?url=https%3A%2F%2F1481849050-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FqTYspa6M7hcHjeBMoysI%252Fuploads%252Fd1gIViyg0a16tblMtit3%252Fpreview-dark.png%3Falt%3Dmedia%26token%3D02032afe-04da-4ff7-904d-2a5e3453bb73&width=490&dpr=3&quality=100&sign=84f10461&sv=2)
-
-Dark
-
-[](https://github.com/dawid-scripts/Fluent/blob/master/src/Themes/Darker.lua)
-
-![Cover](https://forgenet.gitbook.io/fluent-documentation/~gitbook/image?url=https%3A%2F%2F1481849050-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FqTYspa6M7hcHjeBMoysI%252Fuploads%252FFDCzLD1agGp7grOBYwD0%252Fpreview-darker.png%3Falt%3Dmedia%26token%3D2fd85197-023b-4484-9a57-c99b98cdc01e&width=490&dpr=3&quality=100&sign=30c140be&sv=2)
-
-Darker
-
-### 
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#key-codes)
-
-Key Codes
-
-[![Logo](https://forgenet.gitbook.io/fluent-documentation/~gitbook/image?url=https%3A%2F%2Fcdn.foundation.roblox.com%2Fcurrent%2FRobloxStudio.ico&width=20&dpr=3&quality=100&sign=cd6e188c&sv=2)KeyCodecreate.roblox.com](https://create.roblox.com/docs/reference/engine/enums/KeyCode)
-
-Documentation
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#creating-options)
-
-Creating Options
-
-
-----------------------------------------------------------------------------------------------------------------------
-
-Copy
-
-    local Options = Fluent.Options
-
-Options are used by the library to save the elements to access them in the future
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#creating-notifications)
-
-Creating Notifications
-
-
-----------------------------------------------------------------------------------------------------------------------------------
-
-Copy
-
-    Fluent:Notify({
-            Title = "Notification",
-            Content = "This is a notification",
-            SubContent = "SubContent", -- Optional
-            Duration = 5 -- Set to nil to make the notification not disappear
-    })
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#creating-dialogs)
-
-Creating Dialogs
-
-
-----------------------------------------------------------------------------------------------------------------------
-
-Copy
-
-    Window:Dialog({
-        Title = "Title",
-        Content = "This is a dialog",
-        Buttons = {
-            { 
-                Title = "Confirm",
-                Callback = function()
-                    print("Confirmed the dialog.")
-                end 
-            }, {
-                Title = "Cancel",
-                Callback = function()
-                    print("Cancelled the dialog.")
-                end 
-            }
-        }
-    })
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#creating-tabs)
-
-Creating Tabs
-
-
-----------------------------------------------------------------------------------------------------------------
-
-Copy
-
-    -- Fluent provides Lucide Icons, they are optional
-    local Tabs = {
-        Main = Window:AddTab({ Title = "Main", Icon = "" }),
-        Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
-    }
-
-### 
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#tab-settings-with-interface-and-configs)
-
-Tab (Settings) With Interface And Configs
-
-Copy
-
-    local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
-    local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
-    
-    SaveManager:SetLibrary(Fluent)
-    InterfaceManager:SetLibrary(Fluent)
-    
-    InterfaceManager:BuildInterfaceSection(Tabs.Settings)
-    SaveManager:BuildConfigSection(Tabs.Settings)
-
-### 
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#selecting-main-tab)
-
-Selecting Main Tab
-
-Copy
-
-    Window:SelectTab(1)
-
-### 
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#icons)
-
-Icons
-
-[![Logo](https://forgenet.gitbook.io/fluent-documentation/~gitbook/image?url=https%3A%2F%2Flucide.dev%2Ffavicon.ico&width=20&dpr=3&quality=100&sign=ee02342a&sv=2)Lucide IconsLucide](https://lucide.dev/icons/)
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#creating-sections)
-
-Creating Sections
-
-
-------------------------------------------------------------------------------------------------------------------------
-
-Copy
-
-    local Section = Tab:AddSection("Section Name")
-
-Section can be used as a parent for any element instead of a tab
-
-Copy
-
-    local Section = Tab:AddSection("Section Name")
-    Section:AddParagraph({
-        Title = "Paragraph"
-    })
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#creating-paragraphs)
-
-Creating Paragraphs
-
-
-----------------------------------------------------------------------------------------------------------------------------
-
-Copy
-
-    Tab:AddParagraph({
-        Title = "Paragraph",
-        Content = "This is a paragraph.\nSecond line!"
-    })
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#creating-buttons)
-
-Creating Buttons
-
-
-----------------------------------------------------------------------------------------------------------------------
-
-Copy
-
-    Tab:AddButton({
-        Title = "Button",
-        Description = "Very important button",
-        Callback = function()
-            print("Hello, world!")
-        end
-    })
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#creating-toggles)
-
-Creating Toggles
-
-
-----------------------------------------------------------------------------------------------------------------------
-
-Copy
-
-    local Toggle = Tab:AddToggle("MyToggle", 
-    {
-        Title = "Toggle", 
-        Description = "Toggle description",
-        Default = false
-        Callback = function(state)
-    	if state then
-    	    print("Toggle On")
-    	else
-    	    print("Toggle Off")
-            end
-        end 
-    })
-
-### 
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#event-handling)
-
-Event Handling
-
-Copy
-
-    Toggle:OnChanged(function()
-        print("Toggle changed:", Options.MyToggle.Value)
-    end)
-
-### 
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#changing-value)
-
-Changing Value
-
-Copy
-
-    Toggle:SetValue(false)
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#creating-sliders)
-
-Creating Sliders
-
-
-----------------------------------------------------------------------------------------------------------------------
-
-Copy
-
-    local Slider = Tab:AddSlider("Slider", 
-    {
-        Title = "Slider",
-        Description = "This is a slider",
-        Default = 2,
-        Min = 0,
-        Max = 5,
-        Rounding = 1,
-        Callback = function(Value)
-            print("Slider was changed:", Value)
-        end
-    })
-
-### 
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#event-handling-1)
-
-Event Handling
-
-Copy
-
-    Slider:OnChanged(function(Value)
-        print("Slider changed:", Value)
-    end)
-
-### 
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#changing-value-1)
-
-Changing Value
-
-Copy
-
-    Slider:SetValue(3)
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#creating-dropdowns)
-
-Creating Dropdowns
-
-
---------------------------------------------------------------------------------------------------------------------------
-
-Copy
-
-    local Dropdown = Tab:AddDropdown("Dropdown", {
-        Title = "Dropdown",
-        Description = "Dropdown description",
-        Values = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen"},
-        Multi = false,
-        Default = 1,
-    })
-
-### 
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#multiple-dropdown)
-
-Multiple Dropdown
-
-Copy
-
-    local MultiDropdown = Tab:AddDropdown("MultiDropdown", {
-       Title = "Dropdown",
-       Description = "You can select multiple values.",
-       Values = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen"},
-       Multi = true,
-       Default = {"seven", "twelve"},
-    })
-
-### 
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#event-handling-2)
-
-Event Handling
-
-Copy
-
-    Dropdown:OnChanged(function(Value)
-        print("Dropdown changed:", Value)
-    end)
-
-Copy
-
-    MultiDropdown:OnChanged(function(Value)
-        local Values = {}
-        for Value, State in next, Value do
-            table.insert(Values, Value)
-        end
-        print("Mutlidropdown changed:", table.concat(Values, ", "))
-    end)
-
-### 
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#changing-value-2)
-
-Changing Value
-
-Copy
-
-    Dropdown:SetValue("four")
-
-Copy
-
-    MultiDropdown:SetValue({
-       three = true,
-       five = true,
-       seven = false
-    })
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#creating-colorpickers)
-
-Creating Colorpickers
-
-
---------------------------------------------------------------------------------------------------------------------------------
-
-Copy
-
-    local Colorpicker = Tab:AddColorpicker("Colorpicker", {
-        Title = "Colorpicker",
-        Description = "Description for colorpicker",
-        Default = Color3.fromRGB(96, 205, 255)
-    })
-    
-    Colorpicker:OnChanged(function()
-        print("Colorpicker changed:", Colorpicker.Value)
-    end)
-        
-    Colorpicker:SetValueRGB(Color3.fromRGB(0, 255, 140))
-
-### 
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#transparency-colorpicker)
-
-Transparency Colorpicker
-
-Copy
-
-    local TColorpicker = Tab:AddColorpicker("TransparencyColorpicker", {
-        Title = "Colorpicker",
-        Description = "but you can change the transparency.",
-        Transparency = 0,
-        Default = Color3.fromRGB(96, 205, 255)
-    })
-
-### 
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#event-handling-3)
-
-Event Handling
-
-Copy
-
-    Colorpicker:OnChanged(function()
-        print("Colorpicker changed:", Colorpicker.Value)
-    end)
-    
-    TColorpicker:OnChanged(function()
-        print(
-            "TColorpicker changed:", TColorpicker.Value,
-            "Transparency:", TColorpicker.Transparency
-        )
-    end)
-
-### 
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#changing-value-3)
-
-Changing Value
-
-Copy
-
-    Colorpicker:SetValueRGB(Color3.fromRGB(0, 255, 140))
-    
-    TColorpicker:SetValue({0, 100, 100}, 0.5) -- hsv, transparency
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#creating-keybinds)
-
-Creating Keybinds
-
-
-------------------------------------------------------------------------------------------------------------------------
-
-Copy
-
-    local Keybind = Tab:AddKeybind("Keybind", {
-        Title = "Keybind",
-        Description = "Keybind Description",
-        Mode = "Toggle", -- Always, Toggle, Hold
-        Default = "LeftControl", -- String as the name of the keybind (MB1, MB2 for mouse buttons)
-    
-        -- Occurs when the keybind is clicked, Value is `true`/`false`
-        Callback = function(Value)
-            print("Keybind clicked!", Value)
-        end,
-    
-        -- Occurs when the keybind itself is changed, `New` is a KeyCode Enum OR a UserInputType Enum
-        ChangedCallback = function(New)
-            print("Keybind changed!", New)
-        end
-    })
-
-### 
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#event-handling-4)
-
-Event Handling
-
-Copy
-
-    -- OnClick is only fired when you press the keybind and the mode is Toggle
-    -- Otherwise, you will have to use Keybind:GetState()
-    Keybind:OnClick(function()
-        print("Keybind clicked:", Keybind:GetState())
-    end)
-    
-    Keybind:OnChanged(function()
-        print("Keybind changed:", Keybind.Value)
-    end)
-    
-    task.spawn(function()
-        while true do
-            wait(1)
-            -- example for checking if a keybind is being pressed
-            local state = Keybind:GetState()
-            if state then
-                print("Keybind is being held down")
-            end
-    
-            if Fluent.Unloaded then break end
-        end
-    end)
-
-### 
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#changing-value-4)
-
-Changing Value
-
-Copy
-
-    Keybind:SetValue("MB2", "Toggle") -- Sets keybind to MB2, mode to Hold
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#creating-inputs)
-
-Creating Inputs
-
-
---------------------------------------------------------------------------------------------------------------------
-
-Copy
-
-    local Input = Tab:AddInput("Input", {
-        Title = "Input",
-        Description = "Input Description",
-        Default = "Default",
-        Placeholder = "Placeholder",
-        Numeric = false, -- Only allows numbers
-        Finished = false, -- Only calls callback when you press enter
-        Callback = function(Value)
-            print("Input changed:", Value)
-        end
-    })
-
-### 
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#event-handling-5)
-
-Event Handling
-
-Copy
-
-    Input:OnChanged(function()
-        print("Input updated:", Input.Value)
-    end)
-
-### 
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#changing-value-5)
-
-Changing Value
-
-Copy
-
-    Input:SetValue("Text")
-
-### 
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#toggle-gui-transparency)
-
-Toggle Gui Transparency
-
-Copy
-
-    Fluent:ToggleTransparency(false) and Fluent:ToggleTransparency(true)
-
-### 
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#toggle-acrylic-blur)
-
-Toggle Acrylic (Blur)
-
-Copy
-
-    Fluent:ToggleAcrylic(false) or Fluent:ToggleAcrylic(true)
-
-### 
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent#destroy-fluent)
-
-Destroy Fluent
-
-Copy
-
-    Fluent:Destroy()
-
-[PreviousGuide](https://forgenet.gitbook.io/fluent-documentation/documentation/guide)
-[NextSave Manager](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/save-manager)
-
-Last updated 2 years ago
-
----
-
-# Hints | Fluent GUI
-
-![Page cover](https://forgenet.gitbook.io/fluent-documentation/~gitbook/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1569982175971-d92b01cf8694%3Fcrop%3Dentropy%26cs%3Dsrgb%26fm%3Djpg%26ixid%3DM3wxOTcwMjR8MHwxfHNlYXJjaHw3fHxncmFkaWVudHxlbnwwfHx8fDE2OTM3NjMxMzV8MA%26ixlib%3Drb-4.0.3%26q%3D85&width=1248&dpr=3&quality=100&sign=99d9d6a6&sv=2)
-
-For the complete documentation index, see [llms.txt](https://forgenet.gitbook.io/fluent-documentation/llms.txt)
-. This page is also available as [Markdown](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/hints.md)
-.
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/hints#disable-coroutines-when-exiting-fluent-window)
-
-Disable coroutines when exiting Fluent window
-
-
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-You can check if Fluent is unloaded and break coroutines loops
-
-Copy
-
-    function Test()
-        while task.wait() do
-            print("something")
-            if Fluent.Unloaded then break end
-        end
-    end
-    
-    coroutine.resume(coroutine.create(Test))
-    
-
-[PreviousInterface Manager](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/interface-manager)
-[NextDocumentation](https://forgenet.gitbook.io/fluent-documentation/documentation/documentation)
-
-Last updated 2 years ago
-
----
-
-# Examples | Fluent GUI
-
-For the complete documentation index, see [llms.txt](https://forgenet.gitbook.io/fluent-documentation/llms.txt)
-. This page is also available as [Markdown](https://forgenet.gitbook.io/fluent-documentation/documentation/examples.md)
-.
-
-Copy
-
-    local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
-    local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
-    local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
-    
-    local Window = Fluent:CreateWindow({
-        Title = "Fluent " .. Fluent.Version,
-        SubTitle = "by dawid",
-        TabWidth = 160,
-        Size = UDim2.fromOffset(580, 460),
-        Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
-        Theme = "Dark",
-        MinimizeKey = Enum.KeyCode.LeftControl -- Used when theres no MinimizeKeybind
-    })
-    
-    --Fluent provides Lucide Icons https://lucide.dev/icons/ for the tabs, icons are optional
-    local Tabs = {
-        Main = Window:AddTab({ Title = "Main", Icon = "" }),
-        Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
-    }
-    
-    local Options = Fluent.Options
-    
-    do
-        Fluent:Notify({
-            Title = "Notification",
-            Content = "This is a notification",
-            SubContent = "SubContent", -- Optional
-            Duration = 5 -- Set to nil to make the notification not disappear
-        })
-    
-    
-    
-        Tabs.Main:AddParagraph({
-            Title = "Paragraph",
-            Content = "This is a paragraph.\nSecond line!"
-        })
-    
-    
-    
-        Tabs.Main:AddButton({
-            Title = "Button",
-            Description = "Very important button",
-            Callback = function()
-                Window:Dialog({
-                    Title = "Title",
-                    Content = "This is a dialog",
-                    Buttons = {
-                        {
-                            Title = "Confirm",
-                            Callback = function()
-                                print("Confirmed the dialog.")
-                            end
-                        },
-                        {
-                            Title = "Cancel",
-                            Callback = function()
-                                print("Cancelled the dialog.")
-                            end
-                        }
-                    }
-                })
-            end
-        })
-    
-    
-    
-        local Toggle = Tabs.Main:AddToggle("MyToggle", {Title = "Toggle", Default = false })
-    
-        Toggle:OnChanged(function()
-            print("Toggle changed:", Options.MyToggle.Value)
-        end)
-    
-        Options.MyToggle:SetValue(false)
-    
-    
-        
-        local Slider = Tabs.Main:AddSlider("Slider", {
-            Title = "Slider",
-            Description = "This is a slider",
-            Default = 2,
-            Min = 0,
-            Max = 5,
-            Rounding = 1,
-            Callback = function(Value)
-                print("Slider was changed:", Value)
-            end
-        })
-    
-        Slider:OnChanged(function(Value)
-            print("Slider changed:", Value)
-        end)
-    
-        Slider:SetValue(3)
-    
-    
-    
-        local Dropdown = Tabs.Main:AddDropdown("Dropdown", {
-            Title = "Dropdown",
-            Values = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen"},
-            Multi = false,
-            Default = 1,
-        })
-    
-        Dropdown:SetValue("four")
-    
-        Dropdown:OnChanged(function(Value)
-            print("Dropdown changed:", Value)
-        end)
-    
-    
-        
-        local MultiDropdown = Tabs.Main:AddDropdown("MultiDropdown", {
-            Title = "Dropdown",
-            Description = "You can select multiple values.",
-            Values = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen"},
-            Multi = true,
-            Default = {"seven", "twelve"},
-        })
-    
-        MultiDropdown:SetValue({
-            three = true,
-            five = true,
-            seven = false
-        })
-    
-        MultiDropdown:OnChanged(function(Value)
-            local Values = {}
-            for Value, State in next, Value do
-                table.insert(Values, Value)
-            end
-            print("Mutlidropdown changed:", table.concat(Values, ", "))
-        end)
-    
-    
-    
-        local Colorpicker = Tabs.Main:AddColorpicker("Colorpicker", {
-            Title = "Colorpicker",
-            Default = Color3.fromRGB(96, 205, 255)
-        })
-    
-        Colorpicker:OnChanged(function()
-            print("Colorpicker changed:", Colorpicker.Value)
-        end)
-        
-        Colorpicker:SetValueRGB(Color3.fromRGB(0, 255, 140))
-    
-    
-    
-        local TColorpicker = Tabs.Main:AddColorpicker("TransparencyColorpicker", {
-            Title = "Colorpicker",
-            Description = "but you can change the transparency.",
-            Transparency = 0,
-            Default = Color3.fromRGB(96, 205, 255)
-        })
-    
-        TColorpicker:OnChanged(function()
-            print(
-                "TColorpicker changed:", TColorpicker.Value,
-                "Transparency:", TColorpicker.Transparency
-            )
-        end)
-    
-    
-    
-        local Keybind = Tabs.Main:AddKeybind("Keybind", {
-            Title = "KeyBind",
-            Mode = "Toggle", -- Always, Toggle, Hold
-            Default = "LeftControl", -- String as the name of the keybind (MB1, MB2 for mouse buttons)
-    
-            -- Occurs when the keybind is clicked, Value is `true`/`false`
-            Callback = function(Value)
-                print("Keybind clicked!", Value)
-            end,
-    
-            -- Occurs when the keybind itself is changed, `New` is a KeyCode Enum OR a UserInputType Enum
-            ChangedCallback = function(New)
-                print("Keybind changed!", New)
-            end
-        })
-    
-        -- OnClick is only fired when you press the keybind and the mode is Toggle
-        -- Otherwise, you will have to use Keybind:GetState()
-        Keybind:OnClick(function()
-            print("Keybind clicked:", Keybind:GetState())
-        end)
-    
-        Keybind:OnChanged(function()
-            print("Keybind changed:", Keybind.Value)
-        end)
-    
-        task.spawn(function()
-            while true do
-                wait(1)
-    
-                -- example for checking if a keybind is being pressed
-                local state = Keybind:GetState()
-                if state then
-                    print("Keybind is being held down")
-                end
-    
-                if Fluent.Unloaded then break end
-            end
-        end)
-    
-        Keybind:SetValue("MB2", "Toggle") -- Sets keybind to MB2, mode to Hold
-    
-    
-        local Input = Tabs.Main:AddInput("Input", {
-            Title = "Input",
-            Default = "Default",
-            Placeholder = "Placeholder",
-            Numeric = false, -- Only allows numbers
-            Finished = false, -- Only calls callback when you press enter
-            Callback = function(Value)
-                print("Input changed:", Value)
-            end
-        })
-    
-        Input:OnChanged(function()
-            print("Input updated:", Input.Value)
-        end)
-    end
-    
-    
-    -- Addons:
-    -- SaveManager (Allows you to have a configuration system)
-    -- InterfaceManager (Allows you to have a interface managment system)
-    
-    -- Hand the library over to our managers
-    SaveManager:SetLibrary(Fluent)
-    InterfaceManager:SetLibrary(Fluent)
-    
-    -- Ignore keys that are used by ThemeManager.
-    -- (we dont want configs to save themes, do we?)
-    SaveManager:IgnoreThemeSettings()
-    
-    -- You can add indexes of elements the save manager should ignore
-    SaveManager:SetIgnoreIndexes({})
-    
-    -- use case for doing it this way:
-    -- a script hub could have themes in a global folder
-    -- and game configs in a separate folder per game
-    InterfaceManager:SetFolder("FluentScriptHub")
-    SaveManager:SetFolder("FluentScriptHub/specific-game")
-    
-    InterfaceManager:BuildInterfaceSection(Tabs.Settings)
-    SaveManager:BuildConfigSection(Tabs.Settings)
-    
-    
-    Window:SelectTab(1)
-    
-    Fluent:Notify({
-        Title = "Fluent",
-        Content = "The script has been loaded.",
-        Duration = 8
-    })
-    
-    -- You can use the SaveManager:LoadAutoloadConfig() to load a config
-    -- which has been marked to be one that auto loads!
-    SaveManager:LoadAutoloadConfig()
-
-[PreviousFluent](https://forgenet.gitbook.io/fluent-documentation/documentation/documentation/fluent)
-
-Last updated 2 years ago
-
----
-
-# Unknown
-
-\> For the complete documentation index, see \[llms.txt\](https://forgenet.gitbook.io/fluent-documentation/llms.txt). Markdown versions of documentation pages are available by appending \`.md\` to page URLs; this page is available as \[Markdown\](https://forgenet.gitbook.io/fluent-documentation/documentation/documentation/fluent.md).
-
-# Fluent
-
-## Library
-
-### Properties
-
-| Property        | Type                                                                           | Description                           |
-| --------------- | ------------------------------------------------------------------------------ | ------------------------------------- |
-| Version         | \[string\](https://www.lua.org/pil/2.4.html)                                     | Contains the library version          |
-| OpenFrames      | \[table\](https://www.lua.org/pil/2.5.html)                                      | \\\[?\]\[^1\]                              |
-| Options         | \[table\](https://www.lua.org/pil/2.5.html)                                      | Contains library options and elements |
-| Themes          | \[table\](https://www.lua.org/pil/2.5.html)                                      | Contains library \[themes\](#themes)    |
-| Window          | \[Window\](#creating-window)                                                     | Contains created window               |
-| WindowFrame     | \[Frame\](https://create.roblox.com/docs/reference/engine/classes/Frame)         | Contains window gui frame             |
-| Unloaded        | \[boolean\](https://www.lua.org/pil/2.2.html)                                    | Is fluent unloaded                    |
-| Theme           | \[string\](https://www.lua.org/pil/2.4.html)                                     | Contains selected theme               |
-| DialogOpen      | \[boolean\](https://www.lua.org/pil/2.2.html)                                    | Is dialog open                        |
-| UseAcrylic      | \[boolean\](https://www.lua.org/pil/2.2.html)                                    | Is acrylic enabled                    |
-| Acrylic         | \[boolean\](https://www.lua.org/pil/2.2.html)                                    | \\\[?\]\[^1\]                              |
-| Transparency    | \[boolean\](https://www.lua.org/pil/2.2.html)                                    | Is transparency enabled               |
-| MinimizeKeybind | \[KeyCode\](https://create.roblox.com/docs/reference/engine/enums/KeyCode)       | Contains keybind to minimize window   |
-| MinimizeKey     | \[KeyCode\](https://create.roblox.com/docs/reference/engine/enums/KeyCode)       | \\\[?\]\[^1\]                              |
-| GUI             | \[ScreenGui\](https://create.roblox.com/docs/reference/engine/classes/ScreenGui) | Contains library ScreenGui            |
-
-### Methods
-
-<table><thead><tr><th width="268.3333333333333">Method</th><th width="158">Arguments</th><th>Description</th></tr></thead><tbody><tr><td>CreateWindow(Config)</td><td>Config: <a href="https://www.lua.org/pil/2.5.html">table</a></td><td><a href="/pages/GGDsbrytJAcubShpLeue#creating-window">Creates window</a></td></tr><tr><td>SetTheme(Theme)</td><td>Theme<mark style="color:red;">\*</mark>: <a href="https://www.lua.org/pil/2.4.html">string</a></td><td>Sets the specified GUI theme</td></tr><tr><td>Destroy()</td><td></td><td>Destroys window</td></tr><tr><td>ToggleAcrylic(State)</td><td>State: <a href="https://www.lua.org/pil/2.2.html">boolean</a></td><td>Toggles acrylic rendering</td></tr><tr><td>ToggleTransparency(State)</td><td>State: <a href="https://www.lua.org/pil/2.2.html">boolean</a></td><td>Toggles transparency rendering</td></tr><tr><td>Notify(Config)</td><td>Config: <a href="https://www.lua.org/pil/2.5.html">table</a></td><td><a href="/pages/GGDsbrytJAcubShpLeue#creating-notification">Creates notification</a></td></tr></tbody></table>
-
-\[^1\]: Missing information
-
-
----
-
-# Agent Instructions
-This documentation is published with GitBook. GitBook is the documentation platform designed so that both humans and AI agents can read, navigate, and reason over technical content effectively. Learn more at gitbook.com.
-
-## Querying This Documentation
-If you need additional information that is not directly available in this page, you can query the documentation dynamically by asking a question.
-
-Perform an HTTP GET request on the current page URL with the \`ask\` query parameter, and the optional \`goal\` query parameter:
-
-\`\`\`
-GET https://forgenet.gitbook.io/fluent-documentation/documentation/documentation/fluent.md?ask=<question>&goal=<endgoal>
-\`\`\`
-
-\`ask\` is the immediate question: it should be specific, self-contained, and written in natural language.
-\`goal\` is optional and describes the broader end goal you are ultimately trying to accomplish on behalf of the user. GitBook uses it to tailor the answer towards what is most useful for that goal.
-
-The response will contain a direct answer to the question and relevant excerpts and sources from the documentation.
-
-Use this mechanism when the answer is not explicitly present in the current page, you need clarification or additional context, or you want to retrieve related documentation sections.
-
----
-
-# Unknown
-
-\# Fluent GUI
-
-## Fluent Documentation
-
-- \[Fluent Library\](https://forgenet.gitbook.io/fluent-documentation/fluent-library.md): Documentation by #Forgenet
-- \[Quick Start\](https://forgenet.gitbook.io/fluent-documentation/quick-start.md): In this section you can quickly find the necessary information
-- \[Guide\](https://forgenet.gitbook.io/fluent-documentation/documentation/guide.md): This section provides basic information on how to use Fluent
-- \[Fluent\](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent.md): This page contains information that will help you create Fluent interface
-- \[Save Manager\](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/save-manager.md)
-- \[Interface Manager\](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/interface-manager.md)
-- \[Hints\](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/hints.md): This page contains some useful guides
-- \[Documentation\](https://forgenet.gitbook.io/fluent-documentation/documentation/documentation.md): This section provides more precise and technically detailed documentation
-- \[Fluent\](https://forgenet.gitbook.io/fluent-documentation/documentation/documentation/fluent.md)
-- \[Examples\](https://forgenet.gitbook.io/fluent-documentation/documentation/examples.md)
-
-
----
-
-# Agent Instructions
-This documentation is published with GitBook. GitBook is the documentation platform designed so that both humans and AI agents can read, navigate, and reason over technical content effectively. Learn more at gitbook.com.
-
-## Querying This Documentation
-If you need additional information, you can query the documentation dynamically by asking a question.
-Perform an HTTP GET request on a page URL with the \`ask\` query parameter:
-\`\`\`
-GET https://forgenet.gitbook.io/fluent-documentation/fluent-library.md?ask=<question>
-\`\`\`
-The question should be specific, self-contained, and written in natural language.
-The response will contain a direct answer to the question and relevant excerpts and sources from the documentation.
-Use this mechanism when the answer is not explicitly present in the current page, you need clarification or additional context, or you want to retrieve related documentation sections.
-
----
-
-# Unknown
-
-\> For the complete documentation index, see \[llms.txt\](https://forgenet.gitbook.io/fluent-documentation/llms.txt). Markdown versions of documentation pages are available by appending \`.md\` to page URLs; this page is available as \[Markdown\](https://forgenet.gitbook.io/fluent-documentation/fluent-library.md).
-
-# Fluent Library
-
-<figure><img src="/files/9Jfeh0JB47UCPIw6rApr" alt=""><figcaption></figcaption></figure>
-
-## \\\[📰\] Description
-
-Fluent Roblox GUI Lib is the ultimate solution for creating stunning user interfaces that are both modern and customizable. With an extensive range of UI elements to choose from, you can easily create menus and other interfaces that are tailored to your specific needs. The library offers a sleek and intuitive design, making it easy for anyone to get started. With its comprehensive documentation, you'll be able to create amazing interfaces in no time. Fluent has everything you need to bring your ideas to life.
-
-## \\\[🔥\] Features
-
-\* Modern design
-\* Many customization options
-\* Almost any UI Element you would ever need
-
-## \\\[🔧\] Installation
-
-You can load Fluent through a GitHub Release:
-
-\`\`\`lua
-local Library = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
-\`\`\`
-
-## \\\[📌\] Links
-
-{% embed url="<https://github.com/dawid-scripts/Fluent>" %}
-Github Page
-{% endembed %}
-
-{% embed url="<https://github.com/dawid-scripts/Fluent/blob/master/Example.lua>" %}
-Example Script
-{% endembed %}
-
-{% embed url="<https://github.com/dawid-scripts/Fluent/blob/master/Example.client.lua>" %}
-Example Script
-{% endembed %}
-
-
----
-
-# Agent Instructions
-This documentation is published with GitBook. GitBook is the documentation platform designed so that both humans and AI agents can read, navigate, and reason over technical content effectively. Learn more at gitbook.com.
-
-## Querying This Documentation
-If you need additional information that is not directly available in this page, you can query the documentation dynamically by asking a question.
-
-Perform an HTTP GET request on the current page URL with the \`ask\` query parameter, and the optional \`goal\` query parameter:
-
-\`\`\`
-GET https://forgenet.gitbook.io/fluent-documentation/fluent-library.md?ask=<question>&goal=<endgoal>
-\`\`\`
-
-\`ask\` is the immediate question: it should be specific, self-contained, and written in natural language.
-\`goal\` is optional and describes the broader end goal you are ultimately trying to accomplish on behalf of the user. GitBook uses it to tailor the answer towards what is most useful for that goal.
-
-The response will contain a direct answer to the question and relevant excerpts and sources from the documentation.
-
-Use this mechanism when the answer is not explicitly present in the current page, you need clarification or additional context, or you want to retrieve related documentation sections.
-
----
-
-# Unknown
-
-\> For the complete documentation index, see \[llms.txt\](https://forgenet.gitbook.io/fluent-documentation/llms.txt). Markdown versions of documentation pages are available by appending \`.md\` to page URLs; this page is available as \[Markdown\](https://forgenet.gitbook.io/fluent-documentation/documentation/documentation.md).
-
-# Documentation
-
-{% hint style="info" %}
-All types have a link to the documentation, for example: \[string\](https://www.lua.org/pil/2.4.html)
-{% endhint %}
-
-{% hint style="info" %}
-Mandatory method argument is marked with "<mark style="color:red;">\\\*</mark>"
-
-\*\*Example:\*\* Agrument<mark style="color:red;">\\\*</mark>: \[type\](https://www.lua.org/pil/2.html)
-{% endhint %}
-
-{% hint style="warning" %}
-Missing info is marked with "\\\[?\]\[^1\]"
-{% endhint %}
-
-\[^1\]: Missing information
-
-
----
-
-# Agent Instructions
-This documentation is published with GitBook. GitBook is the documentation platform designed so that both humans and AI agents can read, navigate, and reason over technical content effectively. Learn more at gitbook.com.
-
-## Querying This Documentation
-If you need additional information that is not directly available in this page, you can query the documentation dynamically by asking a question.
-
-Perform an HTTP GET request on the current page URL with the \`ask\` query parameter, and the optional \`goal\` query parameter:
-
-\`\`\`
-GET https://forgenet.gitbook.io/fluent-documentation/documentation/documentation.md?ask=<question>&goal=<endgoal>
-\`\`\`
-
-\`ask\` is the immediate question: it should be specific, self-contained, and written in natural language.
-\`goal\` is optional and describes the broader end goal you are ultimately trying to accomplish on behalf of the user. GitBook uses it to tailor the answer towards what is most useful for that goal.
-
-The response will contain a direct answer to the question and relevant excerpts and sources from the documentation.
-
-Use this mechanism when the answer is not explicitly present in the current page, you need clarification or additional context, or you want to retrieve related documentation sections.
-
----
-
-# Unknown
-
-\> For the complete documentation index, see \[llms.txt\](https://forgenet.gitbook.io/fluent-documentation/llms.txt). Markdown versions of documentation pages are available by appending \`.md\` to page URLs; this page is available as \[Markdown\](https://forgenet.gitbook.io/fluent-documentation/quick-start.md).
 
 # Quick Start
 
-{% hint style="success" %}
-How to use Fluent: \[Fluent\](/fluent-documentation/documentation/guide/fluent.md)
-{% endhint %}
-
-{% hint style="success" %}
-Detailed documentation: \[Documentation\](/fluent-documentation/documentation/documentation.md)
-{% endhint %}
-
-{% hint style="success" %}
-Examples: \[Examples\](/fluent-documentation/documentation/examples.md)
-{% endhint %}
-
-
----
-
-# Agent Instructions
-This documentation is published with GitBook. GitBook is the documentation platform designed so that both humans and AI agents can read, navigate, and reason over technical content effectively. Learn more at gitbook.com.
-
-## Querying This Documentation
-If you need additional information that is not directly available in this page, you can query the documentation dynamically by asking a question.
-
-Perform an HTTP GET request on the current page URL with the \`ask\` query parameter, and the optional \`goal\` query parameter:
-
-\`\`\`
-GET https://forgenet.gitbook.io/fluent-documentation/quick-start.md?ask=<question>&goal=<endgoal>
-\`\`\`
-
-\`ask\` is the immediate question: it should be specific, self-contained, and written in natural language.
-\`goal\` is optional and describes the broader end goal you are ultimately trying to accomplish on behalf of the user. GitBook uses it to tailor the answer towards what is most useful for that goal.
-
-The response will contain a direct answer to the question and relevant excerpts and sources from the documentation.
-
-Use this mechanism when the answer is not explicitly present in the current page, you need clarification or additional context, or you want to retrieve related documentation sections.
-
----
-
-# Unknown
-
-\> For the complete documentation index, see \[llms.txt\](https://forgenet.gitbook.io/fluent-documentation/llms.txt). Markdown versions of documentation pages are available by appending \`.md\` to page URLs; this page is available as \[Markdown\](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/interface-manager.md).
-
-# Interface Manager
-
-
----
-
-# Agent Instructions
-This documentation is published with GitBook. GitBook is the documentation platform designed so that both humans and AI agents can read, navigate, and reason over technical content effectively. Learn more at gitbook.com.
-
-## Querying This Documentation
-If you need additional information that is not directly available in this page, you can query the documentation dynamically by asking a question.
-
-Perform an HTTP GET request on the current page URL with the \`ask\` query parameter, and the optional \`goal\` query parameter:
-
-\`\`\`
-GET https://forgenet.gitbook.io/fluent-documentation/documentation/guide/interface-manager.md?ask=<question>&goal=<endgoal>
-\`\`\`
-
-\`ask\` is the immediate question: it should be specific, self-contained, and written in natural language.
-\`goal\` is optional and describes the broader end goal you are ultimately trying to accomplish on behalf of the user. GitBook uses it to tailor the answer towards what is most useful for that goal.
-
-The response will contain a direct answer to the question and relevant excerpts and sources from the documentation.
-
-Use this mechanism when the answer is not explicitly present in the current page, you need clarification or additional context, or you want to retrieve related documentation sections.
-
----
-
-# Unknown
-
-\> For the complete documentation index, see \[llms.txt\](https://forgenet.gitbook.io/fluent-documentation/llms.txt). Markdown versions of documentation pages are available by appending \`.md\` to page URLs; this page is available as \[Markdown\](https://forgenet.gitbook.io/fluent-documentation/documentation/guide.md).
-
-# Guide
-
-## Fluent
-
-Information about using the gui library
-
-{% content-ref url="/pages/GGDsbrytJAcubShpLeue" %}
-\[Fluent\](/fluent-documentation/documentation/guide/fluent.md)
-{% endcontent-ref %}
-
-## Save Manager
-
-Information about using the save manager
-
-{% content-ref url="/pages/FKivnmWJfQkmZIKpglhc" %}
-\[Save Manager\](/fluent-documentation/documentation/guide/save-manager.md)
-{% endcontent-ref %}
-
-## Interface Manager
-
-Information about using the interface manager
-
-{% content-ref url="/pages/Dn8iSDZeYiGQynGx7wEz" %}
-\[Interface Manager\](/fluent-documentation/documentation/guide/interface-manager.md)
-{% endcontent-ref %}
-
-
----
-
-# Agent Instructions
-This documentation is published with GitBook. GitBook is the documentation platform designed so that both humans and AI agents can read, navigate, and reason over technical content effectively. Learn more at gitbook.com.
-
-## Querying This Documentation
-If you need additional information that is not directly available in this page, you can query the documentation dynamically by asking a question.
-
-Perform an HTTP GET request on the current page URL with the \`ask\` query parameter, and the optional \`goal\` query parameter:
-
-\`\`\`
-GET https://forgenet.gitbook.io/fluent-documentation/documentation/guide.md?ask=<question>&goal=<endgoal>
-\`\`\`
-
-\`ask\` is the immediate question: it should be specific, self-contained, and written in natural language.
-\`goal\` is optional and describes the broader end goal you are ultimately trying to accomplish on behalf of the user. GitBook uses it to tailor the answer towards what is most useful for that goal.
-
-The response will contain a direct answer to the question and relevant excerpts and sources from the documentation.
-
-Use this mechanism when the answer is not explicitly present in the current page, you need clarification or additional context, or you want to retrieve related documentation sections.
-
----
-
-# Unknown
-
-\> For the complete documentation index, see \[llms.txt\](https://forgenet.gitbook.io/fluent-documentation/llms.txt). Markdown versions of documentation pages are available by appending \`.md\` to page URLs; this page is available as \[Markdown\](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/save-manager.md).
-
-# Save Manager
-
-### Creating Save Manager
-
-\`\`\`lua
-local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
-\`\`\`
-
-### Auto Load Config
-
-\`\`\`lua
-SaveManager:LoadAutoloadConfig()
-\`\`\`
-
-
----
-
-# Agent Instructions
-This documentation is published with GitBook. GitBook is the documentation platform designed so that both humans and AI agents can read, navigate, and reason over technical content effectively. Learn more at gitbook.com.
-
-## Querying This Documentation
-If you need additional information that is not directly available in this page, you can query the documentation dynamically by asking a question.
-
-Perform an HTTP GET request on the current page URL with the \`ask\` query parameter, and the optional \`goal\` query parameter:
-
-\`\`\`
-GET https://forgenet.gitbook.io/fluent-documentation/documentation/guide/save-manager.md?ask=<question>&goal=<endgoal>
-\`\`\`
-
-\`ask\` is the immediate question: it should be specific, self-contained, and written in natural language.
-\`goal\` is optional and describes the broader end goal you are ultimately trying to accomplish on behalf of the user. GitBook uses it to tailor the answer towards what is most useful for that goal.
-
-The response will contain a direct answer to the question and relevant excerpts and sources from the documentation.
-
-Use this mechanism when the answer is not explicitly present in the current page, you need clarification or additional context, or you want to retrieve related documentation sections.
-
----
-
-# Unknown
-
-\> For the complete documentation index, see \[llms.txt\](https://forgenet.gitbook.io/fluent-documentation/llms.txt). Markdown versions of documentation pages are available by appending \`.md\` to page URLs; this page is available as \[Markdown\](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent.md).
-
-# Fluent
-
-## Creating Library
-
-\`\`\`lua
+```lua
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
-\`\`\`
 
-### Accessibility
-
-{% hint style="success" %}
-Fluent is accessible from any function
-{% endhint %}
-
-\`\`\`lua
-function Init()
-    local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
-end
-
-function Test()
-    print(Fluent.Options)
-end
-
-Init()
-Test()
-\`\`\`
-
-## Creating Window
-
-\`\`\`lua
 local Window = Fluent:CreateWindow({
-    Title = "Fluent " .. Fluent.Version,
-    SubTitle = "by dawid",
+    Title = "My Script",
+    SubTitle = "by me",
     TabWidth = 160,
-    Size = UDim2.fromOffset(580, 460),
-    Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
-    Theme = "Dark",
-    MinimizeKey = Enum.KeyCode.LeftControl -- Used when theres no MinimizeKeybind
+    Size = UDim2.fromOffset(470, 380),
+    Acrylic = false,
+    Theme = "Vynixu",
+    MinimizeKey = Enum.KeyCode.RightControl
 })
-\`\`\`
 
-### Themes
-
-<table data-column-title-hidden data-view="cards"><thead><tr><th>Themes</th><th data-hidden data-card-cover data-type="files"></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td>Amethyst</td><td><a href="/files/zkHaSyKSmGhOzgDU9PAQ">/files/zkHaSyKSmGhOzgDU9PAQ</a></td><td><a href="https://github.com/dawid-scripts/Fluent/blob/master/src/Themes/Amethyst.lua">https://github.com/dawid-scripts/Fluent/blob/master/src/Themes/Amethyst.lua</a></td></tr><tr><td>Aqua</td><td><a href="/files/syWcE9YILIvVS98QCsHS">/files/syWcE9YILIvVS98QCsHS</a></td><td><a href="https://github.com/dawid-scripts/Fluent/blob/master/src/Themes/Aqua.lua">https://github.com/dawid-scripts/Fluent/blob/master/src/Themes/Aqua.lua</a></td></tr><tr><td>Rose</td><td><a href="/files/I1cdXHLBQZDRkRrs2CQM">/files/I1cdXHLBQZDRkRrs2CQM</a></td><td><a href="https://github.com/dawid-scripts/Fluent/blob/master/src/Themes/Rose.lua">https://github.com/dawid-scripts/Fluent/blob/master/src/Themes/Rose.lua</a></td></tr><tr><td>Light</td><td><a href="/files/wKZ1Wnzd4fMjWD3olZeM">/files/wKZ1Wnzd4fMjWD3olZeM</a></td><td><a href="https://github.com/dawid-scripts/Fluent/blob/master/src/Themes/Light.lua">https://github.com/dawid-scripts/Fluent/blob/master/src/Themes/Light.lua</a></td></tr><tr><td>Dark</td><td><a href="/files/hUOnch58hsN4ultuHicF">/files/hUOnch58hsN4ultuHicF</a></td><td><a href="https://github.com/dawid-scripts/Fluent/blob/master/src/Themes/Dark.lua">https://github.com/dawid-scripts/Fluent/blob/master/src/Themes/Dark.lua</a></td></tr><tr><td>Darker</td><td><a href="/files/58OgIR3VFZtO9XTSgufs">/files/58OgIR3VFZtO9XTSgufs</a></td><td><a href="https://github.com/dawid-scripts/Fluent/blob/master/src/Themes/Darker.lua">https://github.com/dawid-scripts/Fluent/blob/master/src/Themes/Darker.lua</a></td></tr></tbody></table>
-
-### Key Codes
-
-{% embed url="<https://create.roblox.com/docs/reference/engine/enums/KeyCode>" %}
-Documentation
-{% endembed %}
-
-## Creating Options
-
-\`\`\`lua
-local Options = Fluent.Options
-\`\`\`
-
-{% hint style="info" %}
-Options are used by the library to save the elements to access them in the future
-{% endhint %}
-
-## Creating Notifications
-
-\`\`\`lua
-Fluent:Notify({
-        Title = "Notification",
-        Content = "This is a notification",
-        SubContent = "SubContent", -- Optional
-        Duration = 5 -- Set to nil to make the notification not disappear
-})
-\`\`\`
-
-## Creating Dialogs
-
-\`\`\`lua
-Window:Dialog({
-    Title = "Title",
-    Content = "This is a dialog",
-    Buttons = {
-        { 
-            Title = "Confirm",
-            Callback = function()
-                print("Confirmed the dialog.")
-            end 
-        }, {
-            Title = "Cancel",
-            Callback = function()
-                print("Cancelled the dialog.")
-            end 
-        }
-    }
-})
-\`\`\`
-
-## Creating Tabs
-
-<pre class="language-lua"><code class="lang-lua">-- Fluent provides Lucide Icons, they are optional
-<strong>local Tabs = {
-</strong>    Main = Window:AddTab({ Title = "Main", Icon = "" }),
+local Tabs = {
+    Main = Window:AddTab({ Title = "Main", Icon = "home" }),
     Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
 }
-</code></pre>
 
-### Tab (Settings) With Interface And Configs
+local Options = Fluent.Options
 
-\`\`\`lua
-local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
-local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
-
-SaveManager:SetLibrary(Fluent)
-InterfaceManager:SetLibrary(Fluent)
-
-InterfaceManager:BuildInterfaceSection(Tabs.Settings)
-SaveManager:BuildConfigSection(Tabs.Settings)
-\`\`\`
-
-### Selecting Main Tab
-
-\`\`\`lua
-Window:SelectTab(1)
-\`\`\`
-
-### Icons
-
-{% embed url="<https://lucide.dev/icons/>" %}
-
-## Creating Sections
-
-\`\`\`lua
-local Section = Tab:AddSection("Section Name")
-\`\`\`
-
-{% hint style="info" %}
-Section can be used as a parent for any element instead of a tab
-{% endhint %}
-
-<pre class="language-lua"><code class="lang-lua">local Section = Tab:AddSection("Section Name")
-Section:AddParagraph({
-    Title = "Paragraph"
-<strong>})
-</strong></code></pre>
-
-## Creating Paragraphs
-
-\`\`\`lua
-Tab:AddParagraph({
-    Title = "Paragraph",
-    Content = "This is a paragraph.\\nSecond line!"
-})
-\`\`\`
-
-## Creating Buttons
-
-<pre class="language-lua"><code class="lang-lua"><strong>Tab:AddButton({
-</strong>    Title = "Button",
-    Description = "Very important button",
+Tabs.Main:AddButton({
+    Title = "Hello",
+    Description = "Click me",
     Callback = function()
         print("Hello, world!")
     end
 })
-</code></pre>
 
-## Creating Toggles
+Window:SelectTab(1)
+```
 
-\`\`\`lua
-local Toggle = Tab:AddToggle("MyToggle", 
-{
-    Title = "Toggle", 
-    Description = "Toggle description",
-    Default = false
-    Callback = function(state)
-	if state then
-	    print("Toggle On")
-	else
-	    print("Toggle Off")
-        end
-    end 
+---
+
+# Creating Window
+
+```lua
+local Window = Fluent:CreateWindow(Config)
+```
+
+`Fluent:CreateWindow()` / `Fluent:Window()` / `Fluent:AddWindow()` can only be called once.
+
+## Window Config
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| Title | string? | Game name | Window title text |
+| SubTitle | string? | "Made with Fluent Renewed Plus" | Subtitle below title |
+| TabWidth | number? | 160 | Width of the tab selector panel |
+| Size | UDim2? | UDim2.fromOffset(470, 380) | Initial window size |
+| MinSize | Vector2? | Vector2.new(470, 380) | Minimum window size (when resizable) |
+| Resize | boolean? | false | Enable window resizing via bottom-right handle |
+| MinimizeKey | Enum.KeyCode? | RightControl | Key to toggle minimize |
+| Acrylic | boolean? | false | Enable acrylic blur effect (DepthOfField) |
+| Theme | string? | "Vynixu" | Initial theme name |
+| Mobile | table? | -- | Mobile-specific configuration |
+| MinimizeButton | boolean? | true | Show floating minimize button |
+| MinimizeButtonSize | number? | 50 | Size of the floating button |
+| MinimizeButtonIcon | string? | "cat" | Icon name for the floating button |
+| Transparency | boolean? | false | Enable glass transparency effect |
+| KeySystem | table? | -- | Key system config (omit to skip) |
+| KeyFolder | string? | "FluentTemp" | Folder for saved key files |
+
+### Mobile Config
+
+| Option | Type | Description |
+|---|---|---|
+| GetIcon | function | Function returning icon image data |
+| Size | number | Icon size |
+
+## Key System Config
+
+Include a `KeySystem` table in the Window config to enable key validation.
+
+| Option | Type | Description |
+|---|---|---|
+| Title | string? | Dialog title (default: "Key System") |
+| Note | string? | Description text below the title |
+| SaveKey | boolean? | Save validated key to disk |
+| Key | string or {string}? | Static key(s) for validation (Mode 1) |
+| KeyValidator | function? | Custom validation function(key) (Mode 2) |
+| API | {table}? | List of API service configs (Mode 3) |
+| URL | string? | "Get Key" button link |
+| Thumbnail | table? | Side image: {Image, Width?, Title?} |
+
+### API Service Config
+
+Each entry in the `API` table:
+
+| Service | Args |
+|---|---|
+| platoboost | {ServiceId, Secret} |
+| pandadevelopment | {ServiceId} |
+| luarmor | {ScriptId, Discord?} |
+| junkiedevelopment | {ServiceId, ApiKey, Provider} |
+
+### Key System Example
+
+```lua
+local Window = Fluent:CreateWindow({
+    Title = "My Script",
+    KeySystem = {
+        Key = {"key1", "key2"},
+        URL = "https://discord.gg/example",
+        SaveKey = true,
+        Thumbnail = {
+            Image = "rbxassetid://1234567890",
+            Title = "My Script"
+        }
+    }
 })
-\`\`\`
+```
 
-### Event Handling
+---
 
-<pre class="language-lua"><code class="lang-lua">Toggle:OnChanged(function()
-    print("Toggle changed:", <a data-footnote-ref href="#user-content-fn-1">Options</a>.MyToggle.Value)
+# Library API
+
+## Properties
+
+| Property | Type | Description |
+|---|---|---|
+| Version | string | Library version ("1.0.5") |
+| Options | table | All created options/elements indexed by ID |
+| Themes | {string} | List of available theme names |
+| CreatedWindow | table or nil | The created Window object |
+| UIContainer | Instance | Parent container (CoreGui / PlayerGui) |
+| Utilities | table | Helper functions (Resize, Truncate, GetIcon, etc.) |
+| Connections | {RBXScriptSignal} | All active signal connections |
+| Unloaded | boolean | Whether the library was destroyed |
+| Loaded | boolean | Inverse of Unloaded |
+| Theme | string | Current theme name |
+| DialogOpen | boolean | Whether a dialog is currently open |
+| UseAcrylic | boolean | Was acrylic enabled at window creation |
+| Acrylic | boolean | Is acrylic currently active |
+| Transparency | boolean | Is glass transparency active |
+| MinimizeKey | Enum.KeyCode | Key to toggle minimize |
+| GUI | ScreenGui | The root ScreenGui instance |
+| OnUnload | Signal | Fired when the library is being destroyed |
+| PostUnload | Signal | Fired after the destroy animation completes |
+| ThemeChanged | Signal | Fired when the theme changes |
+
+## Methods
+
+| Method | Arguments | Description |
+|---|---|---|
+| CreateWindow(Config) | Config: table | Create the main window |
+| Window(Config) | Config: table | Alias for CreateWindow |
+| AddWindow(Config) | Config: table | Alias for CreateWindow |
+| SetTheme(Name) | Name: string | Set the UI theme |
+| Destroy() | -- | Destroy the library with fade-out animation |
+| ToggleAcrylic(Value) | Value: boolean | Enable or disable acrylic blur |
+| ToggleTransparency(Value) | Value: boolean | Enable or disable glass transparency |
+| Notify(Config) | Config: table | Create a notification (returns object) |
+| SafeCallback(Function, ...) | fn, ...any | Execute callback with pcall error handling |
+
+## Utilities
+
+| Method | Signature | Description |
+|---|---|---|
+| Resize(X, Y) | (number, number) -> (number, number) | Scale coordinates from 1920x1080 reference |
+| Truncate(n, d, r) | (number, number?, boolean?) -> number | Truncate or round decimals |
+| Round(n, f) | (number, number?) -> number | Round to decimal places |
+| GetIcon(Name) | (string) -> {Image, ImageRectSize, ImageRectOffset} | Get icon image data by name |
+| Prettify(v) | (EnumItem or string or number) -> string or number | Format enums/values nicely |
+| Clone(v) | (any) -> (any, boolean) | Deep clone tables, instances, or functions |
+| GetOS() | () -> string | Detect OS: Windows, macOS, Mobile, Xbox, PlayStation, MetaHorizon |
+
+---
+
+# Tabs and Sections
+
+## Creating Tabs
+
+```lua
+local Tabs = {
+    Main = Window:AddTab({ Title = "Main", Icon = "home" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
+}
+```
+
+Tab config:
+
+| Option | Type | Description |
+|---|---|---|
+| Title | string | Tab display name |
+| Icon | string? | Icon name (Lucide or Phosphor) |
+
+## Selecting Tabs
+
+```lua
+Window:SelectTab(1)       -- by index (1-based)
+Window:SelectTab(Tabs.Main)   -- by tab object
+```
+
+## Creating Sections
+
+Sections group related elements under a header.
+
+```lua
+local Section = Tabs.Main:AddSection("Section Name")
+
+-- Elements can be created directly on a section:
+Section:AddButton({
+    Title = "Button in Section",
+    Callback = function() end
+})
+```
+
+---
+
+# Elements
+
+All elements are created via `Tab:AddElementName("Id", Config)` or `Section:AddElementName("Id", Config)`.
+
+The `Id` string is used to access the element later via `Fluent.Options["Id"]`.
+
+## Button
+
+A clickable button with a chevron icon.
+
+```lua
+local Button = Tabs.Main:AddButton("MyButton", {
+    Title = "Click Me",
+    Description = "This button does something",
+    Callback = function()
+        print("Button clicked!")
+    end
+})
+```
+
+| Option | Type | Description |
+|---|---|---|
+| Title | string | Button label |
+| Description | string? | Description text |
+| Callback | function | Fired on click |
+
+## Toggle
+
+A toggle switch for boolean values.
+
+```lua
+local Toggle = Tabs.Main:AddToggle("MyToggle", {
+    Title = "Toggle",
+    Description = "Toggle description",
+    Default = false,
+    Callback = function(state)
+        if state then
+            print("Toggle On")
+        else
+            print("Toggle Off")
+        end
+    end
+})
+```
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| Title | string | -- | Toggle label |
+| Description | string? | -- | Description text |
+| Default | boolean? | false | Initial state |
+| Callback | function(boolean)? | -- | Fired on state change |
+
+### Methods
+
+```lua
+Toggle:SetValue(true)          -- Set state
+Toggle:OnChanged(function()    -- Listen for changes
+    print("Value:", Toggle.Value)
 end)
-</code></pre>
+```
 
-### Changing Value
+### Embedded Keybind
 
-\`\`\`lua
-Toggle:SetValue(false)
-\`\`\`
+A keybind picker can be embedded inside a toggle row:
 
-## Creating Sliders
+```lua
+local ToggleKeybind = Toggle:Keybind("ToggleKeybind", {
+    Title = "Keybind",
+    Mode = "Toggle",
+    Default = "LeftControl",
+    Callback = function(value)
+        print("Keybind state:", value)
+    end
+})
+```
 
-{% code fullWidth="false" %}
+## Slider
 
-\`\`\`lua
-local Slider = Tab:AddSlider("Slider", 
-{
+A draggable slider with editable numeric input.
+
+```lua
+local Slider = Tabs.Main:AddSlider("MySlider", {
     Title = "Slider",
     Description = "This is a slider",
     Default = 2,
@@ -1933,284 +356,810 @@ local Slider = Tab:AddSlider("Slider",
     Max = 5,
     Rounding = 1,
     Callback = function(Value)
-        print("Slider was changed:", Value)
+        print("Slider changed:", Value)
     end
 })
-\`\`\`
+```
 
-{% endcode %}
+| Option | Type | Default | Description |
+|---|---|---|---|
+| Title | string | -- | Slider label |
+| Description | string? | -- | Description text |
+| Default | number? | 0 | Initial value |
+| Min | number? | 0 | Minimum value |
+| Max | number? | 100 | Maximum value |
+| Rounding | number? | 1 | Decimal places to round to |
+| Callback | function(number)? | -- | Fired on value change |
 
-### Event Handling
+### Methods
 
-\`\`\`lua
-Slider:OnChanged(function(Value)
-    print("Slider changed:", Value)
+```lua
+Slider:SetValue(3)              -- Set value (clamped and rounded)
+Slider:OnChanged(function(v)    -- Listen for changes
+    print("Value:", v)
 end)
-\`\`\`
+```
 
-### Changing Value
+## Dropdown
 
-\`\`\`lua
-Slider:SetValue(3)
-\`\`\`
+Single or multi-select dropdown with searchable options.
 
-## Creating Dropdowns
-
-\`\`\`lua
-local Dropdown = Tab:AddDropdown("Dropdown", {
+```lua
+local Dropdown = Tabs.Main:AddDropdown("MyDropdown", {
     Title = "Dropdown",
-    Description = "Dropdown description",
-    Values = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen"},
+    Description = "Select an option",
+    Values = {"one", "two", "three"},
     Multi = false,
     Default = 1,
+    Searchable = false,
 })
-\`\`\`
+```
 
-### Multiple Dropdown
+| Option | Type | Default | Description |
+|---|---|---|---|
+| Title | string | -- | Dropdown label |
+| Description | string? | -- | Description text |
+| Values | {any}? | {} | List of options (any type: strings, instances, enums, numbers) |
+| Multi | boolean? | false | Allow selecting multiple values |
+| Default | any or {any: boolean}? | nil | Initial selection |
+| Searchable | boolean? | false | Show search filter input |
+| FocusSearch | boolean? | false | Auto-focus search when opening |
+| SearchPlaceholder | string? | "Search..." | Placeholder text for search |
+| Displayer | function(any)? | -- | Custom display function for values |
+| AutoDeselect | boolean? | true | Deselect current value when clicking it again |
+| AllowNull | boolean? | false | Prevent deselecting the last value |
+| Callback | function(any)? | -- | Fired on selection change |
 
-\`\`\`lua
-local MultiDropdown = Tab:AddDropdown("MultiDropdown", {
-   Title = "Dropdown",
-   Description = "You can select multiple values.",
-   Values = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen"},
-   Multi = true,
-   Default = {"seven", "twelve"},
-})
-\`\`\`
+### Methods
 
-### Event Handling
-
-\`\`\`lua
-Dropdown:OnChanged(function(Value)
-    print("Dropdown changed:", Value)
+```lua
+Dropdown:SetValue("four")                           -- Single: set value
+Dropdown:SetValue({three = true, five = true})     -- Multi: set values (table map)
+Dropdown:SetValues({"a", "b", "c"})                -- Replace all options
+Dropdown:Open()                                     -- Open dropdown list
+Dropdown:Close()                                    -- Close dropdown list
+Dropdown:Display()                                  -- Update display text
+Dropdown:GetActiveValues()                          -- Get currently selected values
+Dropdown:OnChanged(function(v)                      -- Listen for changes
+    print("Value:", v)
 end)
-\`\`\`
+```
 
-\`\`\`lua
+### Multi-Select Example
+
+```lua
+local MultiDropdown = Tabs.Main:AddDropdown("MultiDropdown", {
+    Title = "Multi Dropdown",
+    Values = {"one", "two", "three", "four"},
+    Multi = true,
+    Default = {"seven", "twelve"},
+})
+
 MultiDropdown:OnChanged(function(Value)
     local Values = {}
     for Value, State in next, Value do
         table.insert(Values, Value)
     end
-    print("Mutlidropdown changed:", table.concat(Values, ", "))
+    print("Selected:", table.concat(Values, ", "))
 end)
-\`\`\`
+```
 
-### Changing Value
+## Colorpicker
 
-\`\`\`lua
-Dropdown:SetValue("four")
-\`\`\`
+A color picker with HSV map, hue slider, hex/RGB input, and optional transparency.
 
-\`\`\`lua
-MultiDropdown:SetValue({
-   three = true,
-   five = true,
-   seven = false
-})
-\`\`\`
-
-## Creating Colorpickers
-
-\`\`\`lua
-local Colorpicker = Tab:AddColorpicker("Colorpicker", {
+```lua
+local Colorpicker = Tabs.Main:AddColorpicker("MyColorpicker", {
     Title = "Colorpicker",
-    Description = "Description for colorpicker",
-    Default = Color3.fromRGB(96, 205, 255)
-})
-
-Colorpicker:OnChanged(function()
-    print("Colorpicker changed:", Colorpicker.Value)
-end)
-    
-Colorpicker:SetValueRGB(Color3.fromRGB(0, 255, 140))
-\`\`\`
-
-### Transparency Colorpicker
-
-\`\`\`lua
-local TColorpicker = Tab:AddColorpicker("TransparencyColorpicker", {
-    Title = "Colorpicker",
-    Description = "but you can change the transparency.",
+    Description = "Pick a color",
+    Default = Color3.fromRGB(96, 205, 255),
     Transparency = 0,
-    Default = Color3.fromRGB(96, 205, 255)
+    UpdateOnChange = false,
+    Callback = function()
+        print("Color changed:", Colorpicker.Value)
+    end
 })
-\`\`\`
+```
 
-### Event Handling
+| Option | Type | Default | Description |
+|---|---|---|---|
+| Title | string | -- | Colorpicker label |
+| Description | string? | -- | Description text |
+| Default | Color3? | Color3.new(1, 1, 1) | Initial color |
+| Transparency | number? | nil | Initial transparency (0-1), shows alpha slider if set |
+| UpdateOnChange | boolean? | false | Fire callback while sliding (live preview) |
+| Callback | function()? | -- | Fired on color change |
 
-\`\`\`lua
-Colorpicker:OnChanged(function()
-    print("Colorpicker changed:", Colorpicker.Value)
+### Methods
+
+```lua
+Colorpicker:SetValueRGB(Color3.fromRGB(0, 255, 140))        -- Set from RGB
+Colorpicker:SetValue({Hue, Sat, Vib}, Transparency?)   -- Set from HSV
+Colorpicker:OnChanged(function()                          -- Listen for changes
+    print("Color:", Colorpicker.Value)
 end)
+```
 
-TColorpicker:OnChanged(function()
-    print(
-        "TColorpicker changed:", TColorpicker.Value,
-        "Transparency:", TColorpicker.Transparency
-    )
-end)
-\`\`\`
+## Keybind
 
-### Changing Value
+A keybind picker with Always/Toggle/Hold modes.
 
-\`\`\`lua
-Colorpicker:SetValueRGB(Color3.fromRGB(0, 255, 140))
-
-TColorpicker:SetValue({0, 100, 100}, 0.5) -- hsv, transparency
-\`\`\`
-
-## Creating Keybinds
-
-<pre class="language-lua"><code class="lang-lua">local Keybind = Tab:AddKeybind("Keybind", {
+```lua
+local Keybind = Tabs.Main:AddKeybind("MyKeybind", {
     Title = "Keybind",
     Description = "Keybind Description",
-    Mode = "Toggle", -- Always, Toggle, Hold
-    Default = "LeftControl", -- String as the name of the keybind (MB1, MB2 for mouse buttons)
-
-    -- Occurs when the keybind is clicked, Value is \`true\`/\`false\`
+    Mode = "Toggle",   -- "Always", "Toggle", or "Hold"
+    Default = "LeftControl",
     Callback = function(Value)
         print("Keybind clicked!", Value)
     end,
-
-    -- Occurs when the keybind itself is changed, \`New\` is a KeyCode Enum OR a UserInputType Enum
     ChangedCallback = function(New)
-        print("Keybind changed!", New)
+        print("Keybind changed to:", New)
     end
-<strong>})
-</strong></code></pre>
+})
+```
 
-### Event Handling
+| Option | Type | Default | Description |
+|---|---|---|---|
+| Title | string | -- | Keybind label |
+| Description | string? | -- | Description text |
+| Mode | string? | "Toggle" | "Always": always active, "Toggle": click to toggle, "Hold": active while held |
+| Default | string? | "" | Default key (e.g. "LeftControl", "MB1", "MB2") |
+| Callback | function(boolean)? | -- | Fired when keybind is pressed/released |
+| ChangedCallback | function(KeyCode or UserInputType)? | -- | Fired when the bound key changes |
 
-\`\`\`lua
--- OnClick is only fired when you press the keybind and the mode is Toggle
--- Otherwise, you will have to use Keybind:GetState()
-Keybind:OnClick(function()
-    print("Keybind clicked:", Keybind:GetState())
+### Methods
+
+```lua
+Keybind:GetState()                          -- Check if keybind is currently active
+Keybind:SetValue("MB2", "Toggle")          -- Set key and mode
+Keybind:DoClick()                           -- Manually trigger the keybind
+Keybind:OnClick(function()                  -- Listen for click events
+    print("Clicked, state:", Keybind:GetState())
 end)
-
-Keybind:OnChanged(function()
-    print("Keybind changed:", Keybind.Value)
+Keybind:OnChanged(function()                -- Listen for key/mode changes
+    print("Changed:", Keybind.Value)
 end)
+```
 
+### State Checking Loop
+
+```lua
 task.spawn(function()
-    while true do
-        wait(1)
-        -- example for checking if a keybind is being pressed
-        local state = Keybind:GetState()
-        if state then
+    while task.wait() do
+        if Keybind:GetState() then
             print("Keybind is being held down")
         end
-
         if Fluent.Unloaded then break end
     end
 end)
-\`\`\`
+```
 
-### Changing Value
+## Input
 
-\`\`\`lua
-Keybind:SetValue("MB2", "Toggle") -- Sets keybind to MB2, mode to Hold
-\`\`\`
+A text input field with validation options.
 
-## Creating Inputs
-
-\`\`\`lua
-local Input = Tab:AddInput("Input", {
+```lua
+local Input = Tabs.Main:AddInput("MyInput", {
     Title = "Input",
-    Description = "Input Description",
+    Description = "Enter text",
     Default = "Default",
-    Placeholder = "Placeholder",
-    Numeric = false, -- Only allows numbers
-    Finished = false, -- Only calls callback when you press enter
+    Placeholder = "Type here...",
+    Numeric = false,
+    Finished = false,
+    MaxLength = 100,
+    ClearOnFocusLost = false,
     Callback = function(Value)
         print("Input changed:", Value)
     end
 })
-\`\`\`
+```
 
-### Event Handling
+| Option | Type | Default | Description |
+|---|---|---|---|
+| Title | string | -- | Input label |
+| Description | string? | -- | Description text |
+| Default | string? | "" | Initial text |
+| Placeholder | string? | "" | Placeholder text |
+| Numeric | boolean? | false | Only allow numeric input |
+| Finished | boolean? | false | Only fire callback on Enter press |
+| MaxLength | number? | -- | Maximum character count |
+| ClearOnFocusLost | boolean? | false | Clear text on focus lost (only when Finished is true) |
+| Callback | function(string)? | -- | Fired on value change |
 
-\`\`\`lua
-Input:OnChanged(function()
-    print("Input updated:", Input.Value)
+### Methods
+
+```lua
+Input:SetValue("New text")     -- Set text
+Input:OnChanged(function()     -- Listen for changes
+    print("Value:", Input.Value)
 end)
-\`\`\`
+```
 
-### Changing Value
+## Paragraph
 
-\`\`\`lua
-Input:SetValue("Text")
-\`\`\`
+A static text display element (not interactive).
 
-### Toggle Gui Transparency
+```lua
+local Paragraph = Tabs.Main:AddParagraph("MyParagraph", {
+    Title = "Paragraph",
+    Content = "This is a paragraph.\nSecond line!",
+    TitleAlignment = "Left",
+    ContentAlignment = "Left"
+})
+```
 
-\`\`\`lua
-Fluent:ToggleTransparency(false) and Fluent:ToggleTransparency(true)
-\`\`\`
+| Option | Type | Default | Description |
+|---|---|---|---|
+| Title | string | -- | Paragraph title |
+| Content | string? | "" | Main text content |
+| TitleAlignment | string or Enum? | "Left" | "Left", "Center", "Middle", or TextXAlignment |
+| ContentAlignment | string or Enum? | "Left" | "Left", "Center", "Middle", or TextXAlignment |
+| Callback | function()? | -- | Optional callback (not commonly used) |
 
-### Toggle Acrylic (Blur)
+### Methods
 
-\`\`\`lua
-Fluent:ToggleAcrylic(false) or Fluent:ToggleAcrylic(true)
-\`\`\`
-
-### Destroy Fluent
-
-\`\`\`lua
-Fluent:Destroy()
-\`\`\`
-
-\[^1\]: \[#creating-options\](#creating-options "mention")
-
-
----
-
-# Agent Instructions
-This documentation is published with GitBook. GitBook is the documentation platform designed so that both humans and AI agents can read, navigate, and reason over technical content effectively. Learn more at gitbook.com.
-
-## Querying This Documentation
-If you need additional information that is not directly available in this page, you can query the documentation dynamically by asking a question.
-
-Perform an HTTP GET request on the current page URL with the \`ask\` query parameter, and the optional \`goal\` query parameter:
-
-\`\`\`
-GET https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent.md?ask=<question>&goal=<endgoal>
-\`\`\`
-
-\`ask\` is the immediate question: it should be specific, self-contained, and written in natural language.
-\`goal\` is optional and describes the broader end goal you are ultimately trying to accomplish on behalf of the user. GitBook uses it to tailor the answer towards what is most useful for that goal.
-
-The response will contain a direct answer to the question and relevant excerpts and sources from the documentation.
-
-Use this mechanism when the answer is not explicitly present in the current page, you need clarification or additional context, or you want to retrieve related documentation sections.
+```lua
+Paragraph:SetValue("New content")     -- Update content
+Paragraph:SetContent("New content")   -- Update content (alias)
+Paragraph:OnChanged(function()         -- Listen for changes
+    print("Content changed")
+end)
+```
 
 ---
 
-# Unknown
+# Notifications
 
-\> For the complete documentation index, see \[llms.txt\](https://forgenet.gitbook.io/fluent-documentation/llms.txt). Markdown versions of documentation pages are available by appending \`.md\` to page URLs; this page is available as \[Markdown\](https://forgenet.gitbook.io/fluent-documentation/documentation/examples.md).
+Notifications appear in the bottom-right corner with a frosted glass background.
+
+```lua
+local Notification = Fluent:Notify({
+    Title = "Notification",
+    Content = "This is the main text",
+    SubContent = "Optional extra text",
+    Duration = 5,               -- seconds, nil = persistent
+    Buttons = {                 -- optional action buttons
+        {
+            Title = "OK",
+            Callback = function()
+                print("OK clicked")
+            end
+        }
+    },
+    Sound = {                   -- optional sound
+        SoundId = "rbxassetid://123456789"
+    }
+})
+
+-- Notification object properties
+print(Notification.Closed)   -- boolean, becomes true when closed
+```
+
+| Option | Type | Description |
+|---|---|---|
+| Title | string | Notification title |
+| Content | string | Main text |
+| SubContent | string? | Secondary text |
+| Duration | number? | Auto-close after N seconds (nil = persistent) |
+| Buttons | {Button}? | Array of {Title, Callback} |
+| Sound | table? | Sound config: {SoundId = "rbxassetid://..."} |
+
+---
+
+# Dialogs
+
+Modal dialogs with customizable buttons.
+
+```lua
+Window:Dialog({
+    Title = "Confirm",
+    Content = "Are you sure?",
+    Buttons = {
+        {
+            Title = "Yes",
+            Callback = function()
+                print("Confirmed")
+            end
+        },
+        {
+            Title = "No",
+            Callback = function()
+                print("Cancelled")
+            end
+        }
+    }
+})
+```
+
+| Option | Type | Description |
+|---|---|---|
+| Title | string | Dialog title |
+| Content | string | Dialog body text |
+| Buttons | {Button} | Array of {Title, Callback} |
+
+---
+
+# Themes
+
+Fluent Renewed Plus comes with 61 built-in themes.
+
+## Setting a Theme
+
+```lua
+Fluent:SetTheme("Dark")           -- Set at runtime
+
+-- Or set in the Window config:
+Fluent:CreateWindow({ Theme = "Vynixu" })
+```
+
+## Available Themes
+
+- Vynixu (default)
+- Dark
+- Darker
+- Light
+- Quiet Light
+- Aqua
+- Tomorrow Night Blue
+- Abyss
+- Amethyst
+- Amethyst Dark
+- Rose
+- Yaru
+- United Ubuntu
+- Elementary
+- Yaru Dark
+- United GNOME
+- Arc Dark
+- Ambiance
+- Adapta Nokto
+- Monokai
+- Monokai Classic
+- Monokai Vibrant
+- Monokai Dimmed
+- Typewriter
+- Dark Typewriter
+- Kimbie Dark
+- Solarized Dark
+- Solarized Light
+- DuoTone Dark Sea
+- DuoTone Dark Sky
+- DuoTone Dark Space
+- DuoTone Dark Forest
+- DuoTone Dark Earth
+- VSC Dark+
+- VSC Dark Modern
+- VSC Dark High Contrast
+- VSC Light+
+- VSC Light Modern
+- VSC Light High Contrast
+- VSC Red
+- VS Dark
+- VS Light
+- GitHub Dark
+- GitHub Dark Dimmed
+- GitHub Dark Default
+- GitHub Dark High Contrast
+- GitHub Dark Colorblind
+- GitHub Light
+- GitHub Light Default
+- GitHub Light High Contrast
+- GitHub Light Colorblind
+- Viow Arabian
+- Viow Arabian Mix
+- Viow Darker
+- Viow Flat
+- Viow Light
+- Viow Mars
+- Viow Neon
+
+## Custom Themes
+
+A theme file returns a table of color properties:
+
+```lua
+return {
+    Accent = Color3.fromRGB(96, 205, 255),
+    AcrylicMain = Color3.fromRGB(60, 60, 60),
+    AcrylicBorder = Color3.fromRGB(90, 90, 90),
+    AcrylicGradient = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.new(1, 1, 1)),
+        ColorSequenceKeypoint.new(1, Color3.new(1, 1, 1))
+    }),
+    AcrylicNoise = 0.9,
+    TitleBarLine = Color3.fromRGB(30, 30, 30),
+    Tab = Color3.fromRGB(35, 35, 35),
+    Element = Color3.fromRGB(30, 30, 30),
+    ElementBorder = Color3.fromRGB(45, 45, 45),
+    InElementBorder = Color3.fromRGB(40, 40, 40),
+    ElementTransparency = 0,
+    Text = Color3.fromRGB(230, 230, 230),
+    SubText = Color3.fromRGB(160, 160, 160),
+    -- Optional (falls back to Dark theme defaults):
+    ToggleToggled = ...,
+    SliderRail = ...,
+    Keybind = ...,
+    Input = ..., InputFocused = ..., InputIndicator = ...,
+    Dialog = ..., DialogHolder = ..., DialogHolderLine = ...,
+    DialogButton = ..., DialogButtonBorder = ...,
+    DialogBorder = ..., DialogInput = ..., DialogInputLine = ...,
+    DropdownFrame = ..., DropdownHolder = ...,
+    DropdownBorder = ..., DropdownOption = ...,
+    Hover = ..., HoverChange = ...
+}
+```
+
+---
+
+# Icons
+
+Fluent Renewed Plus includes icons from two icon sets:
+
+- Lucide 0.469.0 (1,544 icons)
+- Phosphor 2.1.0 (9,072 icons)
+
+Total: approximately 10,616 icons.
+
+## Usage
+
+```lua
+local IconData = Fluent.Utilities:GetIcon("home")
+-- Returns: {Image = "rbxassetid://...", ImageRectSize = Vector2.new(...), ImageRectOffset = Vector2.new(...)}
+
+-- Use in tabs:
+Window:AddTab({ Title = "Main", Icon = "home" })
+```
+
+Browse available icons at https://lucide.dev/icons/ (Lucide) and https://phosphoricons.com/ (Phosphor).
+
+Icon names are in kebab-case (e.g. `"arrow-right"`, `"settings"`, `"user-circle"`).
+
+---
+
+# Addons
+
+## SaveManager
+
+SaveManager handles saving and loading UI element states (Toggle, Slider, Dropdown, Colorpicker, Keybind, Input) to JSON files.
+
+### Loading
+
+```lua
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+```
+
+### Setup
+
+```lua
+SaveManager:SetLibrary(Fluent)
+SaveManager:SetFolder("MyScript/settings")     -- folder path for configs
+SaveManager:IgnoreThemeSettings()               -- skip ThemeManager indexes
+SaveManager:SetIgnoreIndexes({"UnwantedToggle"}) -- skip specific options
+```
+
+### Methods
+
+| Method | Arguments | Description |
+|---|---|---|
+| SetLibrary(lib) | table | Link the library (required) |
+| SetFolder(path) | string | Set config storage folder |
+| SetIgnoreIndexes(list) | {string} | Skip specific option IDs |
+| IgnoreThemeSettings() | -- | Convenience: ignores InterfaceManager indexes |
+| Save(name) | string | Save current options to {name}.json |
+| Load(name) | string | Load options from {name}.json |
+| Delete(name) | string | Delete a config file (also clears autoload) |
+| RefreshConfigList() | -> {string} | List available config names |
+| LoadAutoloadConfig() | -- | Load the autoload config if set |
+| BuildFolderTree() | -- | Create folder structure |
+| BuildConfigSection(tab) | Tab | Build config management UI |
+
+### UI Section
+
+When `BuildConfigSection()` is called, the following UI elements are created:
+
+- **Config Name input** (`SaveManager_ConfigName`) -- name for new config
+- **Config List dropdown** (`SaveManager_ConfigList`) -- select existing config
+- **Create Config button** -- saves new config (notifies overwrite if exists)
+- **Load Config button** -- loads selected config
+- **Delete Config button** -- deletes selected config (clears autoload if applicable)
+- **Refresh List button** -- refreshes config dropdown
+- **Set as Autoload button** -- marks config for auto-load
+
+```lua
+SaveManager:BuildConfigSection(Tabs.Settings)
+SaveManager:LoadAutoloadConfig()  -- load autoload at startup
+```
+
+## InterfaceManager
+
+InterfaceManager persists interface settings (theme, acrylic, transparency, minimize keybind).
+
+### Loading
+
+```lua
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+```
+
+### Setup
+
+```lua
+InterfaceManager:SetLibrary(Fluent)
+InterfaceManager:SetFolder("MyScript")
+```
+
+### Methods
+
+| Method | Arguments | Description |
+|---|---|---|
+| SetLibrary(lib) | table | Link the library (required) |
+| SetFolder(path) | string | Set storage folder |
+| SaveSettings() | -- | Save current settings to {folder}/options.json |
+| LoadSettings() | -- | Load settings from {folder}/options.json |
+| BuildFolderTree() | -- | Create folder structure |
+| BuildInterfaceSection(tab) | Tab | Build interface settings UI |
+
+### Generated UI Elements
+
+- **Theme dropdown** (`InterfaceManager_InterfaceTheme`) -- select theme
+- **Acrylic toggle** (`InterfaceManager_AcrylicToggle`, only if `Library.UseAcrylic`)
+- **Transparency toggle** (`InterfaceManager_TransparentToggle`)
+- **Menu keybind** (`InterfaceManager_MenuKeybind`) -- sets `Library.MinimizeKeybind`
+
+```lua
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+InterfaceManager:LoadSettings()   -- load saved settings at startup
+```
+
+## ExtraSetting
+
+ExtraSetting provides utility toggles for AFK mode, FPS boost, anti-AFK, auto rejoin, and more.
+
+### Loading
+
+```lua
+local ExtraSetting = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/ExtraSetting.lua"))()
+```
+
+### Setup
+
+```lua
+ExtraSetting:SetLibrary(Fluent)
+ExtraSetting:SetFolder("MyScript")
+ExtraSetting:Init()
+ExtraSetting:BuildExtraSection(Tabs.Settings)
+```
+
+### Methods
+
+| Method | Arguments | Description |
+|---|---|---|
+| SetLibrary(lib) | table | Link the library (also adds Fluent:Rejoin()) |
+| SetFolder(path) | string | Set config folder |
+| SetAFKInfo(key, callback) | string, function | Add custom info to the AFK overlay |
+| RemoveAFKInfo(key) | string | Remove a custom AFK info line |
+| Init() | -- | Initialize all subsystems |
+| BuildExtraSection(tab) | Tab | Build the Extra tab UI |
+
+### UI Sections
+
+#### Links
+- GitHub button (always shown)
+- Discord button (only shown if `ExtraSetting.Discord` is set)
+
+#### Anti-AFK
+- Anti-AFK toggle
+- Auto Reconnect toggle
+
+#### Performance
+- Unlock FPS toggle (only if `setfpscap` is available)
+- FPS Boost toggle (applies boost after 5 seconds)
+- FPS Overlay toggle (top-right display showing FPS and memory)
+
+#### AFK Mode
+- Enable AFK toggle (disables 3D rendering, shows black overlay)
+- Auto AFK Time input (idle time before auto-enter)
+- Auto Enter AFK toggle
+
+The AFK overlay displays:
+- Current time
+- FPS counter
+- RAM usage
+- Custom info via `:SetAFKInfo()`
+- Double-tap the minimize key to exit AFK mode
+
+#### Auto Rejoin and Execute
+
+Requires both `queue_on_teleport` capability and `ExtraSetting.AutoExecuteUrl` to be set.
+
+- Auto Rejoin Time input (minutes)
+- Enable Auto Rejoin Timer toggle
+- Auto Execute on Rejoin toggle (executes the URL script after rejoining)
+
+### Config Persistence
+
+ExtraSetting saves its configuration to `{Folder}/settings/extra/extra_config.json` (separate from SaveManager).
+
+### Discord and AutoExecuteUrl
+
+```lua
+-- Before Init(), set these optional values:
+ExtraSetting.Discord = "https://discord.gg/invite"    -- shows Discord button
+ExtraSetting.AutoExecuteUrl = "https://pastebin.com/raw/..."  -- enables auto rejoin section
+```
+
+---
+
+# Advanced
+
+## Creator Module
+
+The Creator module is the core UI engine. It handles instance creation, theme management, and spring animations.
+
+```lua
+local Creator = Fluent.Creator  -- accessed internally
+```
+
+| Method | Signature | Description |
+|---|---|---|
+| New(Class, Properties, Children) | (string, table?, {Instance}?) -> Instance | Create instance with default props and theme support |
+| AddSignal(Signal, Function) | (RBXScriptSignal, function) | Connect and store a signal for cleanup |
+| Disconnect() | () | Disconnect all stored signals |
+| GetThemeProperty(Property) | (string) -> any | Get a theme color/value |
+| UpdateTheme(RegistryIndex?) | (Instance?) | Re-apply theme colors |
+| AddThemeObject(Object, Properties) | (Instance, {string: any}) | Register object for theme updates |
+| OverrideTag(Object, Properties) | (Instance, {string: any}) | Override theme tag on existing object |
+| SpringMotor(Initial, Instance, Prop, ...) | (...) -> (Motor, SetValue) | Create a Flipper spring motor for smooth animation |
+
+## Acrylic System
+
+The acrylic blur uses a DepthOfField effect for frosted glass. It consists of:
+
+- A translucent white base layer
+- A dark background layer (theme: AcrylicMain)
+- A white gradient overlay (theme: AcrylicGradient)
+- A noise texture layer (theme: AcrylicNoise)
+- A border stroke (theme: AcrylicBorder)
+- A DepthOfField blur part positioned behind the UI
+
+```lua
+Fluent:ToggleAcrylic(true)    -- Enable
+Fluent:ToggleAcrylic(false)   -- Disable
+```
+
+## Minimize Button
+
+The floating minimize button persists outside the window and is draggable.
+
+```lua
+-- Configure in Window config:
+Fluent:CreateWindow({
+    MinimizeButton = true,         -- show button
+    MinimizeButtonSize = 50,       -- button size
+    MinimizeButtonIcon = "cat"     -- icon name
+})
+```
+
+The button position is saved to `SharedTable.FluentMFP` for persistence per session.
+
+## Window Resize
+
+When `Resize = true`, a bottom-right resize handle appears. The minimum size is controlled by `MinSize`.
+
+```lua
+Fluent:CreateWindow({
+    Resize = true,
+    MinSize = Vector2.new(470, 380)
+})
+```
+
+## Window Methods
+
+| Method | Description |
+|---|---|
+| Window:Minimize() | Toggle window visibility |
+| Window:Maximize(Value, NoPos, Instant) | Maximize / restore |
+| Window:Dialog(Config) | Open a modal dialog |
+| Window:AddTab(Config) | Add a new tab |
+| Window:SelectTab(Tab) | Switch to a tab |
+| Window:Destroy() | Destroy the window |
+
+## Window Signals
+
+| Signal | Description |
+|---|---|
+| OnMinimized | Fired when window is minimized |
+| PostMinimized | Fired after minimize animation |
+| OnMaximized | Fired when window is maximized |
+| PostMaximized | Fired after maximize animation |
+
+## Mobile Support
+
+```lua
+Fluent:CreateWindow({
+    Mobile = {
+        GetIcon = function() end,    -- custom icon function
+        Size = 40                    -- icon size
+    }
+})
+```
+
+When on mobile, a `Window.HideButton` appears for toggling visibility.
+
+## Library Signals
+
+```lua
+Fluent.OnUnload:Connect(function()
+    print("Library is being destroyed")
+end)
+
+Fluent.PostUnload:Connect(function()
+    print("Destroy animation complete")
+end)
+
+Fluent.ThemeChanged:Connect(function()
+    print("Theme changed to:", Fluent.Theme)
+end)
+```
+
+## Safe Callback
+
+```lua
+Fluent:SafeCallback(function()
+    print("This runs with pcall protection")
+    error("This error will be caught and shown as a notification")
+end)
+```
+
+## Destroy
+
+```lua
+Fluent:Destroy()   -- Fade-out animation, fires OnUnload/PostUnload
+```
+
+---
+
+# Hints
+
+## Breaking Coroutine Loops
+
+Always check `Fluent.Unloaded` to break out of loops when the library is destroyed.
+
+```lua
+task.spawn(function()
+    while task.wait(1) do
+        print("Running...")
+        if Fluent.Unloaded then break end
+    end
+end)
+```
+
+---
 
 # Examples
 
-\`\`\`lua
+```lua
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+local ExtraSetting = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/ExtraSetting.lua"))()
 
 local Window = Fluent:CreateWindow({
     Title = "Fluent " .. Fluent.Version,
     SubTitle = "by dawid",
     TabWidth = 160,
-    Size = UDim2.fromOffset(580, 460),
-    Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
-    Theme = "Dark",
-    MinimizeKey = Enum.KeyCode.LeftControl -- Used when theres no MinimizeKeybind
+    Size = UDim2.fromOffset(470, 380),
+    Resize = true,
+    Acrylic = true,
+    Theme = "Vynixu",
+    MinimizeKey = Enum.KeyCode.RightControl,
+    MinimizeButton = true,
+    MinimizeButtonIcon = "cat",
+    Transparency = false
 })
 
---Fluent provides Lucide Icons https://lucide.dev/icons/ for the tabs, icons are optional
 local Tabs = {
-    Main = Window:AddTab({ Title = "Main", Icon = "" }),
+    Main = Window:AddTab({ Title = "Main", Icon = "home" }),
     Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
 }
 
@@ -2218,361 +1167,98 @@ local Options = Fluent.Options
 
 do
     Fluent:Notify({
-        Title = "Notification",
-        Content = "This is a notification",
-        SubContent = "SubContent", -- Optional
-        Duration = 5 -- Set to nil to make the notification not disappear
+        Title = "Welcome",
+        Content = "Fluent Renewed Plus loaded!",
+        Duration = 5
     })
-
-
 
     Tabs.Main:AddParagraph({
-        Title = "Paragraph",
-        Content = "This is a paragraph.\\nSecond line!"
+        Title = "About",
+        Content = "This is an example script."
     })
-
-
 
     Tabs.Main:AddButton({
         Title = "Button",
-        Description = "Very important button",
+        Description = "Click for dialog",
         Callback = function()
             Window:Dialog({
-                Title = "Title",
-                Content = "This is a dialog",
+                Title = "Dialog",
+                Content = "Hello!",
                 Buttons = {
-                    {
-                        Title = "Confirm",
-                        Callback = function()
-                            print("Confirmed the dialog.")
-                        end
-                    },
-                    {
-                        Title = "Cancel",
-                        Callback = function()
-                            print("Cancelled the dialog.")
-                        end
-                    }
+                    { Title = "OK", Callback = function() print("OK") end }
                 }
             })
         end
     })
 
+    local Toggle = Tabs.Main:AddToggle("MyToggle", {
+        Title = "Toggle",
+        Default = false,
+        Callback = function(v) print("Toggle:", v) end
+    })
 
-
-    local Toggle = Tabs.Main:AddToggle("MyToggle", {Title = "Toggle", Default = false })
-
-    Toggle:OnChanged(function()
-        print("Toggle changed:", Options.MyToggle.Value)
-    end)
-
-    Options.MyToggle:SetValue(false)
-
-
-    
-    local Slider = Tabs.Main:AddSlider("Slider", {
+    local Slider = Tabs.Main:AddSlider("MySlider", {
         Title = "Slider",
-        Description = "This is a slider",
-        Default = 2,
+        Default = 5,
         Min = 0,
-        Max = 5,
+        Max = 10,
         Rounding = 1,
-        Callback = function(Value)
-            print("Slider was changed:", Value)
-        end
+        Callback = function(v) print("Slider:", v) end
     })
 
-    Slider:OnChanged(function(Value)
-        print("Slider changed:", Value)
-    end)
-
-    Slider:SetValue(3)
-
-
-
-    local Dropdown = Tabs.Main:AddDropdown("Dropdown", {
+    local Dropdown = Tabs.Main:AddDropdown("MyDropdown", {
         Title = "Dropdown",
-        Values = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen"},
-        Multi = false,
+        Values = {"A", "B", "C"},
         Default = 1,
+        Callback = function(v) print("Dropdown:", v) end
     })
 
-    Dropdown:SetValue("four")
-
-    Dropdown:OnChanged(function(Value)
-        print("Dropdown changed:", Value)
-    end)
-
-
-    
-    local MultiDropdown = Tabs.Main:AddDropdown("MultiDropdown", {
-        Title = "Dropdown",
-        Description = "You can select multiple values.",
-        Values = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen"},
-        Multi = true,
-        Default = {"seven", "twelve"},
-    })
-
-    MultiDropdown:SetValue({
-        three = true,
-        five = true,
-        seven = false
-    })
-
-    MultiDropdown:OnChanged(function(Value)
-        local Values = {}
-        for Value, State in next, Value do
-            table.insert(Values, Value)
-        end
-        print("Mutlidropdown changed:", table.concat(Values, ", "))
-    end)
-
-
-
-    local Colorpicker = Tabs.Main:AddColorpicker("Colorpicker", {
-        Title = "Colorpicker",
+    local Colorpicker = Tabs.Main:AddColorpicker("MyColorpicker", {
+        Title = "Color",
         Default = Color3.fromRGB(96, 205, 255)
     })
 
-    Colorpicker:OnChanged(function()
-        print("Colorpicker changed:", Colorpicker.Value)
-    end)
-    
-    Colorpicker:SetValueRGB(Color3.fromRGB(0, 255, 140))
-
-
-
-    local TColorpicker = Tabs.Main:AddColorpicker("TransparencyColorpicker", {
-        Title = "Colorpicker",
-        Description = "but you can change the transparency.",
-        Transparency = 0,
-        Default = Color3.fromRGB(96, 205, 255)
+    local Keybind = Tabs.Main:AddKeybind("MyKeybind", {
+        Title = "Keybind",
+        Mode = "Toggle",
+        Default = "LeftControl",
+        Callback = function(v) print("Keybind:", v) end
     })
 
-    TColorpicker:OnChanged(function()
-        print(
-            "TColorpicker changed:", TColorpicker.Value,
-            "Transparency:", TColorpicker.Transparency
-        )
-    end)
-
-
-
-    local Keybind = Tabs.Main:AddKeybind("Keybind", {
-        Title = "KeyBind",
-        Mode = "Toggle", -- Always, Toggle, Hold
-        Default = "LeftControl", -- String as the name of the keybind (MB1, MB2 for mouse buttons)
-
-        -- Occurs when the keybind is clicked, Value is \`true\`/\`false\`
-        Callback = function(Value)
-            print("Keybind clicked!", Value)
-        end,
-
-        -- Occurs when the keybind itself is changed, \`New\` is a KeyCode Enum OR a UserInputType Enum
-        ChangedCallback = function(New)
-            print("Keybind changed!", New)
-        end
-    })
-
-    -- OnClick is only fired when you press the keybind and the mode is Toggle
-    -- Otherwise, you will have to use Keybind:GetState()
-    Keybind:OnClick(function()
-        print("Keybind clicked:", Keybind:GetState())
-    end)
-
-    Keybind:OnChanged(function()
-        print("Keybind changed:", Keybind.Value)
-    end)
-
-    task.spawn(function()
-        while true do
-            wait(1)
-
-            -- example for checking if a keybind is being pressed
-            local state = Keybind:GetState()
-            if state then
-                print("Keybind is being held down")
-            end
-
-            if Fluent.Unloaded then break end
-        end
-    end)
-
-    Keybind:SetValue("MB2", "Toggle") -- Sets keybind to MB2, mode to Hold
-
-
-    local Input = Tabs.Main:AddInput("Input", {
+    local Input = Tabs.Main:AddInput("MyInput", {
         Title = "Input",
-        Default = "Default",
-        Placeholder = "Placeholder",
-        Numeric = false, -- Only allows numbers
-        Finished = false, -- Only calls callback when you press enter
-        Callback = function(Value)
-            print("Input changed:", Value)
-        end
+        Default = "text",
+        Callback = function(v) print("Input:", v) end
     })
-
-    Input:OnChanged(function()
-        print("Input updated:", Input.Value)
-    end)
 end
 
-
--- Addons:
--- SaveManager (Allows you to have a configuration system)
--- InterfaceManager (Allows you to have a interface managment system)
-
--- Hand the library over to our managers
 SaveManager:SetLibrary(Fluent)
 InterfaceManager:SetLibrary(Fluent)
+ExtraSetting:SetLibrary(Fluent)
 
--- Ignore keys that are used by ThemeManager.
--- (we dont want configs to save themes, do we?)
+SaveManager:SetFolder("FluentScript")
+InterfaceManager:SetFolder("FluentScript")
+ExtraSetting:SetFolder("FluentScript")
+
 SaveManager:IgnoreThemeSettings()
-
--- You can add indexes of elements the save manager should ignore
 SaveManager:SetIgnoreIndexes({})
-
--- use case for doing it this way:
--- a script hub could have themes in a global folder
--- and game configs in a separate folder per game
-InterfaceManager:SetFolder("FluentScriptHub")
-SaveManager:SetFolder("FluentScriptHub/specific-game")
 
 InterfaceManager:BuildInterfaceSection(Tabs.Settings)
 SaveManager:BuildConfigSection(Tabs.Settings)
+ExtraSetting:BuildExtraSection(Tabs.Settings)
 
+ExtraSetting:Init()
 
 Window:SelectTab(1)
 
-Fluent:Notify({
-    Title = "Fluent",
-    Content = "The script has been loaded.",
-    Duration = 8
-})
-
--- You can use the SaveManager:LoadAutoloadConfig() to load a config
--- which has been marked to be one that auto loads!
 SaveManager:LoadAutoloadConfig()
-\`\`\`
-
-
----
-
-# Agent Instructions
-This documentation is published with GitBook. GitBook is the documentation platform designed so that both humans and AI agents can read, navigate, and reason over technical content effectively. Learn more at gitbook.com.
-
-## Querying This Documentation
-If you need additional information that is not directly available in this page, you can query the documentation dynamically by asking a question.
-
-Perform an HTTP GET request on the current page URL with the \`ask\` query parameter, and the optional \`goal\` query parameter:
-
-\`\`\`
-GET https://forgenet.gitbook.io/fluent-documentation/documentation/examples.md?ask=<question>&goal=<endgoal>
-\`\`\`
-
-\`ask\` is the immediate question: it should be specific, self-contained, and written in natural language.
-\`goal\` is optional and describes the broader end goal you are ultimately trying to accomplish on behalf of the user. GitBook uses it to tailor the answer towards what is most useful for that goal.
-
-The response will contain a direct answer to the question and relevant excerpts and sources from the documentation.
-
-Use this mechanism when the answer is not explicitly present in the current page, you need clarification or additional context, or you want to retrieve related documentation sections.
+InterfaceManager:LoadSettings()
+```
 
 ---
 
-# Guide | Fluent GUI
+# License
 
-![Page cover](https://forgenet.gitbook.io/fluent-documentation/~gitbook/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1569982175971-d92b01cf8694%3Fcrop%3Dentropy%26cs%3Dsrgb%26fm%3Djpg%26ixid%3DM3wxOTcwMjR8MHwxfHNlYXJjaHw3fHxncmFkaWVudHxlbnwwfHx8fDE2OTM3NjMxMzV8MA%26ixlib%3Drb-4.0.3%26q%3D85&width=1248&dpr=3&quality=100&sign=99d9d6a6&sv=2)
+Fluent Renewed Plus is licensed under the GNU General Public License v3.0.
 
-For the complete documentation index, see [llms.txt](https://forgenet.gitbook.io/fluent-documentation/llms.txt)
-. This page is also available as [Markdown](https://forgenet.gitbook.io/fluent-documentation/documentation/guide.md)
-.
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation#fluent)
-
-Fluent
-
-
--------------------------------------------------------------------------------------
-
-Information about using the gui library
-
-[📄Fluent](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent)
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation#save-manager)
-
-Save Manager
-
-
--------------------------------------------------------------------------------------------------
-
-Information about using the save manager
-
-[📄Save Manager](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/save-manager)
-
-[](https://forgenet.gitbook.io/fluent-documentation/documentation#interface-manager)
-
-Interface Manager
-
-
------------------------------------------------------------------------------------------------------------
-
-Information about using the interface manager
-
-[📄Interface Manager](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/interface-manager)
-
-[PreviousQuick Start](https://forgenet.gitbook.io/fluent-documentation/quick-start)
-[NextFluent](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/fluent)
-
-Last updated 2 years ago
-
----
-
-# Unknown
-
-\> For the complete documentation index, see \[llms.txt\](https://forgenet.gitbook.io/fluent-documentation/llms.txt). Markdown versions of documentation pages are available by appending \`.md\` to page URLs; this page is available as \[Markdown\](https://forgenet.gitbook.io/fluent-documentation/documentation/guide/hints.md).
-
-# Hints
-
-## Disable coroutines when exiting Fluent window
-
-{% hint style="info" %}
-You can check if Fluent is unloaded and break coroutines loops
-{% endhint %}
-
-\`\`\`lua
-function Test()
-    while task.wait() do
-        print("something")
-        if Fluent.Unloaded then break end
-    end
-end
-
-coroutine.resume(coroutine.create(Test))
-
-\`\`\`
-
-
----
-
-# Agent Instructions
-This documentation is published with GitBook. GitBook is the documentation platform designed so that both humans and AI agents can read, navigate, and reason over technical content effectively. Learn more at gitbook.com.
-
-## Querying This Documentation
-If you need additional information that is not directly available in this page, you can query the documentation dynamically by asking a question.
-
-Perform an HTTP GET request on the current page URL with the \`ask\` query parameter, and the optional \`goal\` query parameter:
-
-\`\`\`
-GET https://forgenet.gitbook.io/fluent-documentation/documentation/guide/hints.md?ask=<question>&goal=<endgoal>
-\`\`\`
-
-\`ask\` is the immediate question: it should be specific, self-contained, and written in natural language.
-\`goal\` is optional and describes the broader end goal you are ultimately trying to accomplish on behalf of the user. GitBook uses it to tailor the answer towards what is most useful for that goal.
-
-The response will contain a direct answer to the question and relevant excerpts and sources from the documentation.
-
-Use this mechanism when the answer is not explicitly present in the current page, you need clarification or additional context, or you want to retrieve related documentation sections.
-
----
-
+Source: https://github.com/dawid-scripts/Fluent
