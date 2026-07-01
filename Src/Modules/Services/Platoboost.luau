@@ -17,6 +17,7 @@ end
 local Platoboost = {}
 
 function Platoboost.New(serviceId: string, secret: string)
+
 	if not fRequest then
 		return {
 			Unavailable = true,
@@ -46,7 +47,6 @@ function Platoboost.New(serviceId: string, secret: string)
 	local function ensureInit()
 		if initialized then return end
 		initialized = true
-
 		local ok, resp = pcall(function()
 			return fRequest({ Url = host .. "/public/connectivity", Method = "GET" })
 		end)

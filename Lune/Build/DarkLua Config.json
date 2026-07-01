@@ -20,7 +20,7 @@
 		"remove_unused_while",
 		{
 			"rule": "rename_variables",
-			"include_functions": true,
+			"include_functions": false,
 			"globals": [
 				"$default",
 				"$roblox",
