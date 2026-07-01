@@ -349,21 +349,25 @@ function Library:Window(Config: {
 				local savedKey = readfile(keyFile)
 				local isValid = false
 
-				for _, entry in next, Config.KeySystem.API do
-					local serviceDef = Services[entry.Type]
-					if serviceDef then
-						local args = {}
-						for _, argName in next, serviceDef.Args do
-							table.insert(args, entry[argName])
-						end
-						local ok, service = pcall(serviceDef.New, table.unpack(args))
-						if not ok then continue end
-						local success = service.Verify(savedKey)
-						if success then
-							isValid = true
-							break
+				if savedKey and #savedKey > 0 then
+					for _, entry in next, Config.KeySystem.API do
+						local serviceDef = Services[entry.Type]
+						if serviceDef then
+							local args = {}
+							for _, argName in next, serviceDef.Args do
+								table.insert(args, entry[argName])
+							end
+							local ok, service = pcall(serviceDef.New, table.unpack(args))
+							if not ok then continue end
+							local pcallOk, verifyOk = pcall(service.Verify, savedKey)
+							if pcallOk and verifyOk then
+								isValid = true
+								break
+							end
 						end
 					end
+				else
+					pcall(delfile, keyFile)
 				end
 
 				if isValid then
