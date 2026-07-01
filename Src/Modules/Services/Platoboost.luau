@@ -33,15 +33,36 @@ function Platoboost.New(serviceId: string, secret: string)
 	local requestSending = false
 	local cachedLink, cachedTime = "", 0
 	local host = "https://api.platoboost.com"
+	local initialized = false
 
-	local success, hostResponse = pcall(function()
-		return fRequest({
-			Url = host .. "/public/connectivity",
-			Method = "GET",
-		})
-	end)
-	if success and hostResponse and hostResponse.StatusCode ~= 200 and hostResponse.StatusCode ~= 429 then
-		host = "https://api.platoboost.net"
+	local function generateNonce()
+		local str = ""
+		for _ = 1, 16 do
+			str ..= string.char(math.floor(math.random() * (122 - 97 + 1)) + 97)
+		end
+		return str
+	end
+
+	local function ensureInit()
+		if initialized then return end
+		initialized = true
+
+		local ok, resp = pcall(function()
+			return fRequest({ Url = host .. "/public/connectivity", Method = "GET" })
+		end)
+		if ok and resp and resp.StatusCode ~= 200 and resp.StatusCode ~= 429 then
+			host = "https://api.platoboost.net"
+		end
+
+		pcall(function()
+			for _ = 1, 5 do
+				local oNonce = generateNonce()
+				task.wait(0.2)
+				if generateNonce() == oNonce then
+					error("platoboost nonce error.")
+				end
+			end
+		end)
 	end
 
 	local function cacheLink()
@@ -74,27 +95,8 @@ function Platoboost.New(serviceId: string, secret: string)
 		return true, cachedLink
 	end
 
-	pcall(cacheLink)
-
-	local function generateNonce()
-		local str = ""
-		for _ = 1, 16 do
-			str ..= string.char(math.floor(math.random() * (122 - 97 + 1)) + 97)
-		end
-		return str
-	end
-
-	pcall(function()
-		for _ = 1, 5 do
-			local oNonce = generateNonce()
-			task.wait(0.2)
-			if generateNonce() == oNonce then
-				error("platoboost nonce error.")
-			end
-		end
-	end)
-
 	local function copyLink()
+		ensureInit()
 		local success, link = cacheLink()
 		if success then
 			fSetClipboard(link)
@@ -148,6 +150,7 @@ function Platoboost.New(serviceId: string, secret: string)
 	end
 
 	local function verifyKey(key)
+		ensureInit()
 		if requestSending then
 			return false, "A request is already being sent, please slow down."
 		end
@@ -198,6 +201,7 @@ function Platoboost.New(serviceId: string, secret: string)
 	end
 
 	local function getFlag(name)
+		ensureInit()
 		local nonce = generateNonce()
 		local endpoint = host .. "/public/flag/" .. tostring(service) .. "?name=" .. name
 		if useNonce then
