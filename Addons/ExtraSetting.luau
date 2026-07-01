@@ -54,7 +54,7 @@ local ExtraSetting = {} do
 	local inited = false
 
 	local function ConfigPath()
-		return ExtraSetting.Folder .. "/settings/extra_config.json"
+		return ExtraSetting.Folder .. "/settings/extra/extra_config.json"
 	end
 
 	local function SaveConfig()
@@ -63,6 +63,10 @@ local ExtraSetting = {} do
 			local folder = ExtraSetting.Folder .. "/settings"
 			if not isfolder(folder) then
 				makefolder(folder)
+			end
+			local extra = folder .. "/extra"
+			if not isfolder(extra) then
+				makefolder(extra)
 			end
 			writefile(path, httpService:JSONEncode(ExtraSetting.SavedConfig))
 		end)
@@ -280,6 +284,7 @@ local ExtraSetting = {} do
 
 	local function StartAutoRejoinTimerLoop()
 		if isAutoRejoinTimerRunning or not ExtraSetting.SavedConfig.EnableAutoRejoin then return end
+		if not ExtraSetting.AutoExecuteUrl then return end
 		isAutoRejoinTimerRunning = true
 		task.spawn(function()
 			autoRejoinTimerStartTime = tick()
@@ -534,7 +539,7 @@ local ExtraSetting = {} do
 			StartAutoAFKLoop()
 		end
 
-		if self.SavedConfig.EnableAutoRejoin then
+		if self.SavedConfig.EnableAutoRejoin and ExtraSetting.AutoExecuteUrl then
 			StartAutoRejoinTimerLoop()
 		end
 
@@ -712,7 +717,8 @@ local ExtraSetting = {} do
 			})
 		end
 
-		do
+		local hasQueue = queue_on_teleport or (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport)
+		if hasQueue and ExtraSetting.AutoExecuteUrl then
 			local section = tab:AddSection("Auto Rejoin - Execute")
 
 			section:AddInput("ExtraSetting_AutoRejoinTime", {
@@ -745,17 +751,14 @@ local ExtraSetting = {} do
 				end,
 			})
 
-			local hasQueue = queue_on_teleport or (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport)
-			if hasQueue and ExtraSetting.AutoExecuteUrl then
-				section:AddToggle("ExtraSetting_AutoExecute", {
-					Title = "Auto Execute on Rejoin",
-					Default = cfg.EnableAutoExecute,
-					Callback = function(v)
-						cfg.EnableAutoExecute = v
-						SaveConfig()
-					end,
-				})
-			end
+			section:AddToggle("ExtraSetting_AutoExecute", {
+				Title = "Auto Execute on Rejoin",
+				Default = cfg.EnableAutoExecute,
+				Callback = function(v)
+					cfg.EnableAutoExecute = v
+					SaveConfig()
+				end,
+			})
 		end
 	end
 

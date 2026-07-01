@@ -190,6 +190,26 @@ local SaveManager = {} do
 		return true
 	end
 
+	function SaveManager:Delete(name): (boolean, string?)
+		if not name then
+			return false, "No config selected"
+		end
+
+		local path = `{self.Folder}/settings/{name}.json`
+		if not isfile(path) then
+			return false, "Config not found"
+		end
+
+		delfile(path)
+
+		local autoPath = `{self.Folder}/settings/autoload.txt`
+		if isfile(autoPath) and readfile(autoPath) == name then
+			delfile(autoPath)
+		end
+
+		return true
+	end
+
 	function SaveManager:IgnoreThemeSettings()
 		self:SetIgnoreIndexes({ 
 			"InterfaceManager_InterfaceTheme", "InterfaceManager_AcrylicToggle", "InterfaceManager_TransparentToggle", "InterfaceManager_MenuKeybind"
@@ -278,7 +298,7 @@ local SaveManager = {} do
 		section:AddInput("SaveManager_ConfigName",    { Title = "Config name" })
 		section:AddDropdown("SaveManager_ConfigList", { Title = "Config list", Values = self:RefreshConfigList(), AllowNull = true })
 
-		section:AddButton({
+			section:AddButton({
 			Title = "Create config",
 			Callback = function()
 				local name = SaveManager.Options.SaveManager_ConfigName.Value
@@ -292,6 +312,9 @@ local SaveManager = {} do
 					})
 				end
 
+				local path = `{self.Folder}/settings/{name}.json`
+				local exists = isfile(path)
+
 				local success, err = self:Save(name)
 				if not success then
 					return self.Library:Notify({
@@ -302,17 +325,24 @@ local SaveManager = {} do
 					})
 				end
 
-				self.Library:Notify({
+				SaveManager.Options.SaveManager_ConfigList:SetValues(self:RefreshConfigList())
+				SaveManager.Options.SaveManager_ConfigList:SetValue(nil)
+
+				if exists then
+					return self.Library:Notify({
+						Title = "Interface",
+						Content = "Config loader",
+						SubContent = string.format("Overwrote config %q", name),
+						Duration = 7
+					})
+				end
+
+				return self.Library:Notify({
 					Title = "Interface",
 					Content = "Config loader",
 					SubContent = string.format("Created config %q", name),
 					Duration = 7
 				})
-
-				SaveManager.Options.SaveManager_ConfigList:SetValues(self:RefreshConfigList())
-				SaveManager.Options.SaveManager_ConfigList:SetValue(nil)
-
-				return nil
 			end
 		})
 
@@ -337,23 +367,36 @@ local SaveManager = {} do
 			})
 		end})
 
-		section:AddButton({Title = "Overwrite config", Callback = function()
+		local AutoloadButton
+		section:AddButton({Title = "Delete config", Callback = function()
 			local name = SaveManager.Options.SaveManager_ConfigList.Value
 
-			local success, err = self:Save(name)
+			local success, err = self:Delete(name)
 			if not success then
 				return self.Library:Notify({
 					Title = "Interface",
 					Content = "Config loader",
-					SubContent = "Failed to overwrite config: " .. err,
+					SubContent = "Failed to delete config: " .. err,
 					Duration = 7
 				})
+			end
+
+			SaveManager.Options.SaveManager_ConfigList:SetValues(self:RefreshConfigList())
+			SaveManager.Options.SaveManager_ConfigList:SetValue(nil)
+
+			if AutoloadButton then
+				if isfile(`{self.Folder}/settings/autoload.txt`) then
+					local autoName = readfile(`{self.Folder}/settings/autoload.txt`)
+					AutoloadButton:SetDesc("Current autoload config: " .. autoName)
+				else
+					AutoloadButton:SetDesc("Current autoload config: none")
+				end
 			end
 
 			return self.Library:Notify({
 				Title = "Interface",
 				Content = "Config loader",
-				SubContent = string.format("Overwrote config %q", name),
+				SubContent = string.format("Deleted config %q", name),
 				Duration = 7
 			})
 		end})
@@ -363,9 +406,27 @@ local SaveManager = {} do
 			SaveManager.Options.SaveManager_ConfigList:SetValue(nil)
 		end})
 
-		local AutoloadButton
 		AutoloadButton = section:AddButton({Title = "Set as autoload", Description = "Current autoload config: none", Callback = function()
 			local name = SaveManager.Options.SaveManager_ConfigList.Value
+
+			if not name then
+				return self.Library:Notify({
+					Title = "Interface",
+					Content = "Config loader",
+					SubContent = "No config selected",
+					Duration = 7
+				})
+			end
+
+			if not isfile(`{self.Folder}/settings/{name}.json`) then
+				return self.Library:Notify({
+					Title = "Interface",
+					Content = "Config loader",
+					SubContent = string.format("Config %q no longer exists", name),
+					Duration = 7
+				})
+			end
+
 			writefile(`{self.Folder}/settings/autoload.txt`, name)
 			AutoloadButton:SetDesc("Current autoload config: " .. name)
 			self.Library:Notify({

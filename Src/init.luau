@@ -403,7 +403,7 @@ function Library:Window(Config: {
 		MinSize = Config.MinSize,
 
 		Title = Config.Title,
-		SubTitle = Config.SubTitle or "Made with Fluent Renewed",
+		SubTitle = Config.SubTitle or "Made with Fluent Renewed Plus",
 
 		TabWidth = Config.TabWidth or 160,
 		Mobile = Config.Mobile or {

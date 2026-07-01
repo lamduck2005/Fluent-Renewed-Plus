@@ -38,58 +38,78 @@ Below are the available options for `Library:Window{}`:
 | `Title` | `string?` | Game name | Window title |
 | `SubTitle` | `string?` | `"Made with Fluent Renewed Plus"` | Window subtitle |
 | `TabWidth` | `number?` | `160` | Width of the tab selector |
-| `Size` | `UDim2?` | — | Window size |
+| `Size` | `UDim2?` | `UDim2.fromOffset(470, 380)` | Window size |
 | `MinSize` | `Vector2?` | `Vector2.new(470, 380)` | Minimum window size |
 | `Resize` | `boolean?` | `false` | Allow window resizing |
-| `MinimizeKey` | `Enum.KeyCode?` | `Enum.KeyCode.LeftControl` | Key to toggle minimize |
+| `MinimizeKey` | `Enum.KeyCode?` | `Enum.KeyCode.RightControl` | Key to toggle minimize |
 | `Acrylic` | `boolean?` | `false` | Enable acrylic blur effect |
 | `Theme` | `string?` | `"Vynixu"` | UI theme name |
 | `Mobile` | `table?` | — | Mobile-specific configuration |
-| `MinimizeButton` | `boolean?` | `false` | Show a persistent floating minimize button |
+| `MinimizeButton` | `boolean?` | `true` | Show a persistent floating minimize button |
 | `MinimizeButtonSize` | `number?` | `50` | Size of the minimize button in pixels |
-| `MinimizeButtonIcon` | `string?` | `"bird"` | Icon name for the minimize button (any Lucide/Phosphor icon; falls back to `"bird"` if not found) |
-| `Transparency` | `boolean?` | `true` | Enable window transparency effect |
+| `MinimizeButtonIcon` | `string?` | `"cat"` | Icon name (any Lucide/Phosphor icon) |
+| `Transparency` | `boolean?` | `false` | Enable window transparency effect |
 | `KeySystem` | `table?` | — | Key system configuration (omit to skip) |
 | `KeyFolder` | `string?` | `"FluentTemp"` | Folder to store saved keys |
 
-### 🔽 MinimizeButton
+### MinimizeButton
 
-When enabled, a small floating button is created in a separate ScreenGui that persists even when the main window is hidden. It can be clicked to toggle the window visibility, and dragged to reposition.
+A floating button persists when the window is hidden. Click to toggle, drag to reposition. Position is saved per-session.
+
+```lua
+local Window = Library:Window{
+    Title = "My Script",
+    MinimizeButton = true,          -- enabled by default
+    MinimizeButtonSize = 50,        -- optional
+    MinimizeButtonIcon = "scan-eye", -- optional, defaults to "cat"
+}
+```
+
+### Transparency
+
+Controls the background transparency (frosted glass). Enable for a glass effect, disable for fully opaque background.
 
 ```lua
 local Window = Library:Window{
     Title = "My Script",
-    MinimizeButton = true,
-    MinimizeButtonSize = 50, -- optional, defaults to 50
-    MinimizeButtonIcon = "scan-eye", -- optional, defaults to "bird"
+    Transparency = true, -- enable glass
 }
 ```
 
-The button position is saved per-session and will restore to the last position.
-
-### 🪟 Transparency
-
-Controls the background transparency (frosted glass effect) of the window. Set to `false` for a fully opaque background.
-
-```lua
--- Enable transparency (default)
-local Window = Library:Window{
-    Title = "My Script",
-    Transparency = true,
-}
-
--- Disable transparency for full opacity
-local Window = Library:Window{
-    Title = "My Script",
-    Transparency = false,
-}
-```
-
-You can also toggle it at runtime:
+Toggle at runtime:
 ```lua
 Library:ToggleTransparency(true)  -- enable
 Library:ToggleTransparency(false) -- disable
 ```
+
+## ExtraSetting Addon
+
+ExtraSetting provides common utility toggles in an "Extra" tab. Load it alongside the library:
+
+```lua
+local ExtraSetting = loadstring(game:HttpGet("https://raw.githubusercontent.com/lamduck2005/Fluent-Renewed-Plus/main/Addons/ExtraSetting.luau"))()
+ExtraSetting:SetLibrary(Library)
+ExtraSetting:SetFolder("MyScriptHub")     -- config folder, defaults to "FluentSettings"
+ExtraSetting.AutoExecuteUrl = "https://raw.githubusercontent.com/..."  -- optional
+-- ExtraSetting.Discord = "https://discord.gg/..."  -- optional
+
+ExtraSetting:BuildExtraSection(Tabs.Extra)
+```
+
+### Sections
+
+| Section | Features |
+|---------|----------|
+| **Links** | GitHub button (always), Discord button (if `Discord` is set) |
+| **Anti-AFK & Reconnect** | Prevent idle disconnect |
+| **Performance** | FPS Boost (auto 5s), Unlock FPS (999/60), FPS Overlay (top-right) |
+| **AFK Mode** | Farming mode (disables 3D), auto AFK after 10 min idle, custom info via `:SetAFKInfo()` |
+| **Auto Rejoin & Exec** | Rejoin on disconnect, auto-execute on teleport |
+
+### Methods
+
+- `:SetAFKInfo(name, callback)` — add a line to AFK info display
+- `:RemoveAFKInfo(name)` — remove a previously added info line
 
 ## 🔑 Key System
 
@@ -184,31 +204,16 @@ local Window = Library:Window{
 
 ### SaveKey & KeyFolder
 
-When `SaveKey = true`, the validated key is written to `{KeyFolder}/{UserId}.key` so the user skips the dialog on next launch.
-
-If multiple scripts share the same `KeyFolder` and UserId, **keys will overwrite each other**. To prevent this, set a unique `KeyFolder` per script:
+When `SaveKey = true`, the validated key is written to `{KeyFolder}/{UserId}.key`. Default folder is `FluentTemp`. Use unique `KeyFolder` per script to avoid key collisions:
 
 ```lua
--- Script A
 local Window = Library:Window{
-    Title = "Script A",
-    KeyFolder = "ScriptA_Keys",
+    Title = "My Script",
+    KeyFolder = "MyScript_Keys",
     KeySystem = {
         SaveKey = true,
         Key = "password123",
     },
 }
-
--- Script B
-local Window = Library:Window{
-    Title = "Script B",
-    KeyFolder = "ScriptB_Keys",
-    KeySystem = {
-        SaveKey = true,
-        KeyValidator = function(k) return k == "abc" end,
-    },
-}
 ```
-
-> **Default folder**: If `KeyFolder` is not set, keys are stored under `FluentTemp/`.
 
