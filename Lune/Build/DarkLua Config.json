@@ -4,6 +4,7 @@
 		"column_span": 9999999999
 	},
 "rules": [
+    "compute_expression",
     "filter_after_early_return",
 		"group_local_assignment",
 		"remove_comments",
@@ -19,7 +20,7 @@
 		"remove_unused_while",
 		{
 			"rule": "rename_variables",
-			"include_functions": false,
+			"include_functions": true,
 			"globals": [
 				"$default",
 				"$roblox",
