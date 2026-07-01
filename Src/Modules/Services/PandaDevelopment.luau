@@ -36,7 +36,7 @@ function PandaDevelopment.New(serviceId: string)
 
 		local success, response = pcall(function()
 			return fRequest({
-				Url = "https://new.pandadevelopment.net/api/v1/keys/validate",
+				Url = "https://api.pandauth.com/api/v1/keys/validate",
 				Method = "POST",
 				Headers = {
 					["User-Agent"] = "Roblox/Exploit",
