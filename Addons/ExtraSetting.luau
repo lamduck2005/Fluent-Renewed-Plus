@@ -11,7 +11,6 @@ local userInputService = game:GetService("UserInputService")
 local ExtraSetting = {} do
 	ExtraSetting.Folder = "FluentSettings"
 	ExtraSetting.Library = nil
-	ExtraSetting.Window = nil
 	ExtraSetting.Discord = nil
 	ExtraSetting.AutoExecuteUrl = nil
 
@@ -250,7 +249,6 @@ local ExtraSetting = {} do
 					)
 				end
 
-				pcall(function() collectgarbage("collect") end)
 				task.wait(1)
 			end
 		end)
@@ -367,10 +365,6 @@ local ExtraSetting = {} do
 		q(code)
 	end
 
-	function ExtraSetting:SetWindow(win)
-		self.Window = win
-	end
-
 	function ExtraSetting:SetLibrary(lib)
 		self.Library = lib
 		function lib:Rejoin()
@@ -438,19 +432,35 @@ local ExtraSetting = {} do
 		local lib = self.Library
 		local cfg = self.SavedConfig
 
-		if self.Discord then
-			local section = tab:AddSection("Discord")
+		do
+			local section = tab:AddSection("Links")
+
 			section:AddButton({
-				Title = "Join Discord",
+				Title = "Fluent Renewed Plus",
+				Description = "Lamduck2005 > Fluent-Renewed-Plus",
 				Callback = function()
-					local ok = pcall(function() setclipboard(self.Discord) end)
+					local ok = pcall(function() setclipboard("https://github.com/lamduck2005/Fluent-Renewed-Plus") end)
 					lib:Notify({
-						Title = "Discord",
+						Title = "Links",
 						Content = ok and "Link copied to clipboard!" or "Clipboard not available",
 						Duration = 3,
 					})
 				end,
 			})
+
+			if self.Discord then
+				section:AddButton({
+					Title = "Join Discord",
+					Callback = function()
+						local ok = pcall(function() setclipboard(self.Discord) end)
+						lib:Notify({
+							Title = "Discord",
+							Content = ok and "Link copied to clipboard!" or "Clipboard not available",
+							Duration = 3,
+						})
+					end,
+				})
+			end
 		end
 
 		do
@@ -575,7 +585,7 @@ local ExtraSetting = {} do
 		end
 
 		do
-			local section = tab:AddSection("Auto Rejoin - Exectute")
+			local section = tab:AddSection("Auto Rejoin - Execute")
 
 			section:AddInput("ExtraSetting_AutoRejoinTime", {
 				Title = "Auto Rejoin Time",

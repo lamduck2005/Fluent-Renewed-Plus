@@ -329,8 +329,7 @@ InterfaceManager:SetFolder("FluentScriptHub")
 SaveManager:SetFolder("FluentScriptHub/specific-game")
 ExtraSetting:SetFolder("FluentScriptHub")
 
--- ExtraSetting:SetWindow(Window)
-ExtraSetting.Discord = "https://discord.gg/N3uxkAHYtM"
+-- ExtraSetting.Discord = "https://discord.gg/N3uxkAHYtM"
 ExtraSetting.AutoExecuteUrl = "https://raw.githubusercontent.com/DarkNetworks/Infinite-Yield/main/latest.lua"
 
 InterfaceManager:BuildInterfaceSection(Tabs.Settings)
