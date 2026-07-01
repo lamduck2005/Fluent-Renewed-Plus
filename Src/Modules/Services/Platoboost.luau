@@ -34,7 +34,7 @@ function Platoboost.New(serviceId: string, secret: string)
 	local useNonce = true
 	local requestSending = false
 	local cachedLink, cachedTime = "", 0
-	local host = "https://api.platoboost.com"
+	local host = "https://api.platoboost.app"
 	local initialized = false
 
 	local function generateNonce()
