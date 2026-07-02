@@ -20,24 +20,19 @@ function KeySystem.Show(Config, Library, Callback)
 	local PaddingX = ThumbnailWidth + 20
 	local TotalWidth = 400 + ThumbnailWidth
 
-	local TintFrame = New("TextButton", {
-		Text = "",
-		Size = UDim2.fromScale(1, 1),
-		BackgroundColor3 = Color3.fromRGB(0, 0, 0),
-		BackgroundTransparency = 1,
-		ZIndex = 10,
-		Parent = BaseContainer,
-	})
-
-	local TintMotor, TintTransparency = Creator.SpringMotor(1, TintFrame, "BackgroundTransparency", true)
+	local HasNote = Config.Note and Config.Note ~= ""
+	local NoteHeight = 36                -- room for ~4 lines at TextSize 13
+	local InputY = HasNote and (48 + NoteHeight + 10) or 60
+	local RootHeight = InputY + 36 + 16 + 50 -- InputFrame bottom + tight gap + button row reserve
 
 	local RootFrame = New("CanvasGroup", {
-		Size = UDim2.fromOffset(TotalWidth, 240),
+		Active = true,
+		Size = UDim2.fromOffset(TotalWidth, RootHeight),
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.fromScale(0.5, 0.5),
 		GroupTransparency = 1,
 		ZIndex = 11,
-		Parent = TintFrame,
+		Parent = BaseContainer,
 		ThemeTag = { BackgroundColor3 = "Dialog" },
 	}, {
 		New("UICorner", { CornerRadius = UDim.new(0, 8) }),
@@ -52,10 +47,9 @@ function KeySystem.Show(Config, Library, Callback)
 	local function close()
 		if isClosing then return end
 		isClosing = true
-		TintTransparency(1)
 		RootTransparency(1)
 		task.delay(0.2, function()
-			TintFrame:Destroy()
+			RootFrame:Destroy()
 		end)
 	end
 
@@ -99,9 +93,9 @@ function KeySystem.Show(Config, Library, Callback)
 			Text = Config.Note,
 			TextSize = 13,
 			TextXAlignment = Enum.TextXAlignment.Left,
+			TextYAlignment = Top,
 			TextWrapped = true,
-			Size = UDim2.new(1, -PaddingX - 20, 0, 0),
-			AutomaticSize = Enum.AutomaticSize.Y,
+			Size = UDim2.new(1, -PaddingX - 20, 0, NoteHeight),
 			Position = UDim2.fromOffset(PaddingX, 48),
 			BackgroundTransparency = 1,
 			Parent = RootFrame,
@@ -109,7 +103,6 @@ function KeySystem.Show(Config, Library, Callback)
 		})
 	end
 
-	local InputY = Config.Note and Config.Note ~= "" and 80 or 60
 	local InputFrame = New("Frame", {
 		Size = UDim2.new(1, -PaddingX - 20, 0, 36),
 		Position = UDim2.fromOffset(PaddingX, InputY),
@@ -301,11 +294,12 @@ function KeySystem.Show(Config, Library, Callback)
 
 			local DropdownFrame = New("Frame", {
 				Size = UDim2.fromOffset(DropdownWidth, 0),
-				Position = UDim2.new(0, PaddingX, 1, -86),
+				AnchorPoint = Vector2.new(1, 1),
+				Position = UDim2.new(1, 0, 0, -4),
 				BackgroundTransparency = 1,
 				ClipsDescendants = true,
 				ZIndex = 12,
-				Parent = RootFrame,
+				Parent = GetKeyButton.Frame,
 			})
 
 			local DropdownInner = New("Frame", {
@@ -412,22 +406,12 @@ function KeySystem.Show(Config, Library, Callback)
 			local function toggleDropdown()
 				DropdownOpen = not DropdownOpen
 				local targetHeight = DropdownOpen and DropdownInner.AbsoluteSize.Y or 0
-				local dropY = -86
-
-				if DropdownOpen then
-					local availSpace = RootFrame.AbsoluteSize.Y - (RootFrame.AbsoluteSize.Y + dropY)
-					if targetHeight > availSpace then
-						dropY = dropY - (targetHeight - availSpace) - 4
-					end
-				end
-
 				local chevronTarget = DropdownOpen and 180 or 0
 
 				RootMotor:stop()
 				local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint)
 				game:GetService("TweenService"):Create(DropdownFrame, tweenInfo, {
 					Size = UDim2.fromOffset(DropdownWidth, targetHeight),
-					Position = UDim2.new(0, PaddingX, 1, dropY),
 				}):Play()
 
 				game:GetService("TweenService"):Create(ChevronIcon, tweenInfo, {
@@ -478,7 +462,6 @@ function KeySystem.Show(Config, Library, Callback)
 		end
 	end
 
-	TintTransparency(0.75)
 	RootTransparency(0)
 end
 

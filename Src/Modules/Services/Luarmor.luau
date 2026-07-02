@@ -4,6 +4,7 @@ local Luarmor = {}
 
 function Luarmor.New(scriptId: string, discord: string?)
 	local fSetClipboard = setclipboard or toclipboard
+	local fRequest = request or http_request or syn_request
 
 	local APIURL = "https://sdkapi-public.luarmor.net/library.lua"
 
