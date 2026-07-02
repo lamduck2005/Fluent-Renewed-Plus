@@ -19,17 +19,6 @@ local Platoboost = {}
 
 function Platoboost.New(serviceId: string, secret: string)
 
-	if not fRequest then
-		return {
-			Unavailable = true,
-			Verify = function()
-				return false, "HTTP unavailable in this environment"
-			end,
-			Copy = function() end,
-			GetFlag = function() return nil end,
-		}
-	end
-
 	local service = serviceId
 	local useNonce = true
 	local requestSending = false

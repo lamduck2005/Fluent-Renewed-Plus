@@ -15,15 +15,6 @@ end
 local PandaDevelopment = {}
 
 function PandaDevelopment.New(serviceId: string)
-	if not fRequest then
-		return {
-			Unavailable = true,
-			Verify = function()
-				return false, "HTTP unavailable in this environment"
-			end,
-			Copy = function() return false end,
-		}
-	end
 
 	local hwid = tostring(fGetHwid())
 

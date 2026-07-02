@@ -37,21 +37,21 @@ local Window = Library:Window{
 	-- },
 
 	-- Mode 3: API services (comment Mode 1 above, uncomment this + fill your credentials)
-	-- KeySystem = {
-	-- 	Title = "Fluent Renewed",
-	-- 	Note = "24 hour key, access all scripts!",
-	-- 	SaveKey = true,
-	-- 	-- Thumbnail = {
-	-- 	-- 	Image = "rbxassetid://8992230677",
-	-- 	-- 	Title = "Premium",
-	-- 	-- },
-	-- 	API = {
-	-- 		{ Type = "platoboost", ServiceId = "your-service-id", Secret = "your-secret" },
-	-- 		{ Type = "pandadevelopment", ServiceId = "your-service-id" },
-	-- 		{ Type = "luarmor", ScriptId = "your-script-id", Discord = "discord.gg/..." },
-	-- 		{ Type = "junkiedevelopment", ServiceId = "your-service-id", ApiKey = "your-api-key", Provider = "your-provider" },
-	-- 	},
-	-- },
+	KeySystem = {
+		Title = "Fluent Renewed Plus",
+		Note = "24 hour key, access all scripts!",
+		SaveKey = true,
+		Thumbnail = {
+			Image = "rbxassetid://8992230677",
+			Title = "Premium",
+		},
+		API = {
+			{ Type = "platoboost", ServiceId = "your-service-id", Secret = "your-secret" },
+			{ Type = "pandadevelopment", ServiceId = "your-service-id" },
+			{ Type = "luarmor", ScriptId = "your-script-id", Discord = "discord.gg/..." },
+			{ Type = "junkiedevelopment", ServiceId = "your-service-id", ApiKey = "your-api-key", Provider = "your-provider" },
+		},
+	},
 }
 
 local Tabs = {

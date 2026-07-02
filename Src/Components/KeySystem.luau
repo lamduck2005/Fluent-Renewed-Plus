@@ -327,6 +327,22 @@ function KeySystem.Show(Config, Library, Callback)
 				}),
 			})
 
+			local function toggleDropdown()
+				DropdownOpen = not DropdownOpen
+				local targetHeight = DropdownOpen and DropdownInner.AbsoluteSize.Y or 0
+				local chevronTarget = DropdownOpen and 180 or 0
+
+				RootMotor:stop()
+				local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint)
+				game:GetService("TweenService"):Create(DropdownFrame, tweenInfo, {
+					Size = UDim2.fromOffset(DropdownWidth, targetHeight),
+				}):Play()
+
+				game:GetService("TweenService"):Create(ChevronIcon, tweenInfo, {
+					Rotation = chevronTarget,
+				}):Play()
+			end
+
 			for _, item in next, serviceList do
 				local ItemBtn = New("TextButton", {
 					Text = "",
@@ -400,23 +416,8 @@ function KeySystem.Show(Config, Library, Callback)
 						Content = content,
 						Duration = 3,
 					})
+					toggleDropdown()
 				end)
-			end
-
-			local function toggleDropdown()
-				DropdownOpen = not DropdownOpen
-				local targetHeight = DropdownOpen and DropdownInner.AbsoluteSize.Y or 0
-				local chevronTarget = DropdownOpen and 180 or 0
-
-				RootMotor:stop()
-				local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint)
-				game:GetService("TweenService"):Create(DropdownFrame, tweenInfo, {
-					Size = UDim2.fromOffset(DropdownWidth, targetHeight),
-				}):Play()
-
-				game:GetService("TweenService"):Create(ChevronIcon, tweenInfo, {
-					Rotation = chevronTarget,
-				}):Play()
 			end
 
 			Creator.AddSignal(GetKeyButton.Frame.MouseButton1Click, toggleDropdown)
