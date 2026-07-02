@@ -43,7 +43,7 @@ return function(Config)
 	local Dragging, DragInput, MousePos, StartPos = false
 	local Resizing, ResizePos = false
 	local MinimizeNotif = false
-	local IsDraggingHideButton, DragInputHideButton, DragStart, DragStartPos = false
+	local IsDraggingHideButton, DragInputHideButton, DragStart, DragStartPos, HideButtonDragDistance = false
 
 	Window.AcrylicPaint = Acrylic.AcrylicPaint()
 	Window.TabWidth = Config.TabWidth
@@ -140,16 +140,47 @@ return function(Config)
 		ResizeStartFrame,
 	})
 
-	Window.HideButton = New("ImageButton", {
-		Visible = Library.Utilities:GetOS() == "Mobile",
-		Size = Config.Mobile.Size,
-		BackgroundTransparency = 1,
-		Position = UDim2.new(1, -Config.Mobile.Size.X.Offset - 25, 0.5, -Config.Mobile.Size.Y.Offset / 2),
-		Parent = Config.Parent,
-		Image = Config.Mobile.GetIcon(false).Image,
-		ImageRectOffset = Config.Mobile.GetIcon(false).ImageRectOffset,
-		ImageRectSize = Config.Mobile.GetIcon(false).ImageRectSize
-	})
+	do
+		local hideButtonAuto = Config.HideButton == nil
+		local hideButtonEnabled = Config.HideButton ~= false
+
+		if hideButtonEnabled then
+			Window.HideButton = New("ImageButton", {
+				Visible = if hideButtonAuto then Library.Utilities:GetOS() == "Mobile" else true,
+				Size = Config.Mobile.Size,
+				BackgroundColor3 = Color3.new(0, 0, 0),
+				BackgroundTransparency = 0.2,
+				Position = UDim2.new(0, 25, 0.2, -Config.Mobile.Size.Y.Offset / 2),
+				Parent = Config.Parent,
+			}, {
+				New("UICorner", { CornerRadius = UDim.new(0, 8) }),
+				New("UIStroke", { Thickness = 1.8, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }),
+				New("ImageLabel", {
+					Name = "Icon",
+					Size = UDim2.fromScale(0.64, 0.64),
+					Position = UDim2.fromScale(0.18, 0.18),
+					BackgroundTransparency = 1,
+					Image = Config.Mobile.GetIcon(false).Image,
+					ImageRectOffset = Config.Mobile.GetIcon(false).ImageRectOffset,
+					ImageRectSize = Config.Mobile.GetIcon(false).ImageRectSize,
+					ScaleType = Enum.ScaleType.Fit,
+				}),
+			})
+
+			local iconLabel = Window.HideButton:FindFirstChild("Icon")
+			if iconLabel then
+				Creator.AddThemeObject(iconLabel, {
+					ImageColor3 = "Accent",
+				})
+			end
+			local stroke = Window.HideButton:FindFirstChildOfClass("UIStroke")
+			if stroke then
+				Creator.AddThemeObject(stroke, {
+					Color = "Accent",
+				})
+			end
+		end
+	end
 
 	Window.TitleBar = require(script.Parent.TitleBar)({
 		Title = Config.Title,
@@ -346,11 +377,14 @@ return function(Config)
 				Duration = 6
 			})
 		end
-		if Library.Utilities:GetOS() == "Mobile" then
-			local Icon = Config.Mobile.GetIcon(Window.Minimized)
-			Window.HideButton.Image = Icon.Image
-			Window.HideButton.ImageRectOffset = Icon.ImageRectOffset
-			Window.HideButton.ImageRectSize = Icon.ImageRectSiz
+		if Window.HideButton then
+			local IconData = Config.Mobile.GetIcon(Window.Minimized)
+			local icon = Window.HideButton:FindFirstChild("Icon")
+			if icon then
+				icon.Image = IconData.Image
+				icon.ImageRectOffset = IconData.ImageRectOffset
+				icon.ImageRectSize = IconData.ImageRectSize
+			end
 		end
 		Window.PostMinimized:Fire(tick(), Window.Root.Visible)
 	end
@@ -369,247 +403,42 @@ return function(Config)
 		end
 	end)
 
-	Creator.AddSignal(Window.HideButton.InputBegan, function(Input)
-		if
-			Input.UserInputType == Enum.UserInputType.MouseButton1
-			or Input.UserInputType == Enum.UserInputType.Touch
-		then
-			IsDraggingHideButton = true
-			DragStart = Input.Position
-			DragStartPos = Window.HideButton.Position
-
-			Input.Changed:Connect(function()
-				if Input.UserInputState == Enum.UserInputState.End then
-					IsDraggingHideButton = false
-				end
-			end)
-		end
-	end)
-
-	Creator.AddSignal(Window.HideButton.InputChanged, function(Input)
-		if
-			Input.UserInputType == Enum.UserInputType.MouseMovement
-			or Input.UserInputType == Enum.UserInputType.Touch
-		then
-			DragInputHideButton = Input
-		end
-	end)
-
-	Creator.AddSignal(UserInputService.InputChanged, function(Input)
-		if Input == DragInputHideButton and IsDraggingHideButton then
-		        local delta = Input.Position - DragStart
-			Window.HideButton.Position = UDim2.new(DragStartPos.X.Scale, DragStartPos.X.Offset + delta.X, DragStartPos.Y.Scale, DragStartPos.Y.Offset + delta.Y)
-		end
-	end)
-
-	if Library.Utilities:GetOS() == "Mobile" then
-		Creator.AddSignal(Window.HideButton.TouchTap, function()
-			Window.Minimized = not Window.Minimized
-       			Window.Root.Visible = not Window.Minimized
-			local Icon = Config.Mobile.GetIcon(Window.Minimized)
-			Window.HideButton.Image = Icon.Image
-			Window.HideButton.ImageRectOffset = Icon.ImageRectOffset
-			Window.HideButton.ImageRectSize = Icon.ImageRectSize
-		end)
-	else
-		Creator.AddSignal(Window.HideButton.MouseButton1Click, function()
-			Window.Minimized = not Window.Minimized
-       			Window.Root.Visible = not Window.Minimized
-		end)	
-	end
-
-	----------------------------------------------------------------
-	-- MINIMIZE BUTTON
-	----------------------------------------------------------------
-	if Config.MinimizeButton then
-		local RunService = game:GetService("RunService")
-		local LocalPlayer = game:GetService("Players").LocalPlayer
-
-		local MINIMIZE_GUI_NAME = "FluentMinimizeGUI"
-		local MINIMIZE_BUTTON_NAME = "FluentMinBtn"
-		local MinButtonSize = if typeof(Config.MinimizeButtonSize) == "number" then Config.MinimizeButtonSize else 50
-
-		local screenGui = Library.UIContainer:FindFirstChild(MINIMIZE_GUI_NAME)
-		if not screenGui then
-			screenGui = New("ScreenGui", {
-				Name = MINIMIZE_GUI_NAME,
-				ResetOnSpawn = false,
-				ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
-				DisplayOrder = 999,
-				Parent = Library.UIContainer,
-			})
-		elseif screenGui.Parent ~= Library.UIContainer then
-			screenGui.Parent = Library.UIContainer
-		end
-
-		local frame = screenGui:FindFirstChild(MINIMIZE_BUTTON_NAME)
-		if not frame then
-			local iconName = if typeof(Config.MinimizeButtonIcon) == "string" then Config.MinimizeButtonIcon else "cat"
-			local iconData = Library.Utilities:GetIcon(iconName) or Library.Utilities:GetIcon("cat")
-			local ICON_PADDING = 0.18
-			frame = New("ImageButton", {
-				Name = MINIMIZE_BUTTON_NAME,
-				Size = UDim2.new(0, MinButtonSize, 0, MinButtonSize),
-				BackgroundColor3 = Color3.new(0, 0, 0),
-				BackgroundTransparency = 0.2,
-				Parent = screenGui,
-			}, {
-				New("UICorner", {
-					CornerRadius = UDim.new(0, 8),
-				}),
-				New("UIStroke", {
-					Thickness = 1.8,
-					ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-				}),
-				New("ImageLabel", {
-					Name = "Icon",
-					Size = UDim2.fromScale(1 - ICON_PADDING * 2, 1 - ICON_PADDING * 2),
-					Position = UDim2.fromScale(ICON_PADDING, ICON_PADDING),
-					BackgroundTransparency = 1,
-					Image = iconData.Image,
-					ImageRectSize = iconData.ImageRectSize,
-					ImageRectOffset = iconData.ImageRectOffset,
-					ScaleType = Enum.ScaleType.Fit,
-				}),
-			})
-		end
-
-		local iconLabel = frame:FindFirstChild("Icon")
-		if iconLabel then
-			Creator.AddThemeObject(iconLabel, {
-				ImageColor3 = "Accent",
-			})
-		end
-
-		local framePosition = UDim2.new(0, 100, 0, 100)
-		local SharedTable = Library.Utilities.Shared
-		if SharedTable.FluentMFP then
-			framePosition = SharedTable.FluentMFP
-		end
-		frame.Position = framePosition
-
-		Window.MinimizeGui = screenGui
-
-		local cachedStroke = frame:FindFirstChildOfClass("UIStroke")
-		local cachedIcon = frame:FindFirstChild("Icon")
-		local function getAccent()
-			return Creator.GetThemeProperty("Accent")
-		end
-
-		Creator.AddThemeObject(cachedStroke, {
-			Color = function(GetTheme)
-				if not Window._minBtnHovering and not Window._minBtnDragging then
-					cachedStroke.Color = GetTheme("Accent")
-				end
-			end,
-		})
-
-		local dragging = false
-		local isHovering = false
-		local dragStart: Vector2?
-		local startPos: UDim2?
-		local totalDragDistance = 0
-		local DRAG_THRESHOLD = 5
-		local LERP_SPEED = 0.5
-		local targetPosition = frame.Position
-		local renderSteppedConn = nil
-
-		Window._minBtnHovering = false
-		Window._minBtnDragging = false
-
-		Creator.AddSignal(frame.MouseEnter, function()
-			isHovering = true
-			Window._minBtnHovering = true
-			frame.BackgroundTransparency = 0
-			if cachedIcon then cachedIcon.ImageColor3 = Color3.new(1, 1, 1) end
-			if cachedStroke then cachedStroke.Color = Color3.new(1, 1, 1) end
-		end)
-
-		Creator.AddSignal(frame.MouseLeave, function()
-			isHovering = false
-			Window._minBtnHovering = false
-			if not dragging then
-				frame.BackgroundTransparency = 0.2
-				if cachedIcon then cachedIcon.ImageColor3 = getAccent() end
-				if cachedStroke then cachedStroke.Color = getAccent() end
+	if Window.HideButton then
+		Creator.AddSignal(Window.HideButton.InputBegan, function(Input)
+			if
+				Input.UserInputType == Enum.UserInputType.MouseButton1
+				or Input.UserInputType == Enum.UserInputType.Touch
+			then
+				IsDraggingHideButton = true
+				DragStart = Input.Position
+				DragStartPos = Window.HideButton.Position
+				HideButtonDragDistance = 0
 			end
 		end)
 
-		Creator.AddSignal(frame.InputBegan, function(input)
-			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-				dragging = true
-				Window._minBtnDragging = true
-				dragStart = Vector2.new(input.Position.X, input.Position.Y)
-				startPos = frame.Position
-				totalDragDistance = 0
-				if not renderSteppedConn then
-					renderSteppedConn = RunService.RenderStepped:Connect(function()
-						if dragging then
-							local currentPos = frame.Position
-							local newX = currentPos.X.Offset + (targetPosition.X.Offset - currentPos.X.Offset) * LERP_SPEED
-							local newY = currentPos.Y.Offset + (targetPosition.Y.Offset - currentPos.Y.Offset) * LERP_SPEED
-							frame.Position = UDim2.new(targetPosition.X.Scale, newX, targetPosition.Y.Scale, newY)
-						end
-					end)
+		Creator.AddSignal(Window.HideButton.InputChanged, function(Input)
+			if
+				Input.UserInputType == Enum.UserInputType.MouseMovement
+				or Input.UserInputType == Enum.UserInputType.Touch
+			then
+				DragInputHideButton = Input
+			end
+		end)
+
+		Creator.AddSignal(UserInputService.InputChanged, function(Input)
+			if Input == DragInputHideButton and IsDraggingHideButton then
+				local delta = Input.Position - DragStart
+				HideButtonDragDistance = delta.Magnitude
+				Window.HideButton.Position = UDim2.new(DragStartPos.X.Scale, DragStartPos.X.Offset + delta.X, DragStartPos.Y.Scale, DragStartPos.Y.Offset + delta.Y)
+			end
+		end)
+
+		Creator.AddSignal(UserInputService.InputEnded, function(Input)
+			if (Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch) and IsDraggingHideButton then
+				IsDraggingHideButton = false
+				if HideButtonDragDistance < 5 then
+					Window:Minimize()
 				end
-				frame.BackgroundTransparency = 0
-				if cachedIcon then cachedIcon.ImageColor3 = Color3.new(1, 1, 1) end
-				if cachedStroke then cachedStroke.Color = Color3.new(1, 1, 1) end
-			end
-		end)
-
-		Creator.AddSignal(UserInputService.InputChanged, function(input)
-			if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-				local currentPos = Vector2.new(input.Position.X, input.Position.Y)
-				local delta = currentPos - (dragStart or Vector2.new(0, 0))
-				totalDragDistance = delta.Magnitude
-
-				targetPosition = UDim2.new(
-					(startPos or UDim2.new(0, 0)).X.Scale,
-					(startPos or UDim2.new(0, 0)).X.Offset + delta.X,
-					(startPos or UDim2.new(0, 0)).Y.Scale,
-					(startPos or UDim2.new(0, 0)).Y.Offset + delta.Y
-				)
-			end
-		end)
-
-		Creator.AddSignal(UserInputService.InputEnded, function(input)
-			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-				if dragging then
-					dragging = false
-					Window._minBtnDragging = false
-
-					if renderSteppedConn then
-						renderSteppedConn:Disconnect()
-						renderSteppedConn = nil
-					end
-
-					if totalDragDistance < DRAG_THRESHOLD then
-						Window:Minimize()
-					end
-
-					local vpSize = Camera.ViewportSize
-					local clampedX = math.clamp(targetPosition.X.Offset, 0, vpSize.X - MinButtonSize)
-					local clampedY = math.clamp(targetPosition.Y.Offset, 0, vpSize.Y - MinButtonSize)
-					framePosition = UDim2.new(0, clampedX, 0, clampedY)
-
-					SharedTable.FluentMFP = framePosition
-					frame.Position = framePosition
-					frame.BackgroundTransparency = isHovering and 0 or 0.2
-					if isHovering then
-						if cachedIcon then cachedIcon.ImageColor3 = Color3.new(1, 1, 1) end
-						if cachedStroke then cachedStroke.Color = Color3.new(1, 1, 1) end
-					else
-						if cachedIcon then cachedIcon.ImageColor3 = getAccent() end
-						if cachedStroke then cachedStroke.Color = getAccent() end
-					end
-				end
-			end
-		end)
-
-		Creator.AddSignal(frame.AncestryChanged, function()
-			if not frame:IsDescendantOf(game) then
-				Window.MinimizeGui = nil
 			end
 		end)
 	end
@@ -617,9 +446,6 @@ return function(Config)
 	function Window:Destroy()
 		if Library.UseAcrylic then
 			Window.AcrylicPaint.Model:Destroy()
-		end
-		if Window.MinimizeGui then
-			Window.MinimizeGui:Destroy()
 		end
 		Window.Root:Destroy()
 	end

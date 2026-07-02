@@ -262,9 +262,7 @@ function Library:Window(Config: {
 			GetIcon: (IsMinimized: boolean) -> { Image: string, ImageRectOffset: Vector2, ImageRectSize: Vector2 },
 			Size: UDim2
 		}?,
-		MinimizeButton: boolean?,
-		MinimizeButtonSize: number?,
-		MinimizeButtonIcon: string?,
+		HideButton: boolean?,
 		Transparency: boolean?,
 		Folder: string?,
 		KeySystem: {
@@ -416,9 +414,7 @@ function Library:Window(Config: {
 			end,
 			Size = UDim2.fromOffset(30, 30)
 		},
-		MinimizeButton = if typeof(Config.MinimizeButton) == "boolean" then Config.MinimizeButton else true,
-		MinimizeButtonSize = Config.MinimizeButtonSize,
-		MinimizeButtonIcon = Config.MinimizeButtonIcon
+		HideButton = Config.HideButton,
 	}
 
 	BaseContainer.Name = `FluentRenewed_{Config.Title}`
@@ -458,10 +454,6 @@ function Library:Destroy()
 		end
 
 		Creator.Disconnect()
-
-		if Library.CreatedWindow.MinimizeGui then
-			Library.CreatedWindow.MinimizeGui:Destroy()
-		end
 
 		for i,v in next, Library.Connections do
 			local type = typeof(v)

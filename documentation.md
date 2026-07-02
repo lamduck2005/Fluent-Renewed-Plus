@@ -113,9 +113,7 @@ local Window = Fluent:CreateWindow(Config)
 | Acrylic | boolean? | false | Enable acrylic blur effect (DepthOfField) |
 | Theme | string? | "Vynixu" | Initial theme name |
 | Mobile | table? | -- | Mobile-specific configuration |
-| MinimizeButton | boolean? | true | Show floating minimize button |
-| MinimizeButtonSize | number? | 50 | Size of the floating button |
-| MinimizeButtonIcon | string? | "cat" | Icon name for the floating button |
+| HideButton | boolean? | nil | Show hide button. `nil` = auto (mobile only), `true` = always, `false` = hidden |
 | Transparency | boolean? | false | Enable glass transparency effect |
 | KeySystem | table? | -- | Key system config (omit to skip) |
 | KeyFolder | string? | "FluentTemp" | Folder for saved key files |
@@ -1027,20 +1025,24 @@ Fluent:ToggleAcrylic(true)    -- Enable
 Fluent:ToggleAcrylic(false)   -- Disable
 ```
 
-## Minimize Button
+## Hide Button
 
-The floating minimize button persists outside the window and is draggable.
+A floating toggle button that shows/hides the window. On mobile it appears automatically by default.
+
+| Value | Behaviour |
+|---|---|
+| `nil` (default) | **Auto** — only visible on mobile, uses eye/eye-slash icons |
+| `true` | Always visible |
+| `false` | Hidden entirely |
 
 ```lua
--- Configure in Window config:
+-- Enable always-visible hide button:
 Fluent:CreateWindow({
-    MinimizeButton = true,         -- show button
-    MinimizeButtonSize = 50,       -- button size
-    MinimizeButtonIcon = "cat"     -- icon name
+    HideButton = true
 })
 ```
 
-The button position is saved to `SharedTable.FluentMFP` for persistence per session.
+Uses `Mobile.Size` and `Mobile.GetIcon` for sizing and icons. Draggable.
 
 ## Window Resize
 
@@ -1153,8 +1155,7 @@ local Window = Fluent:CreateWindow({
     Acrylic = true,
     Theme = "Vynixu",
     MinimizeKey = Enum.KeyCode.RightControl,
-    MinimizeButton = true,
-    MinimizeButtonIcon = "cat",
+    HideButton = true,
     Transparency = false
 })
 

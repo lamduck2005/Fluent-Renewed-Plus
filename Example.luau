@@ -12,8 +12,7 @@ local Window = Library:Window{
 	Acrylic = true,
 	Theme = "Vynixu",
 	MinimizeKey = Enum.KeyCode.RightControl,
-	MinimizeButton = true,
-	MinimizeButtonIcon = "bone",
+	HideButton = true,
 	Transparency = false,
 
 	-- Key system (active: Mode 1 - static key. Password: "fluent")
