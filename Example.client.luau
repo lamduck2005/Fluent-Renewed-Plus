@@ -4,7 +4,7 @@ local Window = Library:Window{
 	Title = `Fluent Renewed Plus {Library.Version}`,
 	SubTitle = "by Lamduck2005",
 	TabWidth = 160,
-	Size = UDim2.fromOffset(830, 525),
+	Size = UDim2.fromOffset(1200, 600),
 	Resize = true,
 	Acrylic = true,
 	Theme = "Vynixu",
@@ -628,3 +628,5 @@ BenchSection:Button({
 		print(string.format("[Stress] Mem: %.1f KB | FPS: %d", mem, currentFps))
 	end,
 })
+
+print(Library.Utilities:GetOS())
