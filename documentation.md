@@ -562,6 +562,8 @@ local Input = Tabs.Main:AddInput("MyInput", {
 | Default | string? | "" | Initial text |
 | Placeholder | string? | "" | Placeholder text |
 | Numeric | boolean? | false | Only allow numeric input |
+| Min | number? | -- | Minimum value (only when Numeric is true) |
+| Max | number? | -- | Maximum value (only when Numeric is true) |
 | Finished | boolean? | false | Only fire callback on Enter press |
 | MaxLength | number? | -- | Maximum character count |
 | ClearOnFocusLost | boolean? | false | Clear text on focus lost (only when Finished is true) |

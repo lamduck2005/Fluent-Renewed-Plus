@@ -17,6 +17,8 @@ function Element:New(Idx, Config)
 		Value = Config.Default or Config.Value or "",
 		Numeric = Config.Numeric or false,
 		Finished = Config.Finished or false,
+		Min = Config.Min,
+		Max = Config.Max,
 		Callback = Config.Callback or function(Value) end,
 		ClearOnFocusLost = Config.ClearOnFocusLost or false,
 		Type = "Input",
@@ -36,7 +38,7 @@ function Element:New(Idx, Config)
 
 	local Box = Textbox.Input
 
-	function Input:SetValue(Text)
+	function Input:SetValue(Text, FinalCheck)
 		if Config.MaxLength and #Text > Config.MaxLength then
 			Text = Text:sub(1, Config.MaxLength)
 		end
@@ -44,6 +46,21 @@ function Element:New(Idx, Config)
 		if Input.Numeric then
 			if (not tonumber(Text)) and Text:len() > 0 then
 				Text = Input.Value
+			end
+
+			if FinalCheck then
+				local num = tonumber(Text)
+				if not num then
+					Text = tostring(Config.Default or Input.Min or "")
+					num = tonumber(Text)
+				end
+				if num then
+					if Input.Min and num < Input.Min then
+						Text = tostring(Input.Min)
+					elseif Input.Max and num > Input.Max then
+						Text = tostring(Input.Max)
+					end
+				end
 			end
 		end
 
@@ -64,7 +81,7 @@ function Element:New(Idx, Config)
 				return
 			end
 
-			Input:SetValue(Box.Text)
+			Input:SetValue(Box.Text, true)
 
 			if Config.ClearOnFocusLost then
 				Box.Text = ""
@@ -73,6 +90,9 @@ function Element:New(Idx, Config)
 	else
 		AddSignal(Box:GetPropertyChangedSignal("Text"), function()
 			Input:SetValue(Box.Text)
+		end)
+		AddSignal(Box.FocusLost, function()
+			Input:SetValue(Box.Text, true)
 		end)
 	end
 

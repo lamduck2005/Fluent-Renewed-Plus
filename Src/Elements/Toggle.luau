@@ -15,6 +15,7 @@ function Element:New(Idx, Config)
 
 	local Toggle = {
 		Value = Config.Default or Config.Value or false,
+		Confirm = Config.Confirm,
 		Callback = Config.Callback or function(Value) end,
 		Type = "Toggle",
 	}
@@ -104,12 +105,12 @@ function Element:New(Idx, Config)
 
 	Creator.AddSignal(ToggleFrame.Frame.MouseButton1Click, function()
 		local TargetValue = not Toggle.Value
-		if Config.Confirm and TargetValue == true then
+		if Toggle.Confirm and TargetValue == true then
 			local Window = Library.CreatedWindow
 			if Window then
 				Window:Dialog({
 					Title = "Confirm",
-					Content = Config.Confirm,
+					Content = Toggle.Confirm,
 					Buttons = {
 						{
 							Title = "Yes",

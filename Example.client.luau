@@ -312,6 +312,18 @@ local InputLostFocus = Tabs.Main:Input("InputFocusLost", {
     end
 })
 
+local InputNumericMinMax = Tabs.Main:Input("InputNumericMinMax", {
+    Title = "Numeric Input (Min: 10, Max: 100)",
+    Default = "50",
+    Numeric = true,
+    Min = 10,
+    Max = 100,
+    Finished = true,
+    Callback = function(Value)
+        print("Validated Numeric Input changed:", Value)
+    end
+})
+
 Toggle:OnChanged(function()
     print("Toggle changed:", Library.Options["Toggle"].Value)
 end)

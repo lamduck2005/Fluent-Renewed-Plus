@@ -27,13 +27,15 @@ function Element:New(Config)
 
 	self.Library.Utilities.Icons:SetIcon(ButtonIco, "chevron-right")
 
+	ButtonFrame.Confirm = Config.Confirm
+
 	Creator.AddSignal(ButtonFrame.Frame.MouseButton1Click, function()
-		if Config.Confirm then
+		if ButtonFrame.Confirm then
 			local Window = self.Library.CreatedWindow
 			if Window then
 				Window:Dialog({
 					Title = "Confirm",
-					Content = Config.Confirm,
+					Content = ButtonFrame.Confirm,
 					Buttons = {
 						{
 							Title = "Yes",
