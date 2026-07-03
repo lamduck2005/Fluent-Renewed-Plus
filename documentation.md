@@ -1,4 +1,4 @@
-﻿# Fluent Renewed Plus
+# Fluent Renewed Plus
 
 Fluent Renewed Plus is a modern, customizable Roblox GUI library with an extensive range of UI elements, 61 themes, over 10,000 icons, a built-in key system, acrylic blur effects, and powerful addons for configuration management and utility features.
 
@@ -289,6 +289,7 @@ local Button = Tabs.Main:AddButton("MyButton", {
 |---|---|---|
 | Title | string | Button label |
 | Description | string? | Description text |
+| Confirm | string? | If provided, requires user confirmation via Dialog before running callback |
 | Callback | function | Fired on click |
 
 ## Toggle
@@ -315,6 +316,7 @@ local Toggle = Tabs.Main:AddToggle("MyToggle", {
 | Title | string | -- | Toggle label |
 | Description | string? | -- | Description text |
 | Default | boolean? | false | Initial state |
+| Confirm | string? | -- | If provided, requires user confirmation via Dialog before toggling to `true` |
 | Callback | function(boolean)? | -- | Fired on state change |
 
 ### Methods

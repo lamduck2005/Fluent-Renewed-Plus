@@ -103,7 +103,34 @@ function Element:New(Idx, Config)
 	end
 
 	Creator.AddSignal(ToggleFrame.Frame.MouseButton1Click, function()
-		Toggle:SetValue(not Toggle.Value)
+		local TargetValue = not Toggle.Value
+		if Config.Confirm and TargetValue == true then
+			local Window = Library.CreatedWindow
+			if Window then
+				Window:Dialog({
+					Title = "Confirm",
+					Content = Config.Confirm,
+					Buttons = {
+						{
+							Title = "Yes",
+							Callback = function()
+								Toggle:SetValue(true)
+							end
+						},
+						{
+							Title = "No",
+							Callback = function()
+								-- Do nothing
+							end
+						}
+					}
+				})
+			else
+				Toggle:SetValue(TargetValue)
+			end
+		else
+			Toggle:SetValue(TargetValue)
+		end
 	end)
 
 	Toggle.Keybind = setmetatable({}, { -- TODO: Rewrite this piece of shit

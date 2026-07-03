@@ -127,6 +127,25 @@ Tabs.Main:Button({
     end
 })
 
+Tabs.Main:Button({
+    Title = "Button with Confirmation",
+    Description = "Shows a confirmation dialog before printing",
+    Confirm = "Are you sure you want to print to console?",
+    Callback = function()
+        print("Button Callback executed after confirmation!")
+    end
+})
+
+local ToggleWithConfirm = Tabs.Main:Toggle("ToggleWithConfirm", {
+    Title = "Toggle with Confirmation",
+    Description = "Shows a confirmation dialog before enabling",
+    Confirm = "Are you sure you want to enable this toggle?",
+    Default = false,
+    Callback = function(Value)
+        print("Toggle State Changed to:", Value)
+    end
+})
+
 Tabs.Main:AddSpace({ Column = 3 })
 
 local Toggle = Tabs.Main:Toggle("Toggle", { Title = "Toggle", Default = false })

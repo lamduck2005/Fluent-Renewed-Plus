@@ -28,8 +28,38 @@ function Element:New(Config)
 	self.Library.Utilities.Icons:SetIcon(ButtonIco, "chevron-right")
 
 	Creator.AddSignal(ButtonFrame.Frame.MouseButton1Click, function()
-		if typeof(Config.Callback) == "function" then
-			self.Library:SafeCallback(Config.Callback, Config.Value)
+		if Config.Confirm then
+			local Window = self.Library.CreatedWindow
+			if Window then
+				Window:Dialog({
+					Title = "Confirm",
+					Content = Config.Confirm,
+					Buttons = {
+						{
+							Title = "Yes",
+							Callback = function()
+								if typeof(Config.Callback) == "function" then
+									self.Library:SafeCallback(Config.Callback, Config.Value)
+								end
+							end
+						},
+						{
+							Title = "No",
+							Callback = function()
+								-- Do nothing
+							end
+						}
+					}
+				})
+			else
+				if typeof(Config.Callback) == "function" then
+					self.Library:SafeCallback(Config.Callback, Config.Value)
+				end
+			end
+		else
+			if typeof(Config.Callback) == "function" then
+				self.Library:SafeCallback(Config.Callback, Config.Value)
+			end
 		end
 	end)
 
