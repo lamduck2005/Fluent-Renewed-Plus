@@ -12,7 +12,7 @@ return function(Title, Parent)
 
 	Section.Container = New("Frame", {
 		Size = UDim2.new(1, 0, 0, 26),
-		Position = UDim2.fromOffset(0, 24),
+		Position = UDim2.fromOffset(0, 40),
 		BackgroundTransparency = 1,
 	}, {
 		Section.Layout,
@@ -33,7 +33,7 @@ return function(Title, Parent)
 			TextXAlignment = "Left",
 			TextYAlignment = "Center",
 			Size = UDim2.new(1, -16, 0, 18),
-			Position = UDim2.fromOffset(0, 2),
+			Position = UDim2.fromOffset(0, 18),
 			ThemeTag = {
 				TextColor3 = "Text",
 			},
@@ -42,9 +42,9 @@ return function(Title, Parent)
 	})
 
 	Creator.AddSignal(Section.Layout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
-		if Section.Container.Size ~= UDim2.new(1, 0, 0, Section.Layout.AbsoluteContentSize.Y) or Section.Root.Size ~= UDim2.new(1, 0, 0, Section.Layout.AbsoluteContentSize.Y + 25) then
+		if Section.Container.Size ~= UDim2.new(1, 0, 0, Section.Layout.AbsoluteContentSize.Y) or Section.Root.Size ~= UDim2.new(1, 0, 0, Section.Layout.AbsoluteContentSize.Y + 41) then
 			Section.Container.Size = UDim2.new(1, 0, 0, Section.Layout.AbsoluteContentSize.Y)
-			Section.Root.Size = UDim2.new(1, 0, 0, Section.Layout.AbsoluteContentSize.Y + 25)
+			Section.Root.Size = UDim2.new(1, 0, 0, Section.Layout.AbsoluteContentSize.Y + 41)
 		end
 	end)
 
