@@ -924,7 +924,6 @@ local ExtraSetting = loadstring(game:HttpGet("https://raw.githubusercontent.com/
 ```lua
 ExtraSetting:SetLibrary(Fluent)
 ExtraSetting:SetFolder("MyScript")
-ExtraSetting:Init()
 ExtraSetting:BuildExtraSection(Tabs.Settings)
 ```
 
@@ -936,7 +935,7 @@ ExtraSetting:BuildExtraSection(Tabs.Settings)
 | SetFolder(path) | string | Set config folder |
 | SetAFKInfo(key, callback) | string, function | Add custom info to the AFK overlay |
 | RemoveAFKInfo(key) | string | Remove a custom AFK info line |
-| Init() | -- | Initialize all subsystems |
+| Init() | -- | Initialize all subsystems (called automatically by `BuildExtraSection()`) |
 | BuildExtraSection(tab) | Tab | Build the Extra tab UI |
 
 ### UI Sections
@@ -1247,8 +1246,6 @@ SaveManager:SetIgnoreIndexes({})
 InterfaceManager:BuildInterfaceSection(Tabs.Settings)
 SaveManager:BuildConfigSection(Tabs.Settings)
 ExtraSetting:BuildExtraSection(Tabs.Settings)
-
-ExtraSetting:Init()
 
 Window:SelectTab(1)
 
