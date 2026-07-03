@@ -28,7 +28,7 @@ function Element:New(Idx, Config)
 
 			return Idxes
 		end)(),
-		Value = Config.Default or Config.Value,
+		Value = (Config.Multi and (Config.Default or Config.Value or {})) or Config.Default or Config.Value,
 		Multi = Config.Multi or false,
 		AutoDeselect = Config.AutoDeselect or false,
 		Searchable = Config.Searchable or false,
@@ -510,9 +510,11 @@ function Element:New(Idx, Config)
 		if Dropdown.Multi then
 			local nTable = {}
 
-			for Value, Bool in next, Val do
-				if table.find(Dropdown.Values, Value) then
-					nTable[Value] = true
+			if Val then
+				for Value, Bool in next, Val do
+					if table.find(Dropdown.Values, Value) then
+						nTable[Value] = true
+					end
 				end
 			end
 
