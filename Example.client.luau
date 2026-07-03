@@ -1,64 +1,64 @@
 local Library = require(game:GetService("ReplicatedStorage"):WaitForChild("Fluent"):WaitForChild("MainModule"))
 
-local Window = Library:Window{
-	Title = `Fluent Renewed Plus {Library.Version}`,
-	SubTitle = "by Lamduck2005",
-	TabWidth = 160,
-	Size = UDim2.fromOffset(1200, 600),
-	Resize = true,
-	Acrylic = true,
-	Theme = "Vynixu",
-	MinimizeKey = Enum.KeyCode.P,
-	HideButton = true,
-	Transparency = false,
+local Window = Library:Window {
+    Title = `Fluent Renewed Plus {Library.Version}`,
+    SubTitle = "by Lamduck2005",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(1200, 600),
+    Resize = true,
+    Acrylic = true,
+    Theme = "Vynixu",
+    MinimizeKey = Enum.KeyCode.P,
+    HideButton = true,
+    Transparency = false,
 
-	-- Key system (active: Mode 1 - static key. Password: "fluent")
-	-- KeySystem = {
-	-- 	Title = "Fluent Renewed",
-	-- 	Note = "Enter your key to continue.",
-	-- 	SaveKey = true,
-	-- 	Key = "fluent",
-	-- 	URL = "https://github.com/lamduck2005/Fluent-Renewed-Plus",
-	-- 	Thumbnail = {
-	-- 		Image = "rbxassetid://8992230677",
-	-- 		Title = "Fluent",
-	-- 	},
-	-- },
+    -- Key system (active: Mode 1 - static key. Password: "fluent")
+    -- KeySystem = {
+    -- 	Title = "Fluent Renewed",
+    -- 	Note = "Enter your key to continue.",
+    -- 	SaveKey = true,
+    -- 	Key = "fluent",
+    -- 	URL = "https://github.com/lamduck2005/Fluent-Renewed-Plus",
+    -- 	Thumbnail = {
+    -- 		Image = "rbxassetid://8992230677",
+    -- 		Title = "Fluent",
+    -- 	},
+    -- },
 
-	-- Mode 2: Custom validator (comment Mode 1 above, uncomment this)
-	-- KeySystem = {
-	-- 	Title = "Fluent Renewed",
-	-- 	Note = "Enter the secret password.",
-	-- 	SaveKey = true,
-	-- 	KeyValidator = function(key)
-	-- 		return key == "mypassword"
-	-- 	end,
-	-- },
+    -- Mode 2: Custom validator (comment Mode 1 above, uncomment this)
+    -- KeySystem = {
+    -- 	Title = "Fluent Renewed",
+    -- 	Note = "Enter the secret password.",
+    -- 	SaveKey = true,
+    -- 	KeyValidator = function(key)
+    -- 		return key == "mypassword"
+    -- 	end,
+    -- },
 
-	-- Mode 3: API services (comment Mode 1 above, uncomment this + fill your credentials)
-	-- KeySystem = {
-	-- 	Title = "Fluent Renewed Plus",
-	-- 	Note = "24 hour key, access all scripts!",
-	-- 	SaveKey = true,
-	-- 	Thumbnail = {
-	-- 		Image = "rbxassetid://8992230677",
-	-- 		Title = "Premium",
-	-- 	},
-	-- 	API = {
-	-- 		{ Type = "platoboost", ServiceId = "your-service-id", Secret = "your-secret" },
-	-- 		{ Type = "pandadevelopment", ServiceId = "your-service-id" },
-	-- 		{ Type = "luarmor", ScriptId = "your-script-id", Discord = "discord.gg/..." },
-	-- 		{ Type = "junkiedevelopment", ServiceId = "your-service-id", ApiKey = "your-api-key", Provider = "your-provider" },
-	-- 	},
-	-- },
+    -- Mode 3: API services (comment Mode 1 above, uncomment this + fill your credentials)
+    -- KeySystem = {
+    -- 	Title = "Fluent Renewed Plus",
+    -- 	Note = "24 hour key, access all scripts!",
+    -- 	SaveKey = true,
+    -- 	Thumbnail = {
+    -- 		Image = "rbxassetid://8992230677",
+    -- 		Title = "Premium",
+    -- 	},
+    -- 	API = {
+    -- 		{ Type = "platoboost", ServiceId = "your-service-id", Secret = "your-secret" },
+    -- 		{ Type = "pandadevelopment", ServiceId = "your-service-id" },
+    -- 		{ Type = "luarmor", ScriptId = "your-script-id", Discord = "discord.gg/..." },
+    -- 		{ Type = "junkiedevelopment", ServiceId = "your-service-id", ApiKey = "your-api-key", Provider = "your-provider" },
+    -- 	},
+    -- },
 }
 
 local Tabs = {
-    Main = Window:Tab{
+    Main = Window:Tab {
         Title = "Main",
         Icon = "phosphor-users-bold"
     },
-    Settings = Window:Tab{
+    Settings = Window:Tab {
         Title = "Settings",
         Icon = "settings"
     }
@@ -97,8 +97,9 @@ Tabs.Main:Button({
                     Callback = function()
                         Window:Dialog({
                             Title = "Another Dialog",
-                            Content = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse mollis dolor eget erat mattis, id mollis mauris cursus. Proin ornare sollicitudin odio, id posuere diam luctus id.",
-                            Buttons = { { Title = "Ok", Callback = function() print("Ok") end} }
+                            Content =
+                            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse mollis dolor eget erat mattis, id mollis mauris cursus. Proin ornare sollicitudin odio, id posuere diam luctus id.",
+                            Buttons = { { Title = "Ok", Callback = function() print("Ok") end } }
                         })
                     end
                 },
@@ -122,13 +123,13 @@ Tabs.Main:Button({
     Title = "Button but with an error",
     Description = "Not a important button",
     Callback = function()
-        print("Hello, "..tonumber("World").."!")
+        print("Hello, " .. tonumber("World") .. "!")
     end
 })
 
-Tabs.Main:AddSpace({Column = 3})
+Tabs.Main:AddSpace({ Column = 3 })
 
-local Toggle = Tabs.Main:Toggle("Toggle", {Title = "Toggle", Default = false })
+local Toggle = Tabs.Main:Toggle("Toggle", { Title = "Toggle", Default = false })
 
 local Slider = Tabs.Main:Slider("Slider", {
     Title = "Slider",
@@ -147,7 +148,7 @@ print(Slider.Value)
 
 local Dropdown = Tabs.Main:Dropdown("Dropdown", {
     Title = "Dropdown",
-    Values = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen"},
+    Values = { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen" },
     Multi = false,
     Default = 1,
 })
@@ -157,16 +158,17 @@ Dropdown:SetValue("four")
 print(Dropdown.Value)
 
 Dropdown.Value = 4.5
-Dropdown.Values = {"fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty", "twentyone", "twentytwo", "twentythree", "twentyfour", "twentyfive", "twentysix", "twentyseven", "twentyeight"}
+Dropdown.Values = { "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty", "twentyone", "twentytwo",
+    "twentythree", "twentyfour", "twentyfive", "twentysix", "twentyseven", "twentyeight" }
 
 print(Dropdown.Value)
 
 local MultiDropdown = Tabs.Main:Dropdown("MultiDropdown", {
     Title = "Dropdown",
     Description = "You can select multiple values.",
-    Values = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen"},
+    Values = { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen" },
     Multi = true,
-    Default = {"seven", "twelve"},
+    Default = { "seven", "twelve" },
 })
 
 MultiDropdown:SetValue({
@@ -175,12 +177,28 @@ MultiDropdown:SetValue({
     seven = false
 })
 
+local MultiDropdown2 = Tabs.Main:Dropdown("MultiDropdown", {
+    Title = "Dropdown",
+    Description = "You can select multiple values.",
+    Values = { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen" },
+    Multi = true,
+    Searchable = true,
+    Default = { "seven", "twelve" },
+})
+
+local MultiDropdown3 = Tabs.Main:Dropdown("MultiDropdown", {
+    Title = "Empty Dropdown",
+    Values = {},
+    Multi = true,
+    Searchable = true,
+})
+
 local MultiInstanceDropdown = Tabs.Main:Dropdown("MultiInstanceDropdown", {
     Title = "Instance Dropdown",
     Description = "You can select multiple values and any instance or any other value!",
-    Values = {workspace, 5, Enum.JoinSource, Enum.MarketplaceBulkPurchasePromptStatus.Error},
+    Values = { workspace, 5, Enum.JoinSource, Enum.MarketplaceBulkPurchasePromptStatus.Error },
     Multi = true,
-    Default = {5},
+    Default = { 5 },
 })
 
 local MultiTableDropdown = Tabs.Main:Dropdown("MultiInstanceDropdown", {
@@ -213,7 +231,7 @@ local MultiTableDropdown = Tabs.Main:Dropdown("MultiInstanceDropdown", {
 
 local SearchableDropdown = Tabs.Main:Dropdown("SearchingDropdown", {
     Title = "Dropdown",
-    Values = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen"},
+    Values = { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen" },
     Multi = false,
     Searchable = true,
     Default = 1,
@@ -287,7 +305,7 @@ Dropdown:OnChanged(function(Value)
     print("Dropdown changed:", Value)
 end)
 
-MultiDropdown:OnChanged(function(Value)
+MultiDropdown2:OnChanged(function(Value)
     local Values = {}
 
     for Value, State in next, Value do
@@ -335,7 +353,7 @@ CColorpicker:OnChanged(function()
     )
 end)
 
-Tabs.Main:Button{
+Tabs.Main:Button {
     Title = "Really Really big Dropdown",
     Description = "",
     Callback = function()
@@ -354,14 +372,14 @@ Tabs.Main:Button{
     end
 }
 
-Tabs.Main:Button{
+Tabs.Main:Button {
     Title = "Set Dropdown Values",
     Description = "",
     Callback = function()
         local Values = {}
 
         for i = 1, 1 do
-            Values[i] = math.random(i, i^2)
+            Values[i] = math.random(i, i ^ 2)
         end
 
         Dropdown:SetValues(Values)
@@ -422,7 +440,7 @@ InterfaceSection:Toggle("TransparentToggle", {
 })
 
 InterfaceSection:Keybind("MenuKeybind", {
-    Title = "Minimize Bind", 
+    Title = "Minimize Bind",
     Default = Library.MinimizeKey or Enum.KeyCode.RightShift,
     ChangedCallback = function(Value)
         Library.MinimizeKey = Value
@@ -474,27 +492,27 @@ FpsGui.Parent = PlayerGui
 
 local fpsCount, fpsTime, currentFps = 0, os.clock(), 0
 RunService.RenderStepped:Connect(function()
-	fpsCount += 1
-	local now = os.clock()
-	if now - fpsTime >= 0.5 then
-		currentFps = math.floor(fpsCount * 2)
-		fpsCount, fpsTime = 0, now
-		FpsLabel.Text = string.format("FPS: %d | Mem: %.1f KB", currentFps, collectgarbage("count"))
-	end
+    fpsCount += 1
+    local now = os.clock()
+    if now - fpsTime >= 0.5 then
+        currentFps = math.floor(fpsCount * 2)
+        fpsCount, fpsTime = 0, now
+        FpsLabel.Text = string.format("FPS: %d | Mem: %.1f KB", currentFps, collectgarbage("count"))
+    end
 end)
 
 local StressTab = Window:Tab({
-	Title = "Stress",
-	Icon = "phosphor-gauge-bold",
+    Title = "Stress",
+    Icon = "phosphor-gauge-bold",
 })
 
 StressTab:Toggle("FpsMonitorToggle", {
-	Title = "FPS Monitor",
-	Description = "Show FPS + memory overlay",
-	Default = false,
-	Callback = function(v)
-		FpsGui.Enabled = v
-	end,
+    Title = "FPS Monitor",
+    Description = "Show FPS + memory overlay",
+    Default = false,
+    Callback = function(v)
+        FpsGui.Enabled = v
+    end,
 })
 
 local BenchSection = StressTab:Section("Benchmarks")
@@ -503,130 +521,132 @@ local BenchSection = StressTab:Section("Benchmarks")
 local stressDropdownsRef = {}
 local stressSpawnCount = 0
 BenchSection:Button({
-	Title = "Spawn 2000 Dropdown Options",
-	Description = "20 dropdowns × 100 values each. Measures total load time.",
-	Callback = function()
-		local start = os.clock()
-		stressSpawnCount += 1
+    Title = "Spawn 2000 Dropdown Options",
+    Description = "20 dropdowns × 100 values each. Measures total load time.",
+    Callback = function()
+        local start = os.clock()
+        stressSpawnCount += 1
 
-		for d = 1, 20 do
-			local vals = {}
-			for v = 1, 100 do
-				vals[v] = "Opt " .. d .. "-" .. v
-			end
+        for d = 1, 20 do
+            local vals = {}
+            for v = 1, 100 do
+                vals[v] = "Opt " .. d .. "-" .. v
+            end
 
-			local dd = StressTab:Dropdown("StressDD_" .. stressSpawnCount .. "_" .. d, {
-				Title = "Dropdown " .. d .. " (100 options)",
-				Values = vals,
-				Default = 1,
-			})
-			stressDropdownsRef[#stressDropdownsRef + 1] = dd
+            local dd = StressTab:Dropdown("StressDD_" .. stressSpawnCount .. "_" .. d, {
+                Title = "Dropdown " .. d .. " (100 options)",
+                Values = vals,
+                Default = 1,
+            })
+            stressDropdownsRef[#stressDropdownsRef + 1] = dd
 
-			if d % 5 == 0 then
-				task.wait()
-			end
-		end
+            if d % 5 == 0 then
+                task.wait()
+            end
+        end
 
-		local elapsed = os.clock() - start
-		print(string.format("[Stress] 2000 options created in %.2fs | Mem: %.1f KB", elapsed, collectgarbage("count")))
-	end,
+        local elapsed = os.clock() - start
+        print(string.format("[Stress] 2000 options created in %.2fs | Mem: %.1f KB", elapsed, collectgarbage("count")))
+    end,
 })
 
 BenchSection:Button({
-	Title = "Cleanup All Stress Dropdowns",
-	Description = "Destroys every spawned dropdown + section from all spawns",
-	Callback = function()
-		local ddCount = #stressDropdownsRef
-		for _, dd in stressDropdownsRef do
-			if dd and dd.Destroy then
-				dd:Destroy()
-			end
-		end
-		table.clear(stressDropdownsRef)
+    Title = "Cleanup All Stress Dropdowns",
+    Description = "Destroys every spawned dropdown + section from all spawns",
+    Callback = function()
+        local ddCount = #stressDropdownsRef
+        for _, dd in stressDropdownsRef do
+            if dd and dd.Destroy then
+                dd:Destroy()
+            end
+        end
+        table.clear(stressDropdownsRef)
 
-		print(string.format("[Stress] %d dropdowns cleaned | Mem: %.1f KB", ddCount, collectgarbage("count")))
-	end,
+        print(string.format("[Stress] %d dropdowns cleaned | Mem: %.1f KB", ddCount, collectgarbage("count")))
+    end,
 })
 
 -- 2) Notification flood
 BenchSection:Button({
-	Title = "Notification Flood (50)",
-	Description = "Creates 50 notifications at once",
-	Callback = function()
-		local start = os.clock()
-		for i = 1, 50 do
-			Library:Notify({
-				Title = "Flood #" .. i,
-				Content = "Stress notification " .. i,
-				Duration = 4,
-			})
-		end
-		print(string.format("[Stress] 50 notifications in %.3fs | Mem: %.1f KB", os.clock() - start, collectgarbage("count")))
-	end,
+    Title = "Notification Flood (50)",
+    Description = "Creates 50 notifications at once",
+    Callback = function()
+        local start = os.clock()
+        for i = 1, 50 do
+            Library:Notify({
+                Title = "Flood #" .. i,
+                Content = "Stress notification " .. i,
+                Duration = 4,
+            })
+        end
+        print(string.format("[Stress] 50 notifications in %.3fs | Mem: %.1f KB", os.clock() - start,
+            collectgarbage("count")))
+    end,
 })
 
 -- 3) Dropdown rebuild spam
 local RebuildDD = StressTab:Dropdown("RebuildTargetDD", {
-	Title = "Rebuild Target",
-	Values = {"a", "b", "c"},
-	Default = 1,
+    Title = "Rebuild Target",
+    Values = { "a", "b", "c" },
+    Default = 1,
 })
 BenchSection:Button({
-	Title = "Rebuild Spam (100×50)",
-	Description = "Rebuilds dropdown 100 times, 50 values each",
-	Callback = function()
-		local start = os.clock()
-		for i = 1, 100 do
-			local vals = {}
-			for j = 1, 50 do
-				vals[j] = "v" .. i .. "-" .. j
-			end
-			RebuildDD:SetValues(vals)
-			if i % 10 == 0 then
-				task.wait()
-			end
-		end
-		print(string.format("[Stress] 100 rebuilds in %.3fs | Mem: %.1f KB", os.clock() - start, collectgarbage("count")))
-	end,
+    Title = "Rebuild Spam (100×50)",
+    Description = "Rebuilds dropdown 100 times, 50 values each",
+    Callback = function()
+        local start = os.clock()
+        for i = 1, 100 do
+            local vals = {}
+            for j = 1, 50 do
+                vals[j] = "v" .. i .. "-" .. j
+            end
+            RebuildDD:SetValues(vals)
+            if i % 10 == 0 then
+                task.wait()
+            end
+        end
+        print(string.format("[Stress] 100 rebuilds in %.3fs | Mem: %.1f KB", os.clock() - start, collectgarbage("count")))
+    end,
 })
 
 -- 4) Create / destroy loop
 BenchSection:Button({
-	Title = "Create / Destroy Loop (100×5)",
-	Description = "Create 100 toggles in tab, destroy, repeat 5×. Watch memory after GC.",
-	Callback = function()
-		local start = os.clock()
+    Title = "Create / Destroy Loop (100×5)",
+    Description = "Create 100 toggles in tab, destroy, repeat 5×. Watch memory after GC.",
+    Callback = function()
+        local start = os.clock()
 
-		for cycle = 1, 5 do
-			local els = {}
-			for i = 1, 100 do
-				els[i] = StressTab:Toggle("CDTog_" .. cycle .. "_" .. i, {
-					Title = "CD " .. cycle .. "-" .. i,
-					Default = false,
-				})
-			end
-			task.wait()
-			for i = 1, 100 do
-				if els[i] and els[i].Destroy then
-					els[i]:Destroy()
-				end
-			end
-			table.clear(els)
-			task.wait()
-		end
+        for cycle = 1, 5 do
+            local els = {}
+            for i = 1, 100 do
+                els[i] = StressTab:Toggle("CDTog_" .. cycle .. "_" .. i, {
+                    Title = "CD " .. cycle .. "-" .. i,
+                    Default = false,
+                })
+            end
+            task.wait()
+            for i = 1, 100 do
+                if els[i] and els[i].Destroy then
+                    els[i]:Destroy()
+                end
+            end
+            table.clear(els)
+            task.wait()
+        end
 
-		print(string.format("[Stress] 5 cycles of 100 create/destroy in %.3fs | Mem: %.1f KB", os.clock() - start, collectgarbage("count")))
-	end,
+        print(string.format("[Stress] 5 cycles of 100 create/destroy in %.3fs | Mem: %.1f KB", os.clock() - start,
+            collectgarbage("count")))
+    end,
 })
 
 -- 5) Memory report + quick GC
 BenchSection:Button({
-	Title = "Memory Report",
-	Description = "Prints memory & FPS to console",
-	Callback = function()
-		local mem = collectgarbage("count")
-		print(string.format("[Stress] Mem: %.1f KB | FPS: %d", mem, currentFps))
-	end,
+    Title = "Memory Report",
+    Description = "Prints memory & FPS to console",
+    Callback = function()
+        local mem = collectgarbage("count")
+        print(string.format("[Stress] Mem: %.1f KB | FPS: %d", mem, currentFps))
+    end,
 })
 
 print(Library.Utilities:GetOS())

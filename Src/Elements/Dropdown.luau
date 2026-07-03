@@ -353,6 +353,88 @@ function Element:New(Idx, Config)
 			end
 		end
 
+		local AllButton, NoneButton
+		if Config.Multi then
+			local IsFiltered = Dropdown.Searchable and SearchBox.Text ~= ""
+			
+			-- Select All / Filtered Option
+			AllButton = Button_BuildList:Clone()
+			local AllButtonSelector, AllButtonLabel = AllButton.Frame, AllButton.ButtonLabel
+			
+			AllButtonSelector.BackgroundTransparency = 1
+			AllButtonSelector.Size = UDim2.new(0, 0, 0, 0)
+			AllButtonLabel.Text = IsFiltered and "[ Select Filtered ]" or "[ Select All ]"
+			AllButtonLabel.TextColor3 = Color3.fromRGB(80, 180, 255)
+			
+			local AllConns = {}
+			AllConns[#AllConns + 1] = AllButton.MouseEnter:Connect(function()
+				AllButton.BackgroundTransparency = 0.89
+			end)
+			AllConns[#AllConns + 1] = AllButton.MouseLeave:Connect(function()
+				AllButton.BackgroundTransparency = 1
+			end)
+			
+			AllConns[#AllConns + 1] = AllButtonLabel.InputBegan:Connect(function(Input)
+				if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+					local tbl = {}
+					for val, bool in next, Dropdown.Value do
+						tbl[val] = true
+					end
+					for _, val in next, Dropdown.Values do
+						if not Dropdown.Searchable or SearchBox.Text == "" or string.lower(Dropdown.Displayer(val)):match(string.lower(SearchBox.Text)) then
+							tbl[val] = true
+						end
+					end
+					Dropdown:SetValue(tbl)
+				end
+			end)
+			
+			optionCleanup[AllButton] = {
+				registry = { AllButton, AllButtonSelector, AllButtonLabel },
+				conns = AllConns,
+			}
+			AllButton.Parent = DropdownScrollFrame
+
+			-- Clear All / Filtered Option
+			NoneButton = Button_BuildList:Clone()
+			local NoneButtonSelector, NoneButtonLabel = NoneButton.Frame, NoneButton.ButtonLabel
+			
+			NoneButtonSelector.BackgroundTransparency = 1
+			NoneButtonSelector.Size = UDim2.new(0, 0, 0, 0)
+			NoneButtonLabel.Text = IsFiltered and "[ Clear Filtered ]" or "[ Clear All ]"
+			NoneButtonLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+			
+			local NoneConns = {}
+			NoneConns[#NoneConns + 1] = NoneButton.MouseEnter:Connect(function()
+				NoneButton.BackgroundTransparency = 0.89
+			end)
+			NoneConns[#NoneConns + 1] = NoneButton.MouseLeave:Connect(function()
+				NoneButton.BackgroundTransparency = 1
+			end)
+			
+			NoneConns[#NoneConns + 1] = NoneButtonLabel.InputBegan:Connect(function(Input)
+				if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+					local tbl = {}
+					for val, bool in next, Dropdown.Value do
+						tbl[val] = true
+					end
+					for _, val in next, Dropdown.Values do
+						if not Dropdown.Searchable or SearchBox.Text == "" or string.lower(Dropdown.Displayer(val)):match(string.lower(SearchBox.Text)) then
+							tbl[val] = nil
+						end
+					end
+					Dropdown:SetValue(tbl)
+				end
+			end)
+			
+			optionCleanup[NoneButton] = {
+				registry = { NoneButton, NoneButtonSelector, NoneButtonLabel },
+				conns = NoneConns,
+			}
+			NoneButton.Parent = DropdownScrollFrame
+		end
+
+		local MatchingCount = 0
 		local Count = 0
 
 		for Idx, Value in next, Values do
@@ -365,6 +447,8 @@ function Element:New(Idx, Config)
 			if Dropdown.Searchable and SearchBox.Text ~= "" and not string.lower(Dropdown.Displayer(Value)):match(string.lower(SearchBox.Text)) then
 				continue
 			end
+
+			MatchingCount += 1
 
 			local Table = {}
 			local Selected
@@ -475,6 +559,12 @@ function Element:New(Idx, Config)
 			Dropdown:Display()
 
 			Buttons[Button] = Table
+		end
+
+		if Config.Multi and AllButton and NoneButton then
+			local Show = MatchingCount > 0
+			AllButton.Visible = Show
+			NoneButton.Visible = Show
 		end
 
 		ListSizeX = 0
