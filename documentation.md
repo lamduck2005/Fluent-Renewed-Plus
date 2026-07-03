@@ -5,7 +5,7 @@ Fluent Renewed Plus is a modern, customizable Roblox GUI library with an extensi
 ## Features
 
 - Modern design with smooth spring animations
-- 8 UI element types: Button, Toggle, Slider, Dropdown, Colorpicker, Keybind, Input, Paragraph
+- 10 UI element types: Button, Toggle, Slider, Dropdown, Colorpicker, Keybind, Input, Paragraph, Divider, Space
 - 61 built-in themes
 - Over 10,000 icons (Lucide 0.469.0 + Phosphor 2.1.0)
 - Acrylic frosted glass blur effect
@@ -604,6 +604,30 @@ Paragraph:OnChanged(function()         -- Listen for changes
     print("Content changed")
 end)
 ```
+
+## Divider
+
+A horizontal or vertical separator line with theme color.
+
+```lua
+local Divider = Section:AddDivider()
+```
+
+Divider adapts orientation:
+- Horizontal in regular sections
+- Vertical inside Groups
+
+## Space
+
+A transparent spacer to control layout gaps.
+
+```lua
+local Space = Section:AddSpace({ Columns = 2 })  -- 14px gap (default: 7px per column)
+```
+
+Space sizing:
+- Vertical in Sections
+- Horizontal in Groups/HStacks
 
 ---
 
