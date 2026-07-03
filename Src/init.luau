@@ -297,7 +297,7 @@ function Library:Window(Config: {
 		Config.Title = Success and Game_Info.Name or "Fluent Renewed"
 	end
 
-	Config.Size = if typeof(Config.Size) == "UDim2" then Config.Size else UDim2.fromOffset(470, 380)
+	Config.Size = if typeof(Config.Size) == "UDim2" then Config.Size else UDim2.fromOffset(470, 300)
 	Config.MinSize = if typeof(Config.MinSize) == "Vector2" then Config.MinSize else Vector2.new(470, 380)
 
 	Config.Size = if Config.Resize ~= true then Config.Size else UDim2.fromOffset(Library.Utilities:Resize((Config.Size and Config.Size.X.Offset) or 470, (Config.Size and Config.Size.Y.Offset) or 380))

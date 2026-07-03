@@ -106,8 +106,8 @@ local Window = Fluent:CreateWindow(Config)
 | Title | string? | Game name | Window title text |
 | SubTitle | string? | "Made with Fluent Renewed Plus" | Subtitle below title |
 | TabWidth | number? | 160 | Width of the tab selector panel |
-| Size | UDim2? | UDim2.fromOffset(470, 380) | Initial window size |
-| MinSize | Vector2? | Vector2.new(470, 380) | Minimum window size (when resizable) |
+| Size | UDim2? | UDim2.fromOffset(470, 300) | Initial window size |
+| MinSize | Vector2? | Vector2.new(470, 300) | Minimum window size (when resizable) |
 | Resize | boolean? | false | Enable window resizing via bottom-right handle |
 | MinimizeKey | Enum.KeyCode? | RightControl | Key to toggle minimize |
 | Acrylic | boolean? | false | Enable acrylic blur effect (DepthOfField) |
