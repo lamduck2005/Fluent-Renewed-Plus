@@ -22,7 +22,7 @@ permissions:
 jobs:
   build-script:
     name: Bundle and Upload Fluent Renewed
-    runs-on: windows-2022
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
@@ -54,3 +54,22 @@ jobs:
         with:
           name: Fluent.rbxm
           path: Distribution/Fluent.rbxm
+
+      - name: Deploy to builds branch
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git deploy-branch
+          cd deploy-branch
+          if git ls-remote --heads origin builds | grep -q 'refs/heads/builds'; then
+            git checkout builds
+            rm -f Fluent.luau Fluent.rbxm
+          else
+            git checkout --orphan builds
+            git rm -rf .
+          fi
+          cp ../Distribution/Fluent.luau .
+          cp ../Distribution/Fluent.rbxm .
+          git add Fluent.luau Fluent.rbxm
+          git commit -m "Build: ${{ github.sha }}"
+          git push origin builds
