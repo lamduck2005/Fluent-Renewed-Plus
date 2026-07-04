@@ -67,6 +67,10 @@ local Tabs = {
         Title = "Settings",
         Icon = "settings"
     },
+    SubTabs = Window:CreateTab{
+        Title = "SubTabs",
+        Icon = "layers"
+    },
     Extra = Window:CreateTab{
         Title = "Extra",
         Icon = "settings"
@@ -75,13 +79,38 @@ local Tabs = {
 
 -- Create SubTabBar inside Main Tab
 local SubTabContainers = Tabs.Main:AddSubTabBar({
-    SubTabs = { "Floor 2", "Floor 3", "Floor 4" },
-    Default = "Floor 2",
+    SubTabs = { "SubTab A", "SubTab B", "SubTab C" },
+    Default = "SubTab A",
 })
 
-SubTabContainers["Floor 2"]:AddToggle("Toggle_F2", { Title = "Auto Farm Floor 2", Default = false })
-SubTabContainers["Floor 3"]:AddToggle("Toggle_F3", { Title = "Auto Farm Floor 3", Default = false })
-SubTabContainers["Floor 4"]:AddToggle("Toggle_F4", { Title = "Auto Farm Floor 4", Default = false })
+SubTabContainers["SubTab A"]:AddToggle("Toggle_A1", { Title = "Example Toggle A1", Default = false })
+SubTabContainers["SubTab B"]:AddToggle("Toggle_B1", { Title = "Example Toggle B1", Default = false })
+SubTabContainers["SubTab C"]:AddToggle("Toggle_C1", { Title = "Example Toggle C1", Default = false })
+
+-- Setup SubTabs demo with Sections, Toggles, and Buttons
+local DemoContainers = Tabs.SubTabs:AddSubTabBar({
+    SubTabs = { "Tab 1", "Tab 2", "Tab 3" },
+    Default = "Tab 1",
+})
+
+for _, tabName in ipairs({ "Tab 1", "Tab 2", "Tab 3" }) do
+    local container = DemoContainers[tabName]
+    local key = tabName:gsub(" ", "")
+    
+    local section = container:AddSection(tabName .. " Group")
+    
+    section:AddToggle("Toggle_Demo" .. key, {
+        Title = "Option for " .. tabName,
+        Default = false
+    })
+    
+    section:AddButton({
+        Title = "Run Test",
+        Callback = function()
+            print("Running test for " .. tabName)
+        end
+    })
+end
 
 local Options = Library.Options
 

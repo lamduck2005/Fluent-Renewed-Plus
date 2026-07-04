@@ -1,3 +1,4 @@
+-- Placed in Elements instead of Components to leverage Fluent's automatic element registration without modifying core framework files.
 local Root = script.Parent.Parent
 local Creator = require(Root.Modules.Creator)
 local New = Creator.New
@@ -134,6 +135,21 @@ function Element:New(Idx, Config)
 			ScrollFrame = self.ScrollFrame,
 			Type = "SubTabContainer",
 		}
+
+		function SubTabObject:Section(SectionTitle)
+			local Section = {
+				Type = "Section"
+			}
+			local SectionFrame = require(Root.Components.Section)(SectionTitle, ContainerFrame)
+			Section.Container = SectionFrame.Container
+			Section.ScrollFrame = self.ScrollFrame
+			setmetatable(Section, Elements)
+			return Section
+		end
+
+		SubTabObject.CreateSection = SubTabObject.Section
+		SubTabObject.AddSection = SubTabObject.Section
+
 		setmetatable(SubTabObject, Elements)
 		SubTabContainers[option] = SubTabObject
 
