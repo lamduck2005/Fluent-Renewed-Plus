@@ -73,27 +73,15 @@ function Element:New(Idx, Config)
 	local function SelectSubTab(selectedOption)
 		for option, container in pairs(SubTabContainers) do
 			if option ~= selectedOption and container.Container.Visible then
-				local frame = container.Container
-				local tween = TweenService:Create(frame, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-					GroupTransparency = 1,
-					Position = UDim2.fromOffset(-15, 0)
-				})
-				tween:Play()
-				task.delay(0.12, function()
-					if Default ~= option then
-						frame.Visible = false
-					end
-				end)
+				container.Container.Visible = false
 			end
 		end
 
 		local activeContainer = SubTabContainers[selectedOption].Container
 		activeContainer.Visible = true
 		activeContainer.Position = UDim2.fromOffset(15, 0)
-		activeContainer.GroupTransparency = 1
 
-		TweenService:Create(activeContainer, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-			GroupTransparency = 0,
+		TweenService:Create(activeContainer, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 			Position = UDim2.fromOffset(0, 0)
 		}):Play()
 
@@ -117,12 +105,11 @@ function Element:New(Idx, Config)
 	end
 
 	for index, option in ipairs(Options) do
-		local ContainerFrame = New("CanvasGroup", {
+		local ContainerFrame = New("Frame", {
 			Name = option .. "Container",
 			Size = UDim2.new(1, 0, 0, 0),
 			AutomaticSize = "Y",
 			BackgroundTransparency = 1,
-			GroupTransparency = 1,
 			Parent = ContentWrapper,
 			Visible = false,
 		}, {
