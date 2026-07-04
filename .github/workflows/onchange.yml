@@ -22,7 +22,7 @@ permissions:
 jobs:
   build-script:
     name: Bundle and Upload Fluent Renewed
-    runs-on: ubuntu-latest
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
         with:
@@ -41,7 +41,7 @@ jobs:
           rokit install
 
       - name: Build
-        run: lune run Lune/Build bundle header=Lune/Build/Header.luau minify=true ci-mode=true
+        run: lune run Build bundle header=Lune/Build/Header.luau minify=true ci-mode=true
 
       - name: Upload Minified Fluent Renewed to Artifacts
         uses: actions/upload-artifact@v4
@@ -56,6 +56,7 @@ jobs:
           path: Distribution/Fluent.rbxm
 
       - name: Deploy to builds branch
+        shell: bash
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
