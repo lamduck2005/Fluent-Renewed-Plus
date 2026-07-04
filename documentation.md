@@ -633,6 +633,33 @@ Space sizing:
 - Vertical in Sections
 - Horizontal in Groups/HStacks
 
+## SubTabBar
+
+A horizontal tab selector element (Segmented Control) to split configurations inside a single tab container.
+
+```lua
+local SubTabContainers = Tabs.Main:AddSubTabBar({
+    SubTabs = { "Floor 2", "Floor 3", "Floor 4" },
+    Default = "Floor 2"
+})
+
+-- Add elements to the sub-tabs
+SubTabContainers["Floor 2"]:AddToggle("Toggle_F2", {
+    Title = "Auto Farm Floor 2",
+    Default = false
+})
+```
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| SubTabs | {string}? | -- | List of sub-tab names (Required if `Values` is not set) |
+| Values | {string}? | -- | Alternative alias for `SubTabs` |
+| Default | string? | first option | Initial selected sub-tab |
+
+### Methods
+
+No direct methods are available on the SubTabBar bar itself. The returned `SubTabContainers` dictionary contains sub-container objects that inherit all standard Element methods (`AddToggle`, `AddDropdown`, etc.), making it fully compatible with `SaveManager`.
+
 ---
 
 # Notifications

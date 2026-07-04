@@ -73,6 +73,16 @@ local Tabs = {
     }
 }
 
+-- Create SubTabBar inside Main Tab
+local SubTabContainers = Tabs.Main:AddSubTabBar({
+    SubTabs = { "Floor 2", "Floor 3", "Floor 4" },
+    Default = "Floor 2",
+})
+
+SubTabContainers["Floor 2"]:AddToggle("Toggle_F2", { Title = "Auto Farm Floor 2", Default = false })
+SubTabContainers["Floor 3"]:AddToggle("Toggle_F3", { Title = "Auto Farm Floor 3", Default = false })
+SubTabContainers["Floor 4"]:AddToggle("Toggle_F4", { Title = "Auto Farm Floor 4", Default = false })
+
 local Options = Library.Options
 
 Library:Notify{
