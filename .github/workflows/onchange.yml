@@ -41,7 +41,7 @@ jobs:
           rokit install
 
       - name: Build
-        run: lune run Build bundle header=Lune/Build/Header.luau minify=true ci-mode=true
+        run: lune run Lune/Build bundle header=Lune/Build/Header.luau minify=true ci-mode=true
 
       - name: Upload Minified Fluent Renewed to Artifacts
         uses: actions/upload-artifact@v4
