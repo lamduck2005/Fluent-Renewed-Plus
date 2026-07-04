@@ -243,6 +243,20 @@ MultiInstanceDropdown:OnChanged(function(Value)
     print("Mutlidropdown with instance selection changed:", table.concat(Values, ", "))
 end)
 
+local SearchableDropdown = Tabs.Main:CreateDropdown("SearchableDropdown", {
+    Title = "Searchable Dropdown (Focus)",
+    Description = "Automatically focuses the search box when opened.",
+    Values = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen"},
+    Multi = false,
+    Searchable = true,
+    FocusSearch = true,
+    Default = 1,
+})
+
+SearchableDropdown:OnChanged(function(Value)
+    print("SearchableDropdown changed:", Value)
+end)
+
 local Colorpicker = Tabs.Main:CreateColorpicker("Colorpicker", {
     Title = "Colorpicker",
     Default = Color3.fromRGB(96, 205, 255)

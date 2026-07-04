@@ -292,10 +292,12 @@ local MultiTableDropdown = Tabs.Main:Dropdown("MultiInstanceDropdown", {
 })
 
 local SearchableDropdown = Tabs.Main:Dropdown("SearchingDropdown", {
-    Title = "Dropdown",
+    Title = "Searchable Dropdown (Focus)",
+    Description = "Automatically focuses the search box when opened.",
     Values = { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen" },
     Multi = false,
     Searchable = true,
+    FocusSearch = true,
     Default = 1,
     AutoDeselect = true,
     Callback = function(Value)
