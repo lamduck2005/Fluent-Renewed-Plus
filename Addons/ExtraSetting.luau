@@ -437,7 +437,7 @@ local ExtraSetting = {} do
 		if not q then return end
 		local code = string.format([[
 			local ok, data = pcall(function()
-				local fs = readfile("%s/settings/extra_config.json")
+				local fs = readfile("%s/settings/extra/extra_config.json")
 				return game:GetService("HttpService"):JSONDecode(fs)
 			end)
 			if ok and data and data.EnableAutoExecute then
