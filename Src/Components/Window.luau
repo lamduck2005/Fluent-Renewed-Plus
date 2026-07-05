@@ -404,23 +404,41 @@ return function(Config)
 	end)
 
 	if Window.HideButton then
+		local HoldStart = 0
+		local HoldingTask = nil
+
 		Creator.AddSignal(Window.HideButton.InputBegan, function(Input)
-			if
-				Input.UserInputType == Enum.UserInputType.MouseButton1
-				or Input.UserInputType == Enum.UserInputType.Touch
-			then
+			if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
 				IsDraggingHideButton = true
 				DragStart = Input.Position
 				DragStartPos = Window.HideButton.Position
 				HideButtonDragDistance = 0
+
+				HoldStart = tick()
+				if HoldingTask then task.cancel(HoldingTask) end
+				HoldingTask = task.delay(3, function()
+					if IsDraggingHideButton and HideButtonDragDistance < 5 then
+						local DefaultPos = UDim2.fromOffset(
+							Camera.ViewportSize.X / 2 - Config.Size.X.Offset / 2,
+							Camera.ViewportSize.Y / 2 - Config.Size.Y.Offset / 2
+						)
+						Window.Position = DefaultPos
+						PosMotor:setGoal({ X = Flipper.Instant.new(DefaultPos.X.Offset), Y = Flipper.Instant.new(DefaultPos.Y.Offset) })
+						Window.Size = Config.Size
+						SizeMotor:setGoal({ X = Flipper.Instant.new(Config.Size.X.Offset), Y = Flipper.Instant.new(Config.Size.Y.Offset) })
+
+						Library:Notify({
+							Title = "Interface Reset",
+							Content = "UI position and size reset to default.",
+							Duration = 3
+						})
+					end
+				end)
 			end
 		end)
 
 		Creator.AddSignal(Window.HideButton.InputChanged, function(Input)
-			if
-				Input.UserInputType == Enum.UserInputType.MouseMovement
-				or Input.UserInputType == Enum.UserInputType.Touch
-			then
+			if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
 				DragInputHideButton = Input
 			end
 		end)
@@ -436,7 +454,8 @@ return function(Config)
 		Creator.AddSignal(UserInputService.InputEnded, function(Input)
 			if (Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch) and IsDraggingHideButton then
 				IsDraggingHideButton = false
-				if HideButtonDragDistance < 5 then
+				if HoldingTask then task.cancel(HoldingTask); HoldingTask = nil end
+				if HideButtonDragDistance < 5 and tick() - HoldStart < 3 then
 					Window:Minimize()
 				end
 			end
