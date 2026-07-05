@@ -150,7 +150,7 @@ local SaveManager = {} do
 
 		for idx, option in next, SaveManager.Options do
 			if not self.Parser[option.Type] then continue end
-			if self.Ignore[idx] then continue end
+			if self.Ignore[idx] or idx:sub(1, 13) == "ExtraSetting_" then continue end
 
 			data.objects[#data.objects + 1] = self.Parser[option.Type].Save(idx, option)
 		end
