@@ -54,17 +54,17 @@ local ExtraSetting = {} do
 	local inited = false
 
 	local function ConfigPath()
-		return ExtraSetting.Folder .. "/settings/extra/extra_config.json"
+		return ExtraSetting.Folder .. "/extra/extra_config.json"
 	end
 
 	local function SaveConfig()
 		pcall(function()
 			local path = ConfigPath()
-			local folder = ExtraSetting.Folder .. "/settings"
-			if not isfolder(folder) then
-				makefolder(folder)
+			local root = ExtraSetting.Folder
+			if not isfolder(root) then
+				makefolder(root)
 			end
-			local extra = folder .. "/extra"
+			local extra = root .. "/extra"
 			if not isfolder(extra) then
 				makefolder(extra)
 			end
@@ -437,12 +437,18 @@ local ExtraSetting = {} do
 		if not q then return end
 		local code = string.format([[
 			local ok, data = pcall(function()
-				local fs = readfile("%s/settings/extra/extra_config.json")
+				local fs = readfile("%s/extra/extra_config.json")
 				return game:GetService("HttpService"):JSONDecode(fs)
 			end)
 			if ok and data and data.EnableAutoExecute then
+				print("[Auto Execute] Rejoined. Fetching script from URL...")
 				local s, r = pcall(function() return game:HttpGet("%s") end)
-				if s and r then loadstring(r)() end
+				if s and r then
+					print("[Auto Execute] Script downloaded successfully. Running...")
+					loadstring(r)()
+				else
+					warn("[Auto Execute] Failed to download script: " .. tostring(r))
+				end
 			end
 		]], ExtraSetting.Folder, ExtraSetting.AutoExecuteUrl)
 		q(code)
