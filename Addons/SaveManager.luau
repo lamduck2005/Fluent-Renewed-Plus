@@ -50,6 +50,8 @@ end
 local SaveManager = {} do
 	SaveManager.Folder = "FluentSettings"
 	SaveManager.Ignore = {}
+	SaveManager.DefaultsCaptured = false
+	SaveManager.DefaultValues = {}
 	SaveManager.Options, SaveManager.Library = {} :: { [string]: {Type: string, Value: any, SetValues: (self: any, NewValue: { [any]: any }) -> nil, SetValue: (self: any, NewValue: any, ...any) -> nil, SetValueRGB: (self: any, NewValue: Color3, Transparency: number?) -> nil} }, {}
 	SaveManager.Parser = {
 		Toggle = {
@@ -132,6 +134,19 @@ local SaveManager = {} do
 		end
 	end
 
+	function SaveManager:CaptureDefaults()
+		if self.DefaultsCaptured then return end
+		self.DefaultsCaptured = true
+		for Idx, Option in next, self.Options do
+			if not self.Ignore[Idx] then
+				self.DefaultValues[Idx] = {
+					Value = Option.Value,
+					Mode = Option.Type == "Keybind" and Option.Mode or nil
+				}
+			end
+		end
+	end
+
 	function SaveManager:SetFolder(folder)
 		self.Folder = folder
 		self:BuildFolderTree()
@@ -150,7 +165,7 @@ local SaveManager = {} do
 
 		for idx, option in next, SaveManager.Options do
 			if not self.Parser[option.Type] then continue end
-			if self.Ignore[idx] or idx:sub(1, 13) == "ExtraSetting_" then continue end
+			if self.Ignore[idx] or (type(idx) == "string" and idx:sub(1, 13) == "ExtraSetting_") then continue end
 
 			data.objects[#data.objects + 1] = self.Parser[option.Type].Save(idx, option)
 		end
@@ -266,6 +281,7 @@ local SaveManager = {} do
 	end
 
 	function SaveManager:LoadAutoloadConfig()
+		self:CaptureDefaults()
 		if isfile(`{self.Folder}/settings/autoload.txt`) then
 			local name = readfile(`{self.Folder}/settings/autoload.txt`)
 
@@ -292,18 +308,19 @@ local SaveManager = {} do
 
 	function SaveManager:BuildConfigSection(tab)
 		assert(self.Library, "Must set SaveManager.Library")
+		self:CaptureDefaults()
 
-		local section = tab:AddSection("Configuration")
+		local Section = tab:AddSection("Configuration")
 
-		section:AddInput("SaveManager_ConfigName",    { Title = "Config name" })
-		section:AddDropdown("SaveManager_ConfigList", { Title = "Config list", Values = self:RefreshConfigList(), AllowNull = true })
+		Section:AddInput("SaveManager_ConfigName",    { Title = "Config name" })
+		Section:AddDropdown("SaveManager_ConfigList", { Title = "Config list", Values = self:RefreshConfigList(), AllowNull = true })
 
-			section:AddButton({
+			Section:AddButton({
 			Title = "Create config",
 			Callback = function()
-				local name = SaveManager.Options.SaveManager_ConfigName.Value
+				local Name = SaveManager.Options.SaveManager_ConfigName.Value
 
-				if name:gsub(" ", "") == "" then 
+				if Name:gsub(" ", "") == "" then 
 					return self.Library:Notify({
 						Title = "Interface",
 						Content = "Config loader",
@@ -312,49 +329,60 @@ local SaveManager = {} do
 					})
 				end
 
-				local path = `{self.Folder}/settings/{name}.json`
-				local exists = isfile(path)
+				local Path = `{self.Folder}/settings/{Name}.json`
+				local Exists = isfile(Path)
 
-				local success, err = self:Save(name)
-				if not success then
-					return self.Library:Notify({
+				local function SaveConfiguration()
+					local Success, Err = self:Save(Name)
+					if not Success then
+						return self.Library:Notify({
+							Title = "Interface",
+							Content = "Config loader",
+							SubContent = "Failed to save config: " .. Err,
+							Duration = 7
+						})
+					end
+
+					SaveManager.Options.SaveManager_ConfigList:SetValues(self:RefreshConfigList())
+					SaveManager.Options.SaveManager_ConfigList:SetValue(nil)
+
+					self.Library:Notify({
 						Title = "Interface",
 						Content = "Config loader",
-						SubContent = "Failed to save config: " .. err,
+						SubContent = Exists and string.format("Overwrote config %q", Name) or string.format("Created config %q", Name),
 						Duration = 7
 					})
 				end
 
-				SaveManager.Options.SaveManager_ConfigList:SetValues(self:RefreshConfigList())
-				SaveManager.Options.SaveManager_ConfigList:SetValue(nil)
-
-				if exists then
-					return self.Library:Notify({
-						Title = "Interface",
-						Content = "Config loader",
-						SubContent = string.format("Overwrote config %q", name),
-						Duration = 7
+				if Exists then
+					self.Library.CreatedWindow:Dialog({
+						Title = "Confirm Overwrite",
+						Content = string.format("Are you sure you want to overwrite config %q?", Name),
+						Buttons = {
+							{
+								Title = "Confirm",
+								Callback = SaveConfiguration
+							},
+							{
+								Title = "Cancel"
+							}
+						}
 					})
+				else
+					SaveConfiguration()
 				end
-
-				return self.Library:Notify({
-					Title = "Interface",
-					Content = "Config loader",
-					SubContent = string.format("Created config %q", name),
-					Duration = 7
-				})
 			end
 		})
 
-		section:AddButton({Title = "Load config", Callback = function()
-			local name = SaveManager.Options.SaveManager_ConfigList.Value
+		Section:AddButton({Title = "Load config", Callback = function()
+			local Name = SaveManager.Options.SaveManager_ConfigList.Value
 
-			local success, err = self:Load(name)
-			if not success then
+			local Success, Err = self:Load(Name)
+			if not Success then
 				return self.Library:Notify({
 					Title = "Interface",
 					Content = "Config loader",
-					SubContent = "Failed to load config: " .. err,
+					SubContent = "Failed to load config: " .. Err,
 					Duration = 7
 				})
 			end
@@ -362,54 +390,16 @@ local SaveManager = {} do
 			return self.Library:Notify({
 				Title = "Interface",
 				Content = "Config loader",
-				SubContent = string.format("Loaded config %q", name),
+				SubContent = string.format("Loaded config %q", Name),
 				Duration = 7
 			})
 		end})
 
 		local AutoloadButton
-		section:AddButton({Title = "Delete config", Callback = function()
-			local name = SaveManager.Options.SaveManager_ConfigList.Value
+		Section:AddButton({Title = "Delete config", Callback = function()
+			local Name = SaveManager.Options.SaveManager_ConfigList.Value
 
-			local success, err = self:Delete(name)
-			if not success then
-				return self.Library:Notify({
-					Title = "Interface",
-					Content = "Config loader",
-					SubContent = "Failed to delete config: " .. err,
-					Duration = 7
-				})
-			end
-
-			SaveManager.Options.SaveManager_ConfigList:SetValues(self:RefreshConfigList())
-			SaveManager.Options.SaveManager_ConfigList:SetValue(nil)
-
-			if AutoloadButton then
-				if isfile(`{self.Folder}/settings/autoload.txt`) then
-					local autoName = readfile(`{self.Folder}/settings/autoload.txt`)
-					AutoloadButton:SetDesc("Current autoload config: " .. autoName)
-				else
-					AutoloadButton:SetDesc("Current autoload config: none")
-				end
-			end
-
-			return self.Library:Notify({
-				Title = "Interface",
-				Content = "Config loader",
-				SubContent = string.format("Deleted config %q", name),
-				Duration = 7
-			})
-		end})
-
-		section:AddButton({Title = "Refresh list", Callback = function()
-			SaveManager.Options.SaveManager_ConfigList:SetValues(self:RefreshConfigList())
-			SaveManager.Options.SaveManager_ConfigList:SetValue(nil)
-		end})
-
-		AutoloadButton = section:AddButton({Title = "Set as autoload", Description = "Current autoload config: none", Callback = function()
-			local name = SaveManager.Options.SaveManager_ConfigList.Value
-
-			if not name then
+			if not Name then
 				return self.Library:Notify({
 					Title = "Interface",
 					Content = "Config loader",
@@ -418,28 +408,158 @@ local SaveManager = {} do
 				})
 			end
 
-			if not isfile(`{self.Folder}/settings/{name}.json`) then
+			self.Library.CreatedWindow:Dialog({
+				Title = "Confirm Delete",
+				Content = string.format("Are you sure you want to delete config %q?", Name),
+				Buttons = {
+					{
+						Title = "Confirm",
+						Callback = function()
+							local Success, Err = self:Delete(Name)
+							if not Success then
+								return self.Library:Notify({
+									Title = "Interface",
+									Content = "Config loader",
+									SubContent = "Failed to delete config: " .. Err,
+									Duration = 7
+								})
+							end
+
+							SaveManager.Options.SaveManager_ConfigList:SetValues(self:RefreshConfigList())
+							SaveManager.Options.SaveManager_ConfigList:SetValue(nil)
+
+							if AutoloadButton then
+								if isfile(`{self.Folder}/settings/autoload.txt`) then
+									local AutoName = readfile(`{self.Folder}/settings/autoload.txt`)
+									AutoloadButton:SetDesc("Current autoload config: " .. AutoName)
+								else
+									AutoloadButton:SetDesc("Current autoload config: none")
+								end
+							end
+
+							self.Library:Notify({
+								Title = "Interface",
+								Content = "Config loader",
+								SubContent = string.format("Deleted config %q", Name),
+								Duration = 7
+							})
+						end
+					},
+					{
+						Title = "Cancel"
+					}
+				}
+			})
+		end})
+
+		Section:AddButton({Title = "Refresh list", Callback = function()
+			SaveManager.Options.SaveManager_ConfigList:SetValues(self:RefreshConfigList())
+			SaveManager.Options.SaveManager_ConfigList:SetValue(nil)
+		end})
+
+		Section:AddButton({Title = "Reset to default", Callback = function()
+			self.Library.CreatedWindow:Dialog({
+				Title = "Confirm Reset",
+				Content = "Are you sure you want to reset all options to default?",
+				Buttons = {
+					{
+						Title = "Confirm",
+						Callback = function()
+							for Idx, Option in next, SaveManager.Options do
+								if SaveManager.Ignore[Idx] then continue end
+								local Default = SaveManager.DefaultValues[Idx]
+								if Default ~= nil then
+									if Option.Type == "Keybind" then
+										Option:SetValue(Default.Value, Default.Mode)
+									else
+										Option:SetValue(Default.Value)
+									end
+								end
+							end
+							self.Library:Notify({
+								Title = "Interface",
+								Content = "Config loader",
+								SubContent = "Reset all options to default",
+								Duration = 7
+							})
+						end
+					},
+					{
+						Title = "Cancel"
+					}
+				}
+			})
+		end})
+
+		AutoloadButton = Section:AddButton({Title = "Set as autoload", Description = "Current autoload config: none", Callback = function()
+			local Name = SaveManager.Options.SaveManager_ConfigList.Value
+
+			if not Name then
 				return self.Library:Notify({
 					Title = "Interface",
 					Content = "Config loader",
-					SubContent = string.format("Config %q no longer exists", name),
+					SubContent = "No config selected",
 					Duration = 7
 				})
 			end
 
-			writefile(`{self.Folder}/settings/autoload.txt`, name)
-			AutoloadButton:SetDesc("Current autoload config: " .. name)
+			if not isfile(`{self.Folder}/settings/{Name}.json`) then
+				return self.Library:Notify({
+					Title = "Interface",
+					Content = "Config loader",
+					SubContent = string.format("Config %q no longer exists", Name),
+					Duration = 7
+				})
+			end
+
+			writefile(`{self.Folder}/settings/autoload.txt`, Name)
+			AutoloadButton:SetDesc("Current autoload config: " .. Name)
 			self.Library:Notify({
 				Title = "Interface",
 				Content = "Config loader",
-				SubContent = string.format("Set %q to auto load", name),
+				SubContent = string.format("Set %q to auto load", Name),
 				Duration = 7
 			})
 		end})
 
+		Section:AddButton({Title = "Clear autoload", Callback = function()
+			local AutoPath = `{self.Folder}/settings/autoload.txt`
+			if not isfile(AutoPath) then
+				return self.Library:Notify({
+					Title = "Interface",
+					Content = "Config loader",
+					SubContent = "No autoload config set",
+					Duration = 7
+				})
+			end
+
+			self.Library.CreatedWindow:Dialog({
+				Title = "Confirm Clear Autoload",
+				Content = "Are you sure you want to disable autoload?",
+				Buttons = {
+					{
+						Title = "Confirm",
+						Callback = function()
+							delfile(AutoPath)
+							AutoloadButton:SetDesc("Current autoload config: none")
+							self.Library:Notify({
+								Title = "Interface",
+								Content = "Config loader",
+								SubContent = "Cleared autoload config",
+								Duration = 7
+							})
+						end
+					},
+					{
+						Title = "Cancel"
+					}
+				}
+			})
+		end})
+
 		if isfile(`{self.Folder}/settings/autoload.txt`) then
-			local name = readfile(`{self.Folder}/settings/autoload.txt`)
-			AutoloadButton:SetDesc("Current autoload config: " .. name)
+			local Name = readfile(`{self.Folder}/settings/autoload.txt`)
+			AutoloadButton:SetDesc("Current autoload config: " .. Name)
 		end
 
 		SaveManager:SetIgnoreIndexes({ "SaveManager_ConfigList", "SaveManager_ConfigName" })
