@@ -26,6 +26,7 @@ local ExtraSetting = {} do
 		AutoExecuteUrl = "",
 		EnableAntiAFK = true,
 		EnableAutoReconnect = true,
+		DisablePurchasePrompts = true,
 	}
 
 	local isFPSBoostApplied = false
@@ -141,6 +142,41 @@ local ExtraSetting = {} do
 				if i % 200 == 0 then task.wait() end
 			end
 		end)
+	end
+
+	local purchasePromptConnection = nil
+
+	local function TogglePurchasePrompts(disable)
+		pcall(function()
+			game.CoreGui.PurchasePromptApp.Enabled = not disable
+		end)
+
+		local foundationOverlay = game.CoreGui:FindFirstChild("FoundationOverlay")
+		if disable then
+			if not foundationOverlay then
+				if not purchasePromptConnection then
+					purchasePromptConnection = game.CoreGui.ChildAdded:Connect(function(ins)
+						if ins.Name == "FoundationOverlay" then
+							pcall(function() ins.Enabled = false end)
+							if purchasePromptConnection then
+								purchasePromptConnection:Disconnect()
+								purchasePromptConnection = nil
+							end
+						end
+					end)
+				end
+			else
+				pcall(function() foundationOverlay.Enabled = false end)
+			end
+		else
+			if purchasePromptConnection then
+				purchasePromptConnection:Disconnect()
+				purchasePromptConnection = nil
+			end
+			if foundationOverlay then
+				pcall(function() foundationOverlay.Enabled = true end)
+			end
+		end
 	end
 
 	local function ToggleAFKMode(enable)
@@ -374,6 +410,18 @@ local ExtraSetting = {} do
 	end
 
 	local function Cleanup()
+		if purchasePromptConnection then
+			purchasePromptConnection:Disconnect()
+			purchasePromptConnection = nil
+		end
+		pcall(function()
+			game.CoreGui.PurchasePromptApp.Enabled = true
+			local foundationOverlay = game.CoreGui:FindFirstChild("FoundationOverlay")
+			if foundationOverlay then
+				foundationOverlay.Enabled = true
+			end
+		end)
+
 		if fpsOverlayGui then
 			fpsOverlayGui:Destroy()
 			fpsOverlayGui = nil
@@ -536,6 +584,10 @@ local ExtraSetting = {} do
 			SetFpsOverlay(true)
 		end
 
+		if self.SavedConfig.DisablePurchasePrompts then
+			TogglePurchasePrompts(true)
+		end
+
 		if self.SavedConfig.EnableUnlockFPS and setfpscap then
 			pcall(function() setfpscap(999) end)
 		end
@@ -570,6 +622,21 @@ local ExtraSetting = {} do
 		if not inited then self:Init() end
 		local lib = self.Library
 		local cfg = self.SavedConfig
+
+		do
+			local Section = tab:AddSection("General")
+
+			Section:AddToggle("ExtraSetting_DisablePurchasePrompts", {
+				Title = "Disable Purchase Prompts",
+				Description = "Block Robux and gamepass purchase popups",
+				Default = cfg.DisablePurchasePrompts,
+				Callback = function(Value)
+					cfg.DisablePurchasePrompts = Value
+					SaveConfig()
+					TogglePurchasePrompts(Value)
+				end,
+			})
+		end
 
 		do
 			local section = tab:AddSection("Links")
