@@ -624,21 +624,6 @@ local ExtraSetting = {} do
 		local cfg = self.SavedConfig
 
 		do
-			local Section = tab:AddSection("General")
-
-			Section:AddToggle("ExtraSetting_DisablePurchasePrompts", {
-				Title = "Disable Purchase Prompts",
-				Description = "Block Robux and gamepass purchase popups",
-				Default = cfg.DisablePurchasePrompts,
-				Callback = function(Value)
-					cfg.DisablePurchasePrompts = Value
-					SaveConfig()
-					TogglePurchasePrompts(Value)
-				end,
-			})
-		end
-
-		do
 			local section = tab:AddSection("Links")
 
 			section:AddButton({
@@ -667,6 +652,21 @@ local ExtraSetting = {} do
 					end,
 				})
 			end
+		end
+
+		do
+			local Section = tab:AddSection("General")
+
+			Section:AddToggle("ExtraSetting_DisablePurchasePrompts", {
+				Title = "Disable Purchase Prompts",
+				Description = "Block Robux and gamepass purchase popups",
+				Default = cfg.DisablePurchasePrompts,
+				Callback = function(Value)
+					cfg.DisablePurchasePrompts = Value
+					SaveConfig()
+					TogglePurchasePrompts(Value)
+				end,
+			})
 		end
 
 		do
