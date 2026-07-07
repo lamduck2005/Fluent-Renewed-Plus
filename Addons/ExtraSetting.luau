@@ -38,6 +38,7 @@ local ExtraSetting = {} do
 	local afkStartTime = 0
 	local isAutoAFKLoopRunning = false
 	local afkInfoThread = nil
+	local OriginalVolume = 1
 	local isAutoRejoinTimerRunning = false
 	local autoRejoinTimerStartTime = tick()
 	local isAntiAfkFiring = false
@@ -151,6 +152,10 @@ local ExtraSetting = {} do
 		end)
 
 		if not enable then
+			pcall(function()
+				UserSettings():GetService("UserGameSettings").MasterVolume = OriginalVolume
+			end)
+
 			if afkInfoThread then
 				pcall(task.cancel, afkInfoThread)
 				afkInfoThread = nil
@@ -161,6 +166,12 @@ local ExtraSetting = {} do
 			end
 			return
 		end
+
+		pcall(function()
+			local userGameSettings = UserSettings():GetService("UserGameSettings")
+			OriginalVolume = userGameSettings.MasterVolume
+			userGameSettings.MasterVolume = 0
+		end)
 
 		if not playerGui then return end
 		local blackoutScreenGui = playerGui:FindFirstChild("AFKBlackoutScreenGui")
@@ -685,6 +696,7 @@ local ExtraSetting = {} do
 
 			local afkToggle = section:AddToggle("ExtraSetting_AFKMode", {
 				Title = "Enable AFK Mode",
+				Description = "Disables 3D rendering and mutes audio to reduce resource usage",
 				Default = false,
 				Callback = function(v)
 					isAFKModeEnabled = v
