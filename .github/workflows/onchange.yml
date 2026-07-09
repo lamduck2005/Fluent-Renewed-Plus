@@ -74,3 +74,9 @@ jobs:
           git add Fluent.luau Fluent.rbxm
           git commit -m "Build: ${{ github.sha }}"
           git push origin builds
+
+      - name: Purge jsDelivr Cache
+        shell: bash
+        run: |
+          curl -s "https://purge.jsdelivr.net/gh/${{ github.repository }}@builds/Fluent.luau"
+          curl -s "https://purge.jsdelivr.net/gh/${{ github.repository }}@builds/Fluent.rbxm"
