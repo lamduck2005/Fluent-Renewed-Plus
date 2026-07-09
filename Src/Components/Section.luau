@@ -8,6 +8,7 @@ return function(Title, Parent)
 
 	Section.Layout = New("UIListLayout", {
 		Padding = UDim.new(0, 5),
+		SortOrder = Enum.SortOrder.LayoutOrder,
 	})
 
 	Section.Container = New("Frame", {
