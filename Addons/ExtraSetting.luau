@@ -40,6 +40,7 @@ local ExtraSetting = {} do
 	local isAutoAFKLoopRunning = false
 	local afkInfoThread = nil
 	local OriginalVolume = 1
+	local HasMutedAudio = false
 	local isAutoRejoinTimerRunning = false
 	local autoRejoinTimerStartTime = tick()
 	local isAntiAfkFiring = false
@@ -188,9 +189,12 @@ local ExtraSetting = {} do
 		end)
 
 		if not enable then
-			pcall(function()
-				UserSettings():GetService("UserGameSettings").MasterVolume = OriginalVolume
-			end)
+			if HasMutedAudio then
+				pcall(function()
+					UserSettings():GetService("UserGameSettings").MasterVolume = OriginalVolume
+				end)
+				HasMutedAudio = false
+			end
 
 			if afkInfoThread then
 				pcall(task.cancel, afkInfoThread)
@@ -207,6 +211,7 @@ local ExtraSetting = {} do
 			local userGameSettings = UserSettings():GetService("UserGameSettings")
 			OriginalVolume = userGameSettings.MasterVolume
 			userGameSettings.MasterVolume = 0
+			HasMutedAudio = true
 		end)
 
 		if not playerGui then return end
