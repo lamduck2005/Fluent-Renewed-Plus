@@ -618,7 +618,7 @@ local ExtraSetting = {} do
 		end
 
 		if self.Library and self.Library.OnUnload then
-			self.Library.OnUnload:Connect(Cleanup)
+			self.Library.OnUnload:Once(Cleanup)
 		end
 	end
 
