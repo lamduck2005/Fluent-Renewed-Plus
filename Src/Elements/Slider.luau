@@ -98,21 +98,27 @@ function Element:New(Idx, Config)
 		SliderRail
 	})
 
-	Creator.AddSignal(SliderDot.InputBegan, function(Input)
+	local ActiveInput = nil
+
+	Creator.AddSignal(SliderInner.InputBegan, function(Input)
 		if
 			Input.UserInputType == Enum.UserInputType.MouseButton1
 			or Input.UserInputType == Enum.UserInputType.Touch
 		then
 			Dragging = true
+			ActiveInput = Input
+			local SizeScale = math.clamp(
+				(Input.Position.X - SliderRail.AbsolutePosition.X) / SliderRail.AbsoluteSize.X,
+				0, 1
+			)
+			Slider:SetValue(Slider.Min + ((Slider.Max - Slider.Min) * SizeScale))
 		end
 	end)
 
-	Creator.AddSignal(SliderDot.InputEnded, function(Input)
-		if
-			Input.UserInputType == Enum.UserInputType.MouseButton1
-			or Input.UserInputType == Enum.UserInputType.Touch
-		then
+	Creator.AddSignal(UserInputService.InputEnded, function(Input)
+		if Input == ActiveInput then
 			Dragging = false
+			ActiveInput = nil
 		end
 	end)
 

@@ -221,24 +221,38 @@ function Element:New(Idx, Config)
 
 	Library.OpenFrames[#Library.OpenFrames + 1] = DropdownHolderCanvas
 
-	local function RecalculateListPosition()
-		local Add = 0
-		if Camera.ViewportSize.Y - DropdownInner.AbsolutePosition.Y < DropdownHolderCanvas.AbsoluteSize.Y - 5 then
-			Add = DropdownHolderCanvas.AbsoluteSize.Y
-				- 5
-				- (Camera.ViewportSize.Y - DropdownInner.AbsolutePosition.Y)
-				+ 40
-		end
-		DropdownHolderCanvas.Position =
-			UDim2.fromOffset(DropdownInner.AbsolutePosition.X - 1, DropdownInner.AbsolutePosition.Y - 5 - Add)
-	end
-
 	local ListSizeX = 0
-	local function RecalculateListSize()
+	local function RecalculateListSizeAndPosition()
+		local ViewH = Camera.ViewportSize.Y
+		local ButtonY = DropdownInner.AbsolutePosition.Y
+		local ButtonH = DropdownInner.AbsoluteSize.Y
+
 		local Subtract = Dropdown.Searchable and 42 or 0
 		local Add = Dropdown.Searchable and 35 or 0
+		local TargetHeight = DropdownListLayout.AbsoluteContentSize.Y + 10 + Add
 
-		DropdownHolderCanvas.Size = UDim2.fromOffset(ListSizeX, math.min(392 - Subtract, DropdownListLayout.AbsoluteContentSize.Y + 10 + Add))
+		local SpaceBelow = math.max(100, ViewH - (ButtonY + ButtonH) - 75)
+		local SpaceAbove = math.max(100, ButtonY - 55)
+
+		local PreferBelow = SpaceBelow >= 200 or SpaceBelow >= SpaceAbove
+
+		local FinalHeight
+		local PosY
+
+		if PreferBelow then
+			FinalHeight = math.min(math.min(392 - Subtract, TargetHeight), SpaceBelow)
+			PosY = ButtonY + ButtonH + 2
+		else
+			FinalHeight = math.min(math.min(392 - Subtract, TargetHeight), SpaceAbove)
+			PosY = ButtonY - FinalHeight - 2
+		end
+
+		DropdownHolderCanvas.Size = UDim2.fromOffset(ListSizeX, FinalHeight)
+		DropdownHolderCanvas.Position = UDim2.fromOffset(DropdownInner.AbsolutePosition.X - 1, PosY)
+
+		if Dropdown.Opened then
+			DropdownHolderFrame.Size = UDim2.fromScale(1, 1)
+		end
 	end
 
 	local function RecalculateCanvasSize()
@@ -249,10 +263,16 @@ function Element:New(Idx, Config)
 		Dropdown:BuildDropdownList()
 	end
 
-	RecalculateListPosition()
-	RecalculateListSize()
+	RecalculateListSizeAndPosition()
 
-	dropdownConns[#dropdownConns + 1] = DropdownInner:GetPropertyChangedSignal("AbsolutePosition"):Connect(RecalculateListPosition)
+	dropdownConns[#dropdownConns + 1] = DropdownInner:GetPropertyChangedSignal("AbsolutePosition"):Connect(RecalculateListSizeAndPosition)
+	if self.Library.WindowFrame then
+		dropdownConns[#dropdownConns + 1] = self.Library.WindowFrame:GetPropertyChangedSignal("AbsolutePosition"):Connect(function()
+			if Dropdown.Opened then
+				RecalculateListSizeAndPosition()
+			end
+		end)
+	end
 	dropdownConns[#dropdownConns + 1] = SearchBox:GetPropertyChangedSignal("Text"):Connect(RepopulateDropdownList)
 
 	local ScrollFrame = self.ScrollFrame
@@ -261,6 +281,7 @@ function Element:New(Idx, Config)
 		ScrollFrame.ScrollingEnabled = false
 		DropdownHolderCanvas.Visible = true
 		DropdownHolderFrame.Size = UDim2.fromScale(1, 1)
+		RecalculateListSizeAndPosition()
 
 		if Dropdown.Searchable then
 			SearchBox.Text = ""
@@ -374,20 +395,19 @@ function Element:New(Idx, Config)
 				AllButton.BackgroundTransparency = 1
 			end)
 			
-			AllConns[#AllConns + 1] = AllButtonLabel.InputBegan:Connect(function(Input)
-				if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-					local tbl = {}
-					for val, bool in next, Dropdown.Value do
+			local function DoSelectAll()
+				local tbl = {}
+				for val, bool in next, Dropdown.Value do
+					tbl[val] = true
+				end
+				for _, val in next, Dropdown.Values do
+					if not Dropdown.Searchable or SearchBox.Text == "" or string.lower(Dropdown.Displayer(val)):match(string.lower(SearchBox.Text)) then
 						tbl[val] = true
 					end
-					for _, val in next, Dropdown.Values do
-						if not Dropdown.Searchable or SearchBox.Text == "" or string.lower(Dropdown.Displayer(val)):match(string.lower(SearchBox.Text)) then
-							tbl[val] = true
-						end
-					end
-					Dropdown:SetValue(tbl)
 				end
-			end)
+				Dropdown:SetValue(tbl)
+			end
+			AllConns[#AllConns + 1] = AllButton.Activated:Connect(DoSelectAll)
 			
 			optionCleanup[AllButton] = {
 				registry = { AllButton, AllButtonSelector, AllButtonLabel },
@@ -412,20 +432,19 @@ function Element:New(Idx, Config)
 				NoneButton.BackgroundTransparency = 1
 			end)
 			
-			NoneConns[#NoneConns + 1] = NoneButtonLabel.InputBegan:Connect(function(Input)
-				if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-					local tbl = {}
-					for val, bool in next, Dropdown.Value do
-						tbl[val] = true
-					end
-					for _, val in next, Dropdown.Values do
-						if not Dropdown.Searchable or SearchBox.Text == "" or string.lower(Dropdown.Displayer(val)):match(string.lower(SearchBox.Text)) then
-							tbl[val] = nil
-						end
-					end
-					Dropdown:SetValue(tbl)
+			local function DoSelectNone()
+				local tbl = {}
+				for val, bool in next, Dropdown.Value do
+					tbl[val] = true
 				end
-			end)
+				for _, val in next, Dropdown.Values do
+					if not Dropdown.Searchable or SearchBox.Text == "" or string.lower(Dropdown.Displayer(val)):match(string.lower(SearchBox.Text)) then
+						tbl[val] = nil
+					end
+				end
+				Dropdown:SetValue(tbl)
+			end
+			NoneConns[#NoneConns + 1] = NoneButton.Activated:Connect(DoSelectNone)
 			
 			optionCleanup[NoneButton] = {
 				registry = { NoneButton, NoneButtonSelector, NoneButtonLabel },
@@ -501,9 +520,7 @@ function Element:New(Idx, Config)
 			function Table:UpdateButton()
 				if Config.Multi then
 					Selected = Dropdown.Value[Value]
-					if Selected then
-						SetBackTransparency(0.89)
-					end
+					SetBackTransparency(Selected and 0.89 or 1)
 				else
 					Selected = Dropdown.Value == Value
 					SetBackTransparency(Selected and 0.89 or 1)
@@ -513,39 +530,40 @@ function Element:New(Idx, Config)
 				SetSelTransparency(Selected and 0 or 1)
 			end
 
-			optionConns[#optionConns + 1] = ButtonLabel.InputBegan:Connect(function(Input)
-				if
-					Input.UserInputType == Enum.UserInputType.MouseButton1
-					or Input.UserInputType == Enum.UserInputType.Touch
-				then
-					local Try = not Selected
+			local function OnSelect()
+				local Try = not Selected
 
-					if Dropdown:GetActiveValues() == 1 and not Try and not Config.AllowNull then
-					else
-						if Config.Multi then
-							Selected = Try
-							Dropdown.Value[Value] = Selected and true or nil
+				if Dropdown:GetActiveValues() == 1 and not Try and not Config.AllowNull then
+				else
+					if Config.Multi then
+						Selected = Try
+						Dropdown.Value[Value] = Selected and true or nil
 
-							if typeof(Dropdown.Callback) == "function" then
-								Library:SafeCallback(Dropdown.Callback, Dropdown.Value)
-							end
-							if typeof(Dropdown.Changed) == "function" then
-								Library:SafeCallback(Dropdown.Changed, Dropdown.Value)
-							end
-						else
-							Selected = Try
-							Dropdown:SetValue(Selected and Value or nil)
-
-							for _, OtherButton in next, Buttons do
-								OtherButton:UpdateButton()
-							end
+						if typeof(Dropdown.Callback) == "function" then
+							Library:SafeCallback(Dropdown.Callback, Dropdown.Value)
 						end
+						if typeof(Dropdown.Changed) == "function" then
+							Library:SafeCallback(Dropdown.Changed, Dropdown.Value)
+						end
+					else
+						Selected = Try
+						Dropdown:SetValue(Selected and Value or nil)
 
-						Table:UpdateButton()
-						Dropdown:Display()
+						for _, OtherButton in next, Buttons do
+							OtherButton:UpdateButton()
+						end
 					end
+
+					Table:UpdateButton()
+					Dropdown:Display()
+				end
+			end
+			optionConns[#optionConns + 1] = Button.InputEnded:Connect(function(Input)
+				if Input.UserInputType == Enum.UserInputType.Touch then
+					SetBackTransparency(Selected and 0.89 or 1)
 				end
 			end)
+			optionConns[#optionConns + 1] = Button.Activated:Connect(OnSelect)
 
 			optionCleanup[Button] = {
 				registry = { Button, ButtonSelector, ButtonLabel },
@@ -580,7 +598,7 @@ function Element:New(Idx, Config)
 		ListSizeX = ListSizeX + 30
 
 		RecalculateCanvasSize()
-		RecalculateListSize()
+		RecalculateListSizeAndPosition()
 	end
 
 	function Dropdown:SetValues(NewValues)
