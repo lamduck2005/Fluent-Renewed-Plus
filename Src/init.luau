@@ -300,8 +300,16 @@ function Library:Window(Config: {
 	Config.Size = if typeof(Config.Size) == "UDim2" then Config.Size else UDim2.fromOffset(470, 300)
 	Config.MinSize = if typeof(Config.MinSize) == "Vector2" then Config.MinSize else Vector2.new(470, 300)
 
-	Config.Size = if Config.Resize ~= true then Config.Size else UDim2.fromOffset(Library.Utilities:Resize((Config.Size and Config.Size.X.Offset) or 470, (Config.Size and Config.Size.Y.Offset) or 300))
-	Config.MinSize = if Config.Resize ~= true then Config.MinSize else Vector2.new(Library.Utilities:Resize((Config.MinSize and Config.MinSize.X) or 470, (Config.MinSize and Config.MinSize.Y) or 300))
+	if Library.Utilities:GetOS() == "Mobile" or Camera.ViewportSize.Y < 600 then
+		local TargetX = math.min(480, Camera.ViewportSize.X - 80)
+		local TargetY = math.clamp(math.floor(Camera.ViewportSize.Y * 0.8), 260, 380)
+
+		Config.Size = UDim2.fromOffset(TargetX, TargetY)
+		Config.MinSize = Vector2.new(340, 240)
+	elseif Config.Resize == true then
+		Config.Size = UDim2.fromOffset(Library.Utilities:Resize((Config.Size and Config.Size.X.Offset) or 470, (Config.Size and Config.Size.Y.Offset) or 300))
+		Config.MinSize = Vector2.new(Library.Utilities:Resize((Config.MinSize and Config.MinSize.X) or 470, (Config.MinSize and Config.MinSize.Y) or 300))
+	end
 
 	Library.MinimizeKey = if typeof(Config.MinimizeKey) == "string" or typeof(Config.MinimizeKey) == "EnumItem" and Config.MinimizeKey.EnumType == Enum.KeyCode then Config.MinimizeKey else Enum.KeyCode.RightControl
 	Library.UseAcrylic = if typeof(Config.Acrylic) == "boolean" then Config.Acrylic else false
@@ -463,7 +471,13 @@ function Library:Destroy()
 			end
 		end
 
-		local info, tweenProps, doTween = TweenInfo.new(2 / 3, Enum.EasingStyle.Quint), {}, false
+		if Library.CreatedWindow and Library.CreatedWindow.Root then
+			TweenService:Create(Library.CreatedWindow.Root, TweenInfo.new(1.0, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {
+				Size = UDim2.new(0, Library.CreatedWindow.Root.AbsoluteSize.X, 0, 0)
+			}):Play()
+		end
+
+		local info, tweenProps, doTween = TweenInfo.new(1.0, Enum.EasingStyle.Quint), {}, false
 
 		local function IsA(obj: Object, class: string)
 			local isClass = obj:IsA(class)

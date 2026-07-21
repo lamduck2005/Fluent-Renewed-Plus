@@ -11,6 +11,7 @@ local Components = script.Parent
 local Library = require(Root)
 
 local UserInputService = Library.Utilities:Clone(game:GetService("UserInputService"))
+local TweenService = Library.Utilities:Clone(game:GetService("TweenService"))
 local Mouse = Library.Utilities:Clone(game:GetService("Players")).LocalPlayer:GetMouse()
 local Camera = Library.Utilities:Clone(game:GetService("Workspace")).CurrentCamera
 
@@ -34,10 +35,7 @@ return function(Config)
 		MinSize = Config.MinSize,
 		CurrentPos = 0,
 		TabWidth = 0,
-		Position = UDim2.fromOffset(
-			Camera.ViewportSize.X / 2 - Config.Size.X.Offset / 2,
-			Camera.ViewportSize.Y / 2 - Config.Size.Y.Offset / 2
-		),
+		Position = UDim2.fromScale(0.5, 0.5),
 	}
 
 	local Dragging, DragInput, MousePos, StartPos = false
@@ -127,9 +125,14 @@ return function(Config)
 		Window.ContainerHolder
 	})
 
+	TabFrame.Visible = true
+	Window.ContainerCanvas.Visible = true
+	Window.TabDisplay.Visible = true
+
 	Window.Root = New("Frame", {
 		BackgroundTransparency = 1,
-		Size = Window.Size,
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Size = UDim2.new(0, Window.Size.X.Offset, 0, 0),
 		Position = Window.Position,
 		Parent = Config.Parent,
 	}, {
@@ -195,7 +198,7 @@ return function(Config)
 
 	local SizeMotor = Flipper.GroupMotor.new({
 		X = Window.Size.X.Offset,
-		Y = Window.Size.Y.Offset,
+		Y = 0,
 	})
 
 	local PosMotor = Flipper.GroupMotor.new({
@@ -212,8 +215,25 @@ return function(Config)
 		Window.Root.Size = UDim2.new(0, values.X, 0, values.Y)
 	end)
 
+	task.spawn(function()
+		local info = TweenInfo.new(1.0, Enum.EasingStyle.Quint)
+
+		for _, v in next, Window.Root:GetDescendants() do
+			local props = {}
+			if v:IsA("TextLabel") or v:IsA("TextBox") then props.TextTransparency, v.TextTransparency = v.TextTransparency, 1 end
+			if v:IsA("UIStroke") then props.Transparency, v.Transparency = v.Transparency, 1 end
+			if v:IsA("ImageLabel") or v:IsA("ImageButton") then props.ImageTransparency, v.ImageTransparency = v.ImageTransparency, 1 end
+			if next(props) then TweenService:Create(v, info, props):Play() end
+		end
+
+		SizeMotor:setGoal({
+			X = Spring(Window.Size.X.Offset, { frequency = 2.0, dampingRatio = 1 }),
+			Y = Spring(Window.Size.Y.Offset, { frequency = 2.0, dampingRatio = 1 }),
+		})
+	end)
+
 	PosMotor:onStep(function(values)
-		Window.Root.Position = UDim2.new(0, values.X, 0, values.Y)
+		Window.Root.Position = UDim2.new(0.5, values.X, 0.5, values.Y)
 	end)
 
 	local LastValue = 0
@@ -318,7 +338,7 @@ return function(Config)
 	Creator.AddSignal(UserInputService.InputChanged, function(Input)
 		if Input == DragInput and Dragging then
 			local Delta = Input.Position - MousePos
-			Window.Position = UDim2.fromOffset(StartPos.X.Offset + Delta.X, StartPos.Y.Offset + Delta.Y)
+			Window.Position = UDim2.new(0.5, StartPos.X.Offset + Delta.X, 0.5, StartPos.Y.Offset + Delta.Y)
 			PosMotor:setGoal({
 				X = Instant(Window.Position.X.Offset),
 				Y = Instant(Window.Position.Y.Offset),
@@ -418,12 +438,8 @@ return function(Config)
 				if HoldingTask then task.cancel(HoldingTask) end
 				HoldingTask = task.delay(3, function()
 					if IsDraggingHideButton and HideButtonDragDistance < 5 then
-						local DefaultPos = UDim2.fromOffset(
-							Camera.ViewportSize.X / 2 - Config.Size.X.Offset / 2,
-							Camera.ViewportSize.Y / 2 - Config.Size.Y.Offset / 2
-						)
-						Window.Position = DefaultPos
-						PosMotor:setGoal({ X = Flipper.Instant.new(DefaultPos.X.Offset), Y = Flipper.Instant.new(DefaultPos.Y.Offset) })
+						Window.Position = UDim2.fromScale(0.5, 0.5)
+						PosMotor:setGoal({ X = Flipper.Instant.new(0), Y = Flipper.Instant.new(0) })
 						Window.Size = Config.Size
 						SizeMotor:setGoal({ X = Flipper.Instant.new(Config.Size.X.Offset), Y = Flipper.Instant.new(Config.Size.Y.Offset) })
 
