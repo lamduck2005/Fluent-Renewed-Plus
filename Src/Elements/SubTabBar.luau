@@ -168,7 +168,7 @@ function Element:New(Idx, Config)
 				BackgroundTransparency = 1,
 				Text = option,
 				TextSize = 12,
-				FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Medium),
+				FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Medium),
 				ThemeTag = {
 					TextColor3 = "Text",
 				}

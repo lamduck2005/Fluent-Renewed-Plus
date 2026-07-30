@@ -67,7 +67,7 @@ function Dialog:Create()
 
 	NewDialog.Title = New("TextLabel", {
 		FontFace = Font.new(
-			"rbxasset://fonts/families/GothamSSm.json",
+			"rbxasset://fonts/families/Montserrat.json",
 			Enum.FontWeight.SemiBold,
 			Enum.FontStyle.Normal
 		),

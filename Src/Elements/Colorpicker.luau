@@ -88,7 +88,7 @@ function Element:New(Idx, Config)
 		local function CreateInputLabel(Text, Pos): TextLabel
 			return New("TextLabel", {
 				FontFace = Font.new(
-					"rbxasset://fonts/families/GothamSSm.json",
+					"rbxasset://fonts/families/Montserrat.json",
 					Enum.FontWeight.Medium,
 					Enum.FontStyle.Normal
 				),

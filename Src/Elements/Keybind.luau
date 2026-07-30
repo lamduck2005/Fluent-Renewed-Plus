@@ -30,7 +30,7 @@ function Element:New(Idx, Config)
 	Keybind.SetDesc = KeybindFrame.SetDesc
 
 	local KeybindDisplayLabel = New("TextLabel", {
-		FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
+		FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
 		Text = Library.Utilities:Prettify(Keybind.Value),
 		TextColor3 = Color3.fromRGB(240, 240, 240),
 		TextSize = 13,

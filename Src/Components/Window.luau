@@ -491,7 +491,7 @@ return function(Config)
 		Dialog.Title.Text = Config.Title
 
 		local Content = New("TextLabel", {
-			FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
+			FontFace = Font.new("rbxasset://fonts/families/Montserrat.json"),
 			Text = Config.Content,
 			TextColor3 = Color3.fromRGB(240, 240, 240),
 			TextSize = 14,

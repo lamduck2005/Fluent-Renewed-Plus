@@ -11,7 +11,7 @@ return function(Theme, Parent, DialogCheck)
 	DialogCheck = DialogCheck or false
 
 	Button.Title = New("TextLabel", {
-		FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
+		FontFace = Font.new("rbxasset://fonts/families/Montserrat.json"),
 		TextColor3 = Color3.fromRGB(200, 200, 200),
 		TextSize = 14,
 		TextWrapped = true,

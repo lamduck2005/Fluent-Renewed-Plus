@@ -49,7 +49,7 @@ function Notification:New(Config)
 		RichText = true,
 		TextColor3 = Color3.fromRGB(255, 255, 255),
 		TextTransparency = 0,
-		FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
+		FontFace = Font.new("rbxasset://fonts/families/Montserrat.json"),
 		TextSize = 13,
 		TextXAlignment = "Left",
 		TextYAlignment = "Center",
@@ -62,7 +62,7 @@ function Notification:New(Config)
 	})
 
 	NewNotification.ContentLabel = New("TextLabel", {
-		FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
+		FontFace = Font.new("rbxasset://fonts/families/Montserrat.json"),
 		Text = Config.Content,
 		TextColor3 = Color3.fromRGB(240, 240, 240),
 		TextSize = 14,
@@ -77,7 +77,7 @@ function Notification:New(Config)
 	})
 
 	NewNotification.SubContentLabel = New("TextLabel", {
-		FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
+		FontFace = Font.new("rbxasset://fonts/families/Montserrat.json"),
 		Text = Config.SubContent,
 		TextColor3 = Color3.fromRGB(240, 240, 240),
 		TextSize = 14,

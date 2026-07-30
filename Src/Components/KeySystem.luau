@@ -89,7 +89,7 @@ function KeySystem.Show(Config, Library, Callback)
 
 	if Config.Note and Config.Note ~= "" then
 		New("TextLabel", {
-			FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
+			FontFace = Font.new("rbxasset://fonts/families/Montserrat.json"),
 			Text = Config.Note,
 			TextSize = 13,
 			TextXAlignment = Enum.TextXAlignment.Left,
@@ -119,7 +119,7 @@ function KeySystem.Show(Config, Library, Callback)
 	})
 
 	local InputBox = New("TextBox", {
-		FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
+		FontFace = Font.new("rbxasset://fonts/families/Montserrat.json"),
 		TextColor3 = Color3.fromRGB(200, 200, 200),
 		TextSize = 14,
 		TextXAlignment = Enum.TextXAlignment.Left,
@@ -380,7 +380,7 @@ function KeySystem.Show(Config, Library, Callback)
 				})
 
 				local ItemLabel = New("TextLabel", {
-					FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
+					FontFace = Font.new("rbxasset://fonts/families/Montserrat.json"),
 					Text = item.Config.Title or item.Def.Name,
 					TextSize = 13,
 					TextXAlignment = Enum.TextXAlignment.Left,

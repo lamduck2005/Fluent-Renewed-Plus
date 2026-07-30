@@ -52,7 +52,7 @@ function Element:New(Idx, Config)
 	Dropdown.SetDesc = DropdownFrame.SetDesc
 
 	local DropdownDisplay = New("TextLabel", {
-		FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
+		FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
 		Text = "Value",
 		TextColor3 = Color3.fromRGB(240, 240, 240),
 		TextSize = 13,
@@ -176,7 +176,7 @@ function Element:New(Idx, Config)
 	}) :: Frame
 
 	local ButtonLabel_BuildList = New("TextLabel", {
-		FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
+		FontFace = Font.new("rbxasset://fonts/families/Montserrat.json"),
 		TextColor3 = Color3.fromRGB(200, 200, 200),
 		TextSize = 13,
 		TextXAlignment = Enum.TextXAlignment.Left,

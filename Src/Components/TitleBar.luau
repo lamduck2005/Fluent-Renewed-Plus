@@ -104,7 +104,7 @@ return function(Config)
 		Text = Config.Title,
 		Parent = TitleBar.TitleHolder,
 		FontFace = Font.new(
-			"rbxasset://fonts/families/GothamSSm.json",
+			"rbxasset://fonts/families/Montserrat.json",
 			Enum.FontWeight.Regular,
 			Enum.FontStyle.Normal
 		),
@@ -125,7 +125,7 @@ return function(Config)
 		Parent = TitleBar.TitleHolder,
 		TextTransparency = 0.4,
 		FontFace = Font.new(
-			"rbxasset://fonts/families/GothamSSm.json",
+			"rbxasset://fonts/families/Montserrat.json",
 			Enum.FontWeight.Regular,
 			Enum.FontStyle.Normal
 		),

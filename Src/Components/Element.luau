@@ -10,7 +10,7 @@ return function(Title, Desc, Parent, Hover, Config)
 	Config = typeof(Config) == "table" and Config or {}
 
 	Element.TitleLabel = New("TextLabel", {
-		FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Medium, Enum.FontStyle.Normal),
+		FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.Medium, Enum.FontStyle.Normal),
 		Text = Title,
 		TextColor3 = Color3.fromRGB(240, 240, 240),
 		TextSize = 13,
@@ -24,7 +24,7 @@ return function(Title, Desc, Parent, Hover, Config)
 	}) :: TextLabel
 
 	Element.DescLabel = New("TextLabel", {
-		FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
+		FontFace = Font.new("rbxasset://fonts/families/Montserrat.json"),
 		Text = Desc,
 		TextColor3 = Color3.fromRGB(200, 200, 200),
 		TextSize = 12,

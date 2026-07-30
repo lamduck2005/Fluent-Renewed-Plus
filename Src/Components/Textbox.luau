@@ -10,7 +10,7 @@ return function(Parent, Acrylic)
 	Acrylic = Acrylic or false
 
 	Textbox.Input = New("TextBox", {
-		FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
+		FontFace = Font.new("rbxasset://fonts/families/Montserrat.json"),
 		TextColor3 = Color3.fromRGB(200, 200, 200),
 		TextSize = 14,
 		TextXAlignment = Enum.TextXAlignment.Left,

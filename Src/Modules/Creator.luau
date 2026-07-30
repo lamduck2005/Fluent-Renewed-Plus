@@ -7,6 +7,7 @@ local Creator = {
 	Registry = {},
 	Signals = {},
 	TransparencyMotors = {},
+	Scale = 1,
 	DefaultProperties = {
 		ScreenGui = {
 			ResetOnSpawn = false,
@@ -25,7 +26,7 @@ local Creator = {
 		TextLabel = {
 			BackgroundColor3 = Color3.new(1, 1, 1),
 			BorderColor3 = Color3.new(0, 0, 0),
-			Font = Enum.Font.SourceSans,
+			FontFace = Font.new("rbxasset://fonts/families/Montserrat.json"),
 			Text = "",
 			TextColor3 = Color3.new(0, 0, 0),
 			BackgroundTransparency = 1,
@@ -36,7 +37,7 @@ local Creator = {
 			BackgroundColor3 = Color3.new(1, 1, 1),
 			BorderColor3 = Color3.new(0, 0, 0),
 			AutoButtonColor = false,
-			Font = Enum.Font.SourceSans,
+			FontFace = Font.new("rbxasset://fonts/families/Montserrat.json"),
 			Text = "",
 			TextColor3 = Color3.new(0, 0, 0),
 			TextSize = 14,
@@ -46,7 +47,7 @@ local Creator = {
 			BackgroundColor3 = Color3.new(1, 1, 1),
 			BorderColor3 = Color3.new(0, 0, 0),
 			ClearTextOnFocus = false,
-			Font = Enum.Font.SourceSans,
+			FontFace = Font.new("rbxasset://fonts/families/Montserrat.json"),
 			Text = "",
 			TextColor3 = Color3.new(0, 0, 0),
 			TextSize = 14,
@@ -184,16 +185,25 @@ end
 
 function Creator.New(Name, Properties: { [string]: any }?, Children: { [number]: Instance }?): Instance
 	local Object = Instance.new(Name)
+	local Scale = Creator.Scale
 
 	-- Default properties
 	for Name, Value in next, Creator.DefaultProperties[Name] or {} do
-		Object[Name] = Value
+		if Name == "TextSize" and Scale ~= 1 then
+			Object[Name] = math.round(Value * Scale)
+		else
+			Object[Name] = Value
+		end
 	end
 
 	-- Properties
 	for Name, Value in next, Properties or {} do
 		if Name ~= "ThemeTag" then
-			Object[Name] = Value
+			if Name == "TextSize" and Scale ~= 1 then
+				Object[Name] = math.round(Value * Scale)
+			else
+				Object[Name] = Value
+			end
 		end
 	end
 

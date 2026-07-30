@@ -61,7 +61,7 @@ function Element:New(Idx, Config)
 	})
 
 	local SliderDisplay = New("TextBox", {
-		FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
+		FontFace = Font.new("rbxasset://fonts/families/Montserrat.json"),
 		Text = "Value",
 		ClearTextOnFocus = true,
 		TextSize = 12,
