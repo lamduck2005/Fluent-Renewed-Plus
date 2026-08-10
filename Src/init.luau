@@ -310,11 +310,7 @@ function Library:Window(Config: {
 		Config.Size = UDim2.fromOffset(Library.Utilities:Resize((Config.Size and Config.Size.X.Offset) or 470, (Config.Size and Config.Size.Y.Offset) or 300))
 		Config.MinSize = Vector2.new(Library.Utilities:Resize((Config.MinSize and Config.MinSize.X) or 470, (Config.MinSize and Config.MinSize.Y) or 300))
 	else
-		local VpY = Camera.ViewportSize.Y > 0 and Camera.ViewportSize.Y or 1080
-		local PcScale = math.clamp(VpY / 768, 1.0, 1.8)
-		Creator.Scale = PcScale
-		Config.Size = UDim2.fromOffset(math.round(Config.Size.X.Offset * PcScale), math.round(Config.Size.Y.Offset * PcScale))
-		Config.MinSize = Vector2.new(math.round(Config.MinSize.X * PcScale), math.round(Config.MinSize.Y * PcScale))
+		Creator.Scale = 1
 	end
 
 
