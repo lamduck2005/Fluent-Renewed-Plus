@@ -11,7 +11,7 @@ A modern, customizable Roblox GUI library with 61 themes, 10,000+ icons, a built
 local Library = loadstring(game:HttpGet("https://github.com/lamduck2005/Fluent-Renewed-Plus/releases/latest/download/Fluent.luau"))()
 ```
 
-Forked from [ActualMasterOogway/Fluent-Renewed](https://github.com/ActualMasterOogway/Fluent-Renewed), originally by [dawid-scripts/Fluent](https://github.com/dawid-scripts/Fluent).
+Forked from [ActualMasterOogway/Fluent-Renewed](https://github.com/ActualMasterOogway/Fluent-Renewed), originally by [dawid-scripts/Fluent](https://github.com/dawid-scripts/Fluent). Special thanks to [WindUI](https://github.com/Footagesus/WindUI) for design & feature references.
 
 ## Differences From Original
 

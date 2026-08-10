@@ -69,8 +69,10 @@ function Element:New(Idx, Config)
 
 	local SubTabContainers = {}
 	local Buttons = {}
+	local ActiveOption = Default
 
 	local function SelectSubTab(selectedOption)
+		ActiveOption = selectedOption
 		for option, container in pairs(SubTabContainers) do
 			if option ~= selectedOption and container.Container.Visible then
 				container.Container.Visible = false
@@ -87,6 +89,10 @@ function Element:New(Idx, Config)
 
 		for option, button in pairs(Buttons) do
 			local isSelected = (option == selectedOption)
+			TweenService:Create(button, TweenInfo.new(0.15), {
+				BackgroundTransparency = isSelected and 0.89 or 1
+			}):Play()
+
 			local stroke = button:FindFirstChildOfClass("UIStroke")
 			if stroke then
 				Creator.OverrideTag(stroke, { Color = isSelected and "Accent" or "InElementBorder" })
@@ -149,6 +155,9 @@ function Element:New(Idx, Config)
 			Text = "",
 			LayoutOrder = index,
 			Parent = NavigationBar,
+			ThemeTag = {
+				BackgroundColor3 = "DropdownOption",
+			},
 		}, {
 			New("UICorner", { CornerRadius = UDim.new(1, 0) }),
 			New("UIStroke", {
@@ -178,18 +187,15 @@ function Element:New(Idx, Config)
 		Buttons[option] = Button
 
 		Creator.AddSignal(Button.MouseEnter, function()
-			if Default ~= option then
-				TweenService:Create(Button, TweenInfo.new(0.15), { BackgroundTransparency = 0.95 }):Play()
-			end
+			local isSelected = (option == ActiveOption)
+			TweenService:Create(Button, TweenInfo.new(0.15), { BackgroundTransparency = isSelected and 0.85 or 0.89 }):Play()
 		end)
 		Creator.AddSignal(Button.MouseLeave, function()
-			if Default ~= option then
-				TweenService:Create(Button, TweenInfo.new(0.15), { BackgroundTransparency = 1 }):Play()
-			end
+			local isSelected = (option == ActiveOption)
+			TweenService:Create(Button, TweenInfo.new(0.15), { BackgroundTransparency = isSelected and 0.89 or 1 }):Play()
 		end)
 
 		Creator.AddSignal(Button.MouseButton1Click, function()
-			Default = option
 			SelectSubTab(option)
 		end)
 	end

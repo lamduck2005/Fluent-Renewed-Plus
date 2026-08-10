@@ -61,9 +61,45 @@ return function(Config)
 	})
 
 	local ResizeStartFrame = New("Frame", {
-		Size = UDim2.fromOffset(20, 20),
+		Size = UDim2.fromOffset(32, 32),
 		BackgroundTransparency = 1,
-		Position = UDim2.new(1, -20, 1, -20),
+		Position = UDim2.new(1, 4, 1, 4),
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		ZIndex = 99,
+		Active = true,
+	}, {
+		New("ImageLabel", {
+			Name = "Icon",
+			Size = UDim2.fromOffset(48, 48),
+			BackgroundTransparency = 1,
+			Image = "rbxassetid://120997033468887",
+			Position = UDim2.new(0.5, -12, 0.5, -12),
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			ImageTransparency = 0.8,
+			ZIndex = 99,
+		}),
+	})
+
+	local BottomDragFrame = New("Frame", {
+		Size = UDim2.fromOffset(160, 4),
+		BackgroundColor3 = Color3.new(1, 1, 1),
+		BackgroundTransparency = 0.8,
+		Position = UDim2.new(0.5, 0, 1, 4),
+		AnchorPoint = Vector2.new(0.5, 0),
+		ZIndex = 99,
+	}, {
+		New("UICorner", {
+			CornerRadius = UDim.new(1, 0),
+		}),
+		New("TextButton", {
+			Name = "Trigger",
+			Size = UDim2.new(1, 12, 1, 12),
+			BackgroundTransparency = 1,
+			Position = UDim2.new(0.5, 0, 0.5, 0),
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Active = true,
+			Text = "",
+		}),
 	})
 
 	Window.TabHolder = New("ScrollingFrame", {
@@ -140,6 +176,7 @@ return function(Config)
 		Window.TabDisplay,
 		Window.ContainerCanvas,
 		TabFrame,
+		BottomDragFrame,
 		ResizeStartFrame,
 	})
 
@@ -325,6 +362,62 @@ return function(Config)
 		end
 	end)
 
+	local ResizeIcon = ResizeStartFrame:FindFirstChild("Icon")
+	if ResizeIcon then
+		Creator.AddSignal(ResizeStartFrame.MouseEnter, function()
+			if not Resizing then
+				TweenService:Create(ResizeIcon, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { ImageTransparency = 0.35 }):Play()
+			end
+		end)
+		Creator.AddSignal(ResizeStartFrame.MouseLeave, function()
+			if not Resizing then
+				TweenService:Create(ResizeIcon, TweenInfo.new(0.17, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { ImageTransparency = 0.8 }):Play()
+			end
+		end)
+	end
+
+	local BottomDragTrigger = BottomDragFrame:FindFirstChild("Trigger")
+	if BottomDragTrigger then
+		Creator.AddSignal(BottomDragTrigger.InputBegan, function(Input)
+			if
+				Input.UserInputType == Enum.UserInputType.MouseButton1
+				or Input.UserInputType == Enum.UserInputType.Touch
+			then
+				Dragging = true
+				MousePos = Input.Position
+				StartPos = Window.Root.Position
+
+				if Window.Maximized then
+					StartPos = UDim2.fromOffset(
+						Mouse.X - (Mouse.X * ((OldSizeX - 100) / Window.Root.AbsoluteSize.X)),
+						Mouse.Y - (Mouse.Y * (OldSizeY / Window.Root.AbsoluteSize.Y))
+					)
+				end
+			end
+		end)
+
+		Creator.AddSignal(BottomDragTrigger.InputChanged, function(Input)
+			if
+				Input.UserInputType == Enum.UserInputType.MouseMovement
+				or Input.UserInputType == Enum.UserInputType.Touch
+			then
+				DragInput = Input
+			end
+		end)
+
+		Creator.AddSignal(BottomDragTrigger.MouseEnter, function()
+			if not Dragging then
+				TweenService:Create(BottomDragFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { BackgroundTransparency = 0.5 }):Play()
+			end
+		end)
+
+		Creator.AddSignal(BottomDragTrigger.MouseLeave, function()
+			if not Dragging then
+				TweenService:Create(BottomDragFrame, TweenInfo.new(0.17, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { BackgroundTransparency = 0.8 }):Play()
+			end
+		end)
+	end
+
 	Creator.AddSignal(ResizeStartFrame.InputBegan, function(Input)
 		if
 			Input.UserInputType == Enum.UserInputType.MouseButton1
@@ -332,6 +425,9 @@ return function(Config)
 		then
 			Resizing = true
 			ResizePos = Input.Position
+			if ResizeIcon then
+				TweenService:Create(ResizeIcon, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { ImageTransparency = 0.35 }):Play()
+			end
 		end
 	end)
 
@@ -368,9 +464,23 @@ return function(Config)
 	end)
 
 	Creator.AddSignal(UserInputService.InputEnded, function(Input)
+		if
+			Input == DragInput
+			or Input.UserInputType == Enum.UserInputType.MouseButton1
+			or Input.UserInputType == Enum.UserInputType.Touch
+		then
+			if Dragging then
+				Dragging = false
+				TweenService:Create(BottomDragFrame, TweenInfo.new(0.17, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { BackgroundTransparency = 0.8 }):Play()
+			end
+		end
+
 		if Resizing == true or Input.UserInputType == Enum.UserInputType.Touch then
 			Resizing = false
 			Window.Size = UDim2.fromOffset(SizeMotor:getValue().X, SizeMotor:getValue().Y)
+			if ResizeIcon then
+				TweenService:Create(ResizeIcon, TweenInfo.new(0.17, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { ImageTransparency = 0.8 }):Play()
+			end
 		end
 	end)
 
