@@ -6,7 +6,7 @@ local virtualInputManager = game:GetService("VirtualInputManager")
 local guiService = game:GetService("GuiService")
 local teleportService = game:GetService("TeleportService")
 local runService = game:GetService("RunService")
-local userInputService = game:GetService("UserInputService")
+local statsService = game:GetService("Stats")
 
 local ExtraSetting = {} do
 	ExtraSetting.Folder = "FluentSettings"
@@ -34,7 +34,6 @@ local ExtraSetting = {} do
 	local isAutoAFKEnabled = false
 	local autoAFKTimeThreshold = 300
 	local lastActivityTime = tick()
-	local lastMouseMoveTime = 0
 	local lastClickTime = 0
 	local afkStartTime = 0
 	local isAutoAFKLoopRunning = false
@@ -43,15 +42,13 @@ local ExtraSetting = {} do
 	local HasMutedAudio = false
 	local isAutoRejoinTimerRunning = false
 	local autoRejoinTimerStartTime = tick()
-	local isAntiAfkFiring = false
 	local afkExtraInfo = {}
 	local afkToggleRef = nil
 	local connIdled = nil
 	local connErrorMessage = nil
-	local connInputBegan = nil
-	local connInputChanged = nil
 	local fpsOverlayConn
 	local fpsCount, fpsTime, currentFps = 0, 0, 0
+	local perfStartTime, lastLogTime, lastLuaMb, lastTotalMb = 0, 0, 0, 0
 	local fpsOverlayGui
 	local fpsOverlayLabel
 	local inited = false
@@ -319,6 +316,7 @@ local ExtraSetting = {} do
 		if isAutoAFKLoopRunning or not isAutoAFKEnabled then return end
 		isAutoAFKLoopRunning = true
 		task.spawn(function()
+			lastActivityTime = tick()
 			while isAutoAFKEnabled do
 				if not isAFKModeEnabled then
 					local idleTime = tick() - lastActivityTime
@@ -353,7 +351,7 @@ local ExtraSetting = {} do
 					ExecuteRejoin()
 					break
 				end
-				task.wait(10)
+				task.wait(1)
 			end
 			isAutoRejoinTimerRunning = false
 		end)
@@ -364,7 +362,6 @@ local ExtraSetting = {} do
 			for _, v in pairs(getconnections(player.Idled)) do v:Disable() end
 		end)
 		connIdled = player.Idled:Connect(function()
-			isAntiAfkFiring = true
 			pcall(function()
 				virtualUser:CaptureController()
 				virtualUser:ClickButton2(Vector2.new())
@@ -378,7 +375,6 @@ local ExtraSetting = {} do
 				virtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 1)
 			end)
 			pcall(function() player.Character:FindFirstChildOfClass("Humanoid").Jump = true end)
-			isAntiAfkFiring = false
 		end)
 	end
 
@@ -399,13 +395,32 @@ local ExtraSetting = {} do
 		if enabled then
 			if fpsOverlayConn then return end
 			fpsCount, fpsTime = 0, tick()
+			perfStartTime = os.clock()
+			lastLogTime = os.clock()
+			lastLuaMb = gcinfo() / 1024
+			lastTotalMb = statsService and statsService:GetTotalMemoryUsageMb() or 0
 			fpsOverlayConn = runService.RenderStepped:Connect(function()
 				fpsCount += 1
 				local now = tick()
 				if now - fpsTime >= 1 then
 					currentFps = math.floor(fpsCount / (now - fpsTime))
 					fpsCount, fpsTime = 0, now
-					fpsOverlayLabel.Text = string.format("FPS: %d | Mem: %d MB", currentFps, math.floor(collectgarbage("count") / 1024))
+					local curLuaMb = gcinfo() / 1024
+					fpsOverlayLabel.Text = string.format("FPS: %d | Mem: %d MB", currentFps, math.floor(curLuaMb))
+
+					local nowClock = os.clock()
+					if nowClock - lastLogTime >= 30 then
+						local curTotalMb = statsService and statsService:GetTotalMemoryUsageMb() or 0
+						local elapsedMins = (nowClock - perfStartTime) / 60
+						local luaDelta = curLuaMb - lastLuaMb
+						local totalDelta = curTotalMb - lastTotalMb
+
+						print(string.format("[Perf %.1fm] %d FPS | Lua: %.1fMB (%+.1fMB) | RAM: %dMB (%+.1fMB)", elapsedMins, currentFps, curLuaMb, luaDelta, curTotalMb, totalDelta))
+
+						lastLuaMb = curLuaMb
+						lastTotalMb = curTotalMb
+						lastLogTime = nowClock
+					end
 				end
 			end)
 		elseif fpsOverlayConn then
@@ -449,14 +464,6 @@ local ExtraSetting = {} do
 			connErrorMessage:Disconnect()
 			connErrorMessage = nil
 		end
-		if connInputBegan then
-			connInputBegan:Disconnect()
-			connInputBegan = nil
-		end
-		if connInputChanged then
-			connInputChanged:Disconnect()
-			connInputChanged = nil
-		end
 
 		pcall(function()
 			local pg = player:FindFirstChild("PlayerGui")
@@ -473,26 +480,8 @@ local ExtraSetting = {} do
 		isAutoAFKEnabled = false
 		isAFKModeEnabled = false
 		isAutoRejoinTimerRunning = false
-		isAntiAfkFiring = false
 		isFPSBoostApplied = false
 		inited = false
-	end
-
-	local function InitActivityTracking()
-		connInputBegan = userInputService.InputBegan:Connect(function(input, processed)
-			if not processed and not isAntiAfkFiring then
-				lastActivityTime = tick()
-			end
-		end)
-		connInputChanged = userInputService.InputChanged:Connect(function(input)
-			if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-				local now = tick()
-				if now - lastMouseMoveTime > 1 then
-					lastActivityTime = now
-					lastMouseMoveTime = now
-				end
-			end
-		end)
 	end
 
 	local function SetupQueueOnTeleport()
@@ -551,7 +540,6 @@ local ExtraSetting = {} do
 		if self.SavedConfig.EnableAutoReconnect then
 			InitAutoRejoin()
 		end
-		InitActivityTracking()
 		SetupQueueOnTeleport()
 
 		pcall(function()
@@ -629,7 +617,7 @@ local ExtraSetting = {} do
 		local cfg = self.SavedConfig
 
 		do
-			local section = tab:AddSection("Links")
+			local section = tab:AddSection("Utilities")
 
 			section:AddButton({
 				Title = "Fluent Renewed Plus",
@@ -657,12 +645,10 @@ local ExtraSetting = {} do
 					end,
 				})
 			end
-		end
 
-		do
-			local Section = tab:AddSection("General")
+			section:AddDivider()
 
-			Section:AddToggle("ExtraSetting_DisablePurchasePrompts", {
+			section:AddToggle("ExtraSetting_DisablePurchasePrompts", {
 				Title = "Disable Purchase Prompts",
 				Description = "Block Robux and gamepass purchase popups",
 				Default = cfg.DisablePurchasePrompts,
@@ -672,14 +658,9 @@ local ExtraSetting = {} do
 					TogglePurchasePrompts(Value)
 				end,
 			})
-		end
-
-		do
-			local section = tab:AddSection("Anti-AFK")
 
 			section:AddToggle("ExtraSetting_AntiAFK", {
 				Title = "Anti-AFK",
-				Description = "Prevents Roblox from kicking you for being idle",
 				Default = cfg.EnableAntiAFK,
 				Callback = function(v)
 					cfg.EnableAntiAFK = v
@@ -695,7 +676,6 @@ local ExtraSetting = {} do
 
 			section:AddToggle("ExtraSetting_AutoReconnect", {
 				Title = "Auto Reconnect",
-				Description = "Automatically rejoins when disconnected due to error (e.g. kicked, server closed)",
 				Default = cfg.EnableAutoReconnect,
 				Callback = function(v)
 					cfg.EnableAutoReconnect = v
@@ -711,7 +691,7 @@ local ExtraSetting = {} do
 		end
 
 		do
-			local section = tab:AddSection("Performance")
+			local section = tab:AddSection("Performance & Automation")
 
 			if setfpscap then
 				section:AddToggle("ExtraSetting_UnlockFPS", {
@@ -730,7 +710,7 @@ local ExtraSetting = {} do
 			end
 
 			section:AddToggle("ExtraSetting_FPSBoost", {
-				Title = "Enable FPS Boost",
+				Title = "FPS Boost",
 				Default = cfg.EnableFPSBoost,
 				Callback = function(v)
 					if v then
@@ -761,13 +741,11 @@ local ExtraSetting = {} do
 					SetFpsOverlay(v)
 				end,
 			})
-		end
 
-		do
-			local section = tab:AddSection("AFK Mode")
+			section:AddDivider()
 
 			local afkToggle = section:AddToggle("ExtraSetting_AFKMode", {
-				Title = "Enable AFK Mode",
+				Title = "AFK Mode",
 				Description = "Disables 3D rendering and mutes audio to reduce resource usage",
 				Default = false,
 				Callback = function(v)
@@ -777,78 +755,108 @@ local ExtraSetting = {} do
 			})
 			afkToggleRef = afkToggle
 
-			section:AddInput("ExtraSetting_AutoAFKTime", {
-				Title = "Auto AFK Time",
-				Description = "seconds, min: 10",
-				Placeholder = "300",
-				Default = tostring(cfg.AutoAFKTime),
-				Callback = function(val)
-					local parsed = tonumber(val) or 10
-					if parsed < 10 then parsed = 10 end
-					autoAFKTimeThreshold = parsed
-					cfg.AutoAFKTime = parsed
-					SaveConfig()
-					lastActivityTime = tick()
-				end,
-			})
+			local afkOptions = { "Disabled", "10 Seconds", "1 Minute", "3 Minutes", "5 Minutes", "10 Minutes", "15 Minutes", "30 Minutes" }
+			local afkMap = {
+				["Disabled"] = 0,
+				["10 Seconds"] = 10,
+				["1 Minute"] = 60,
+				["3 Minutes"] = 180,
+				["5 Minutes"] = 300,
+				["10 Minutes"] = 600,
+				["15 Minutes"] = 900,
+				["30 Minutes"] = 1800,
+			}
+			local defaultAfkOption = "Disabled"
+			if cfg.EnableAutoAFK then
+				for label, sec in pairs(afkMap) do
+					if sec == (cfg.AutoAFKTime or 300) then
+						defaultAfkOption = label
+						break
+					end
+				end
+			end
 
-			section:AddToggle("ExtraSetting_AutoEnterAFK", {
-				Title = "Auto Enter AFK Mode",
-				Default = cfg.EnableAutoAFK,
-				Callback = function(v)
-					isAutoAFKEnabled = v
-					cfg.EnableAutoAFK = v
-					SaveConfig()
-					if v then
+			section:AddDropdown("ExtraSetting_AutoAFKTimer", {
+				Title = "Auto AFK Mode",
+				Values = afkOptions,
+				Default = defaultAfkOption,
+				Callback = function(val)
+					local sec = afkMap[val] or 0
+					if sec == 0 then
+						isAutoAFKEnabled = false
+						cfg.EnableAutoAFK = false
+					else
+						isAutoAFKEnabled = true
+						cfg.EnableAutoAFK = true
+						cfg.AutoAFKTime = sec
+						autoAFKTimeThreshold = sec
 						lastActivityTime = tick()
 						StartAutoAFKLoop()
 					end
+					SaveConfig()
 				end,
 			})
-		end
 
-		local hasQueue = queue_on_teleport or (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport)
-		if hasQueue and ExtraSetting.AutoExecuteUrl then
-			local section = tab:AddSection("Auto Rejoin - Execute")
+			local hasQueue = queue_on_teleport or (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport)
+			if hasQueue and ExtraSetting.AutoExecuteUrl then
+				section:AddDivider()
 
-			section:AddInput("ExtraSetting_AutoRejoinTime", {
-				Title = "Auto Rejoin Time",
-				Description = "minutes, min: 5",
-				Placeholder = "60",
-				Default = tostring(cfg.AutoRejoinMinutes or 60),
-				Callback = function(val)
-					local parsed = tonumber(val) or 60
-					if parsed < 5 then parsed = 60 end
-					cfg.AutoRejoinMinutes = parsed
-					SaveConfig()
-					if isAutoRejoinTimerRunning then
-						autoRejoinTimerStartTime = tick()
+				local rejoinOptions = { "Disabled", "15 Minutes", "30 Minutes", "1 Hour", "2 Hours", "4 Hours", "6 Hours", "8 Hours", "12 Hours" }
+				local rejoinMap = {
+					["Disabled"] = 0,
+					["15 Minutes"] = 15,
+					["30 Minutes"] = 30,
+					["1 Hour"] = 60,
+					["2 Hours"] = 120,
+					["4 Hours"] = 240,
+					["6 Hours"] = 360,
+					["8 Hours"] = 480,
+					["12 Hours"] = 720,
+				}
+				local defaultRejoinOption = "Disabled"
+				if cfg.EnableAutoRejoin then
+					for label, mins in pairs(rejoinMap) do
+						if math.abs(mins - (cfg.AutoRejoinMinutes or 60)) < 0.01 then
+							defaultRejoinOption = label
+							break
+						end
 					end
-				end,
-			})
+				end
 
-			section:AddToggle("ExtraSetting_AutoRejoin", {
-				Title = "Enable Auto Rejoin Timer",
-				Description = "Not recommended on PC — executor may crash",
-				Default = cfg.EnableAutoRejoin,
-				Callback = function(v)
-					cfg.EnableAutoRejoin = v
-					SaveConfig()
-					if v then
-						autoRejoinTimerStartTime = tick()
-						StartAutoRejoinTimerLoop()
-					end
-				end,
-			})
+				section:AddDropdown("ExtraSetting_AutoRejoinTimer", {
+					Title = "Auto Rejoin",
+					Description = "Not recommended",
+					Values = rejoinOptions,
+					Default = defaultRejoinOption,
+					Callback = function(val)
+						local mins = rejoinMap[val] or 0
+						if mins == 0 then
+							cfg.EnableAutoRejoin = false
+						else
+							cfg.EnableAutoRejoin = true
+							cfg.AutoRejoinMinutes = mins
+							cfg.EnableAutoExecute = true
+							local autoExecOption = lib.Options and lib.Options.ExtraSetting_AutoExecute
+							if autoExecOption then
+								autoExecOption:SetValue(true)
+							end
+							autoRejoinTimerStartTime = tick()
+							StartAutoRejoinTimerLoop()
+						end
+						SaveConfig()
+					end,
+				})
 
-			section:AddToggle("ExtraSetting_AutoExecute", {
-				Title = "Auto Execute on Rejoin",
-				Default = cfg.EnableAutoExecute,
-				Callback = function(v)
-					cfg.EnableAutoExecute = v
-					SaveConfig()
-				end,
-			})
+				section:AddToggle("ExtraSetting_AutoExecute", {
+					Title = "Auto Execute",
+					Description = "Only takes effect after rejoining",
+					Default = cfg.EnableAutoExecute,
+					Callback = function(v)
+						cfg.EnableAutoExecute = v
+						SaveConfig()
+					end,
+				})
+			end
 		end
 	end
 
