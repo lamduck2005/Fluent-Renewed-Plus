@@ -1,0 +1,9 @@
+{
+	"name": "Fluent Renewed",
+	"tree": {
+		"$path": "Src",
+		"Packages": {
+			"$path": "Packages"
+		}
+	}
+}

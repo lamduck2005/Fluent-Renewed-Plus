@@ -1,0 +1,671 @@
+-- a wise man once said: "i will rewrite this someday"
+
+local Root = script.Parent.Parent
+local Flipper = require(Root.Packages.Flipper)
+local Creator = require(Root.Modules.Creator)
+local Acrylic = require(Root.Modules.Acrylic)
+local Signal = require(Root.Packages.Signal)
+local Assets = require(script.Parent.Assets)
+local Components = script.Parent
+
+local Library = require(Root)
+
+local UserInputService = Library.Utilities:Clone(game:GetService("UserInputService"))
+local TweenService = Library.Utilities:Clone(game:GetService("TweenService"))
+local Mouse = Library.Utilities:Clone(game:GetService("Players")).LocalPlayer:GetMouse()
+local Camera = Library.Utilities:Clone(game:GetService("Workspace")).CurrentCamera
+
+local Spring = Flipper.Spring.new
+local Instant = Flipper.Instant.new
+local New = Creator.New
+
+return function(Config)
+	assert(typeof(Config.Mobile) == "table", "Config key 'Mobile' must be a table!")
+	assert(typeof(Config.Mobile.GetIcon) == "function", "Mobile Config key 'GetIcon' must be a function!")
+	assert(typeof(Config.Mobile.Size) == "UDim2", "Mobile Config key 'Size' must be a UDim2!")
+	
+	local Window = {
+		Minimized = false,
+		OnMinimized = Signal.new(),
+		PostMinimized = Signal.new(),
+		Maximized = false,
+		OnMaximized = Signal.new(),
+		PostMaximized = Signal.new(),
+		Size = Config.Size,
+		MinSize = Config.MinSize,
+		CurrentPos = 0,
+		TabWidth = 0,
+		Position = UDim2.fromScale(0.5, 0.5),
+	}
+
+	local Dragging, DragInput, MousePos, StartPos = false
+	local Resizing, ResizePos = false
+	local MinimizeNotif = false
+	local IsDraggingHideButton, DragInputHideButton, DragStart, DragStartPos, HideButtonDragDistance = false
+
+	Window.AcrylicPaint = Acrylic.AcrylicPaint()
+	Window.TabWidth = Config.TabWidth
+
+	local Selector = New("Frame", {
+		Size = UDim2.fromOffset(4, 0),
+		BackgroundColor3 = Color3.fromRGB(76, 194, 255),
+		Position = UDim2.fromOffset(0, 17),
+		AnchorPoint = Vector2.new(0, 0.5),
+		ThemeTag = {
+			BackgroundColor3 = "Accent",
+		},
+	}, {
+		New("UICorner", {
+			CornerRadius = UDim.new(0, 2),
+		}),
+	})
+
+	local ResizeStartFrame = New("Frame", {
+		Size = UDim2.fromOffset(32, 32),
+		BackgroundTransparency = 1,
+		Position = UDim2.new(1, 4, 1, 4),
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		ZIndex = 99,
+		Active = true,
+	}, {
+		New("ImageLabel", {
+			Name = "Icon",
+			Size = UDim2.fromOffset(48, 48),
+			BackgroundTransparency = 1,
+			Image = "rbxassetid://120997033468887",
+			Position = UDim2.new(0.5, -12, 0.5, -12),
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			ImageTransparency = 0.8,
+			ZIndex = 99,
+		}),
+	})
+
+	local BottomDragFrame = New("Frame", {
+		Size = UDim2.fromOffset(160, 4),
+		BackgroundColor3 = Color3.new(1, 1, 1),
+		BackgroundTransparency = 0.8,
+		Position = UDim2.new(0.5, 0, 1, 4),
+		AnchorPoint = Vector2.new(0.5, 0),
+		ZIndex = 99,
+	}, {
+		New("UICorner", {
+			CornerRadius = UDim.new(1, 0),
+		}),
+		New("TextButton", {
+			Name = "Trigger",
+			Size = UDim2.new(1, 12, 1, 12),
+			BackgroundTransparency = 1,
+			Position = UDim2.new(0.5, 0, 0.5, 0),
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Active = true,
+			Text = "",
+		}),
+	})
+
+	Window.TabHolder = New("ScrollingFrame", {
+		Size = UDim2.fromScale(1, 1),
+		BackgroundTransparency = 1,
+		ScrollBarImageTransparency = 1,
+		ScrollBarThickness = 0,
+		BorderSizePixel = 0,
+		CanvasSize = UDim2.fromScale(0, 0),
+		ScrollingDirection = Enum.ScrollingDirection.Y,
+	}, {
+		New("UIListLayout", {
+			Padding = UDim.new(0, 4),
+		}),
+	})
+
+	local TabFrame = New("Frame", {
+		Size = UDim2.new(0, Window.TabWidth, 1, -66),
+		Position = UDim2.new(0, 12, 0, 54),
+		BackgroundTransparency = 1,
+		ClipsDescendants = true,
+	}, {
+		Window.TabHolder,
+		Selector,
+	})
+
+	Window.TabDisplay = New("TextLabel", {
+		RichText = true,
+		Text = "Tab",
+		TextTransparency = 0,
+		FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal),
+		TextSize = 28,
+		TextXAlignment = "Left",
+		TextYAlignment = "Center",
+		Size = UDim2.new(1, -16, 0, 28),
+		Position = UDim2.fromOffset(Window.TabWidth + 26, 56),
+		BackgroundTransparency = 1,
+		ThemeTag = {
+			TextColor3 = "Text",
+		},
+	})
+
+	Window.ContainerHolder = New("Frame", {
+		Size = UDim2.fromScale(1, 1),
+		BackgroundTransparency = 1,
+	})
+
+	Window.ContainerAnim = New("CanvasGroup", {
+		Size = UDim2.fromScale(1, 1),
+		BackgroundTransparency = 1,
+	})
+
+	Window.ContainerCanvas = New("Frame", {
+		Size = UDim2.new(1, -Window.TabWidth - 32, 1, -102),
+		Position = UDim2.fromOffset(Window.TabWidth + 26, 90),
+		BackgroundTransparency = 1,
+	}, {
+		Window.ContainerAnim,
+		Window.ContainerHolder
+	})
+
+	TabFrame.Visible = true
+	Window.ContainerCanvas.Visible = true
+	Window.TabDisplay.Visible = true
+
+	Window.Root = New("Frame", {
+		BackgroundTransparency = 1,
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Size = UDim2.new(0, Window.Size.X.Offset, 0, 0),
+		Position = Window.Position,
+		Parent = Config.Parent,
+	}, {
+		Window.AcrylicPaint.Frame,
+		Window.TabDisplay,
+		Window.ContainerCanvas,
+		TabFrame,
+		BottomDragFrame,
+		ResizeStartFrame,
+	})
+
+	do
+		local hideButtonAuto = Config.HideButton == nil
+		local hideButtonEnabled = Config.HideButton ~= false
+
+		if hideButtonEnabled then
+			Window.HideButton = New("ImageButton", {
+				Visible = if hideButtonAuto then Library.Utilities:GetOS() == "Mobile" else true,
+				Size = Config.Mobile.Size,
+				BackgroundColor3 = Color3.new(0, 0, 0),
+				BackgroundTransparency = 0.2,
+				Position = UDim2.new(0, 25, 0.2, -Config.Mobile.Size.Y.Offset / 2),
+				Parent = Config.Parent,
+			}, {
+				New("UICorner", { CornerRadius = UDim.new(0, 8) }),
+				New("UIStroke", { Thickness = 1.8, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }),
+				New("ImageLabel", {
+					Name = "Icon",
+					Size = UDim2.fromScale(0.64, 0.64),
+					Position = UDim2.fromScale(0.18, 0.18),
+					BackgroundTransparency = 1,
+					Image = Config.Mobile.GetIcon(false).Image,
+					ImageRectOffset = Config.Mobile.GetIcon(false).ImageRectOffset,
+					ImageRectSize = Config.Mobile.GetIcon(false).ImageRectSize,
+					ScaleType = Enum.ScaleType.Fit,
+				}),
+			})
+
+			local iconLabel = Window.HideButton:FindFirstChild("Icon")
+			if iconLabel then
+				Creator.AddThemeObject(iconLabel, {
+					ImageColor3 = "Accent",
+				})
+			end
+			local stroke = Window.HideButton:FindFirstChildOfClass("UIStroke")
+			if stroke then
+				Creator.AddThemeObject(stroke, {
+					Color = "Accent",
+				})
+			end
+		end
+	end
+
+	Window.TitleBar = require(script.Parent.TitleBar)({
+		Title = Config.Title,
+		SubTitle = Config.SubTitle,
+		Parent = Window.Root,
+		Window = Window,
+	})
+
+	if Library.UseAcrylic then
+		Window.AcrylicPaint.AddParent(Window.Root)
+	end
+
+	local SizeMotor = Flipper.GroupMotor.new({
+		X = Window.Size.X.Offset,
+		Y = 0,
+	})
+
+	local PosMotor = Flipper.GroupMotor.new({
+		X = Window.Position.X.Offset,
+		Y = Window.Position.Y.Offset,
+	})
+
+	Window.SelectorPosMotor = Flipper.SingleMotor.new(17)
+	Window.SelectorSizeMotor = Flipper.SingleMotor.new(0)
+	Window.ContainerBackMotor = Flipper.SingleMotor.new(0)
+	Window.ContainerPosMotor = Flipper.SingleMotor.new(94)
+
+	SizeMotor:onStep(function(values)
+		Window.Root.Size = UDim2.new(0, values.X, 0, values.Y)
+	end)
+
+	task.spawn(function()
+		local info = TweenInfo.new(1.0, Enum.EasingStyle.Quint)
+
+		for _, v in next, Window.Root:GetDescendants() do
+			local props = {}
+			if v:IsA("TextLabel") or v:IsA("TextBox") then props.TextTransparency, v.TextTransparency = v.TextTransparency, 1 end
+			if v:IsA("UIStroke") then props.Transparency, v.Transparency = v.Transparency, 1 end
+			if v:IsA("ImageLabel") or v:IsA("ImageButton") then props.ImageTransparency, v.ImageTransparency = v.ImageTransparency, 1 end
+			if next(props) then TweenService:Create(v, info, props):Play() end
+		end
+
+		SizeMotor:setGoal({
+			X = Spring(Window.Size.X.Offset, { frequency = 2.0, dampingRatio = 1 }),
+			Y = Spring(Window.Size.Y.Offset, { frequency = 2.0, dampingRatio = 1 }),
+		})
+	end)
+
+	PosMotor:onStep(function(values)
+		Window.Root.Position = UDim2.new(0.5, values.X, 0.5, values.Y)
+	end)
+
+	local LastValue = 0
+	local LastTime = 0
+	Window.SelectorPosMotor:onStep(function(Value)
+		Selector.Position = UDim2.new(0, 0, 0, Value + 17)
+		local Now = tick()
+		local DeltaTime = Now - LastTime
+
+		if LastValue ~= nil then
+			Window.SelectorSizeMotor:setGoal(Spring((math.abs(Value - LastValue) / (DeltaTime * 60)) + 16))
+			LastValue = Value
+		end
+		LastTime = Now
+	end)
+
+	Window.SelectorSizeMotor:onStep(function(Value)
+		Selector.Size = UDim2.new(0, 4, 0, Value)
+	end)
+
+	Window.ContainerBackMotor:onStep(function(Value)
+		Window.ContainerAnim.GroupTransparency = Value
+	end)
+
+	Window.ContainerPosMotor:onStep(function(Value)
+		Window.ContainerAnim.Position = UDim2.fromOffset(0, Value)
+	end)
+
+	local OldSizeX
+	local OldSizeY
+	Window.Maximize = function(Value, NoPos, Instant)
+		Window.OnMaximized:Fire(tick())
+
+		Window.Maximized = Value
+		Window.TitleBar.MaxButton.Frame.Icon.Image = Value and Assets.Restore or Assets.Max
+
+		if Value then
+			OldSizeX = Window.Size.X.Offset
+			OldSizeY = Window.Size.Y.Offset
+		end
+		local SizeX = Value and Camera.ViewportSize.X or OldSizeX
+		local SizeY = Value and Camera.ViewportSize.Y or OldSizeY
+		SizeMotor:setGoal({
+			X = Flipper[Instant and "Instant" or "Spring"].new(SizeX, { frequency = 6 }),
+			Y = Flipper[Instant and "Instant" or "Spring"].new(SizeY, { frequency = 6 }),
+		})
+		Window.Size = UDim2.fromOffset(SizeX, SizeY)
+
+		if not NoPos then
+			PosMotor:setGoal({
+				X = Spring(Value and 0 or Window.Position.X.Offset, { frequency = 6 }),
+				Y = Spring(Value and 0 or Window.Position.Y.Offset, { frequency = 6 }),
+			})
+		end
+
+		Window.PostMaximized:Fire(tick())
+	end
+
+	Creator.AddSignal(Window.TitleBar.Frame.InputBegan, function(Input)
+		if
+			Input.UserInputType == Enum.UserInputType.MouseButton1
+			or Input.UserInputType == Enum.UserInputType.Touch
+		then
+			Dragging = true
+			MousePos = Input.Position
+			StartPos = Window.Root.Position
+
+			if Window.Maximized then
+				StartPos = UDim2.fromOffset(
+					Mouse.X - (Mouse.X * ((OldSizeX - 100) / Window.Root.AbsoluteSize.X)),
+					Mouse.Y - (Mouse.Y * (OldSizeY / Window.Root.AbsoluteSize.Y))
+				)
+			end
+
+			Input.Changed:Connect(function()
+				if Input.UserInputState == Enum.UserInputState.End then
+					Dragging = false
+				end
+			end)
+		end
+	end)
+
+	Creator.AddSignal(Window.TitleBar.Frame.InputChanged, function(Input)
+		if
+			Input.UserInputType == Enum.UserInputType.MouseMovement
+			or Input.UserInputType == Enum.UserInputType.Touch
+		then
+			DragInput = Input
+		end
+	end)
+
+	local ResizeIcon = ResizeStartFrame:FindFirstChild("Icon")
+	if ResizeIcon then
+		Creator.AddSignal(ResizeStartFrame.MouseEnter, function()
+			if not Resizing then
+				TweenService:Create(ResizeIcon, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { ImageTransparency = 0.35 }):Play()
+			end
+		end)
+		Creator.AddSignal(ResizeStartFrame.MouseLeave, function()
+			if not Resizing then
+				TweenService:Create(ResizeIcon, TweenInfo.new(0.17, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { ImageTransparency = 0.8 }):Play()
+			end
+		end)
+	end
+
+	local BottomDragTrigger = BottomDragFrame:FindFirstChild("Trigger")
+	if BottomDragTrigger then
+		Creator.AddSignal(BottomDragTrigger.InputBegan, function(Input)
+			if
+				Input.UserInputType == Enum.UserInputType.MouseButton1
+				or Input.UserInputType == Enum.UserInputType.Touch
+			then
+				Dragging = true
+				MousePos = Input.Position
+				StartPos = Window.Root.Position
+
+				if Window.Maximized then
+					StartPos = UDim2.fromOffset(
+						Mouse.X - (Mouse.X * ((OldSizeX - 100) / Window.Root.AbsoluteSize.X)),
+						Mouse.Y - (Mouse.Y * (OldSizeY / Window.Root.AbsoluteSize.Y))
+					)
+				end
+			end
+		end)
+
+		Creator.AddSignal(BottomDragTrigger.InputChanged, function(Input)
+			if
+				Input.UserInputType == Enum.UserInputType.MouseMovement
+				or Input.UserInputType == Enum.UserInputType.Touch
+			then
+				DragInput = Input
+			end
+		end)
+
+		Creator.AddSignal(BottomDragTrigger.MouseEnter, function()
+			if not Dragging then
+				TweenService:Create(BottomDragFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { BackgroundTransparency = 0.5 }):Play()
+			end
+		end)
+
+		Creator.AddSignal(BottomDragTrigger.MouseLeave, function()
+			if not Dragging then
+				TweenService:Create(BottomDragFrame, TweenInfo.new(0.17, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { BackgroundTransparency = 0.8 }):Play()
+			end
+		end)
+	end
+
+	Creator.AddSignal(ResizeStartFrame.InputBegan, function(Input)
+		if
+			Input.UserInputType == Enum.UserInputType.MouseButton1
+			or Input.UserInputType == Enum.UserInputType.Touch
+		then
+			Resizing = true
+			ResizePos = Input.Position
+			if ResizeIcon then
+				TweenService:Create(ResizeIcon, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { ImageTransparency = 0.35 }):Play()
+			end
+		end
+	end)
+
+	Creator.AddSignal(UserInputService.InputChanged, function(Input)
+		if Input == DragInput and Dragging then
+			local Delta = Input.Position - MousePos
+			Window.Position = UDim2.new(0.5, StartPos.X.Offset + Delta.X, 0.5, StartPos.Y.Offset + Delta.Y)
+			PosMotor:setGoal({
+				X = Instant(Window.Position.X.Offset),
+				Y = Instant(Window.Position.Y.Offset),
+			})
+
+			if Window.Maximized then
+				Window.Maximize(false, true, true)
+			end
+		end
+
+		if
+			(Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch)
+			and Resizing
+		then
+			local Delta = Input.Position - ResizePos
+			local StartSize = Window.Size
+
+			local TargetSize = Vector3.new(StartSize.X.Offset, StartSize.Y.Offset, 0) + Vector3.new(1, 1, 0) * Delta
+			local TargetSizeClamped =
+				Vector2.new(math.clamp(TargetSize.X, Window.MinSize.X, 2048), math.clamp(TargetSize.Y, Window.MinSize.Y, 2048))
+
+			SizeMotor:setGoal({
+				X = Flipper.Instant.new(TargetSizeClamped.X),
+				Y = Flipper.Instant.new(TargetSizeClamped.Y),
+			})
+		end
+	end)
+
+	Creator.AddSignal(UserInputService.InputEnded, function(Input)
+		if
+			Input == DragInput
+			or Input.UserInputType == Enum.UserInputType.MouseButton1
+			or Input.UserInputType == Enum.UserInputType.Touch
+		then
+			if Dragging then
+				Dragging = false
+				TweenService:Create(BottomDragFrame, TweenInfo.new(0.17, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { BackgroundTransparency = 0.8 }):Play()
+			end
+		end
+
+		if Resizing == true or Input.UserInputType == Enum.UserInputType.Touch then
+			Resizing = false
+			Window.Size = UDim2.fromOffset(SizeMotor:getValue().X, SizeMotor:getValue().Y)
+			if ResizeIcon then
+				TweenService:Create(ResizeIcon, TweenInfo.new(0.17, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { ImageTransparency = 0.8 }):Play()
+			end
+		end
+	end)
+
+	Creator.AddSignal(Window.TabHolder.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
+		if Window.TabHolder.CanvasSize ~= UDim2.fromOffset(0, Window.TabHolder.UIListLayout.AbsoluteContentSize.Y) then
+			Window.TabHolder.CanvasSize = UDim2.fromOffset(0, Window.TabHolder.UIListLayout.AbsoluteContentSize.Y)
+		end
+	end)
+
+	function Window:Minimize()
+		Window.Minimized = not Window.Minimized
+		Window.Root.Visible = not Window.Minimized
+
+		Window.OnMinimized:Fire(tick(), Window.Root.Visible)
+
+		if not MinimizeNotif then
+			local Key = Library.MinimizeKeybind and Library.MinimizeKeybind.Value or typeof(Library.MinimizeKey) == "string" and Library.MinimizeKey or Library.MinimizeKey.Name
+
+			MinimizeNotif = true
+			
+			Library:Notify({
+				Title = "Interface",
+				Content = `Press {Library.Utilities:Prettify(Key)} to toggle the interface.`,
+				Duration = 6
+			})
+		end
+		if Window.HideButton then
+			local IconData = Config.Mobile.GetIcon(Window.Minimized)
+			local icon = Window.HideButton:FindFirstChild("Icon")
+			if icon then
+				icon.Image = IconData.Image
+				icon.ImageRectOffset = IconData.ImageRectOffset
+				icon.ImageRectSize = IconData.ImageRectSize
+			end
+		end
+		Window.PostMinimized:Fire(tick(), Window.Root.Visible)
+	end
+
+	Creator.AddSignal(UserInputService.InputBegan, function(Input)
+		if
+			type(Library.MinimizeKeybind) == "table"
+			and Library.MinimizeKeybind.Type == "Keybind"
+			and not UserInputService:GetFocusedTextBox()
+		then
+			if Input.KeyCode.Name == Library.MinimizeKeybind.Value or Input.KeyCode.Name == Library.MinimizeKeybind.Value.Name then
+				Window:Minimize()
+			end
+		elseif (Input.KeyCode == Library.MinimizeKey or Input.KeyCode.Name == Library.MinimizeKey) and not UserInputService:GetFocusedTextBox() then
+			Window:Minimize()
+		end
+	end)
+
+	if Window.HideButton then
+		local HoldStart = 0
+		local HoldingTask = nil
+
+		Creator.AddSignal(Window.HideButton.InputBegan, function(Input)
+			if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+				IsDraggingHideButton = true
+				DragStart = Input.Position
+				DragStartPos = Window.HideButton.Position
+				HideButtonDragDistance = 0
+
+				HoldStart = tick()
+				if HoldingTask then task.cancel(HoldingTask) end
+				HoldingTask = task.delay(3, function()
+					if IsDraggingHideButton and HideButtonDragDistance < 5 then
+						Window.Position = UDim2.fromScale(0.5, 0.5)
+						PosMotor:setGoal({ X = Flipper.Instant.new(0), Y = Flipper.Instant.new(0) })
+						Window.Size = Config.Size
+						SizeMotor:setGoal({ X = Flipper.Instant.new(Config.Size.X.Offset), Y = Flipper.Instant.new(Config.Size.Y.Offset) })
+
+						Library:Notify({
+							Title = "Interface Reset",
+							Content = "UI position and size reset to default.",
+							Duration = 3
+						})
+					end
+				end)
+			end
+		end)
+
+		Creator.AddSignal(Window.HideButton.InputChanged, function(Input)
+			if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
+				DragInputHideButton = Input
+			end
+		end)
+
+		Creator.AddSignal(UserInputService.InputChanged, function(Input)
+			if Input == DragInputHideButton and IsDraggingHideButton then
+				local delta = Input.Position - DragStart
+				HideButtonDragDistance = delta.Magnitude
+				Window.HideButton.Position = UDim2.new(DragStartPos.X.Scale, DragStartPos.X.Offset + delta.X, DragStartPos.Y.Scale, DragStartPos.Y.Offset + delta.Y)
+			end
+		end)
+
+		Creator.AddSignal(UserInputService.InputEnded, function(Input)
+			if (Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch) and IsDraggingHideButton then
+				IsDraggingHideButton = false
+				if HoldingTask then task.cancel(HoldingTask); HoldingTask = nil end
+				if HideButtonDragDistance < 5 and tick() - HoldStart < 3 then
+					Window:Minimize()
+				end
+			end
+		end)
+	end
+
+	function Window:Destroy()
+		if Library.UseAcrylic then
+			Window.AcrylicPaint.Model:Destroy()
+		end
+		Window.Root:Destroy()
+	end
+
+	local DialogModule = require(Components.Dialog):Init(Window)
+	function Window:Dialog(Config)
+		local Dialog = DialogModule:Create()
+		Dialog.Title.Text = Config.Title
+
+		local Content = New("TextLabel", {
+			FontFace = Font.new("rbxasset://fonts/families/Montserrat.json"),
+			Text = Config.Content,
+			TextColor3 = Color3.fromRGB(240, 240, 240),
+			TextSize = 14,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			TextYAlignment = Enum.TextYAlignment.Top,
+			Size = UDim2.new(1, -40, 1, 0),
+			Position = UDim2.fromOffset(20, 60),
+			BackgroundTransparency = 1,
+			Parent = Dialog.Root,
+			ClipsDescendants = false,
+			ThemeTag = {
+				TextColor3 = "Text",
+			},
+		})
+
+		New("UISizeConstraint", {
+			MinSize = Vector2.new(300, 165),
+			MaxSize = Vector2.new(620, math.huge),
+			Parent = Dialog.Root,
+		})
+
+		Dialog.Root.Size = UDim2.fromOffset(Content.TextBounds.X + 40, 165)
+		if Content.TextBounds.X + 40 > Window.Size.X.Offset - 120 then
+			Dialog.Root.Size = UDim2.fromOffset(Window.Size.X.Offset - 120, 165)
+			Content.TextWrapped = true
+			Dialog.Root.Size = UDim2.fromOffset(Window.Size.X.Offset - 120, Content.TextBounds.Y + 150)
+		end
+
+		for _, Button in next, Config.Buttons do
+			Dialog:Button(Button.Title, Button.Callback)
+		end
+
+		Dialog:Open()
+
+		if Config.Yield then
+			Dialog.Closed:Wait()
+		end
+
+		return Dialog
+	end
+
+	local TabModule = require(Components.Tab):Init(Window)
+
+	function Window:Tab(TabConfig)
+		return TabModule:New(TabConfig.Title, TabConfig.Icon, Window.TabHolder)
+	end
+
+	function Window:AddTab(TabConfig)
+		return Window:Tab(TabConfig)
+	end
+
+	function Window:CreateTab(TabConfig)
+		return Window:Tab(TabConfig)
+	end
+
+	function Window:SelectTab(Tab)
+		TabModule:SelectTab(Tab)
+	end
+
+	Creator.AddSignal(Window.TabHolder:GetPropertyChangedSignal("CanvasPosition"), function()
+		LastValue = TabModule:GetCurrentTabPos() + 16
+		LastTime = 0
+		Window.SelectorPosMotor:setGoal(Instant(TabModule:GetCurrentTabPos()))
+	end)
+
+	return Window
+end

@@ -1,0 +1,27 @@
+{
+	"name": "Fluent Renewed",
+	"tree": {
+		"$className": "DataModel",
+		"ReplicatedStorage": {
+			"Fluent": {
+				"$className": "Folder",
+				"MainModule": {
+					"$path": "Src",
+					"Packages": {
+						"$path": "Packages"
+					}
+				}
+			}
+		},
+		"StarterPlayer": {
+			"StarterPlayerScripts": {
+				"Fluent": {
+					"$className": "Folder",
+					"Example": {
+						"$path": "Example.client.luau"
+					}
+				}
+			}
+		}
+	}
+}
