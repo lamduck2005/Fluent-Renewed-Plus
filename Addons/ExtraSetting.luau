@@ -494,8 +494,8 @@ local ExtraSetting = {} do
 				return game:GetService("HttpService"):JSONDecode(fs)
 			end)
 			if ok and data and data.EnableAutoExecute then
-				print("[Auto Execute] Rejoined. Waiting 10s for game to load...")
-				task.wait(10)
+				print("[Auto Execute] Rejoined. Waiting 5s for game to load...")
+				task.wait(5)
 				print("[Auto Execute] Fetching script from URL...")
 				local s, r = pcall(function() return game:HttpGet("%s") end)
 				if s and r then
