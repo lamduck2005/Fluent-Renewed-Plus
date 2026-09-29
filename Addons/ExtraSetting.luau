@@ -8,6 +8,51 @@ local teleportService = game:GetService("TeleportService")
 local runService = game:GetService("RunService")
 local statsService = game:GetService("Stats")
 
+local DISCONNECT_ERROR_CODES = {
+	[260] = true,
+	[261] = true,
+	[262] = true,
+	[266] = true,
+	[274] = true,
+	[275] = true,
+	[277] = true,
+	[278] = true,
+	[279] = true,
+	[282] = true,
+	[284] = true,
+	[286] = true,
+	[288] = true,
+}
+
+local RECONNECT_TRIGGER_PHRASES = {
+	"idle",
+	"inactivity",
+	"278",
+	"lost connection",
+	"check your internet",
+	"reconnect",
+	"connection attempt failed",
+	"error receiving data",
+	"error sending data",
+	"problem sending data",
+	"server has shut down",
+	"experience has shut down",
+	"server is full",
+	"unexpected client behavior",
+	"277",
+	"266",
+	"279",
+}
+
+local RECONNECT_IGNORE_PHRASES = {
+	"auto reconnecting",
+	"saveinstance",
+	"saving",
+	"banned",
+	"exploiting",
+	"cheat",
+}
+
 local ExtraSetting = {} do
 	ExtraSetting.Folder = "FluentSettings"
 	ExtraSetting.Library = nil
@@ -42,6 +87,8 @@ local ExtraSetting = {} do
 	local HasMutedAudio = false
 	local isAutoRejoinTimerRunning = false
 	local autoRejoinTimerStartTime = tick()
+	local isReconnecting = false
+	local reconnectThread = nil
 	local afkExtraInfo = {}
 	local afkToggleRef = nil
 	local connIdled = nil
@@ -86,18 +133,47 @@ local ExtraSetting = {} do
 		end)
 	end
 
-	local function ExecuteRejoin()
+	local function ExecuteReconnect()
+		if isReconnecting then return end
+		isReconnecting = true
+
 		local placeId = game.PlaceId
 		local jobId = game.JobId
+
 		if #players:GetPlayers() <= 1 then
-			player:Kick("\nRejoining... Don't click anything!")
-			task.wait(1)
-			teleportService:Teleport(placeId, player)
-		else
 			pcall(function()
-				teleportService:TeleportToPlaceInstance(placeId, jobId, player)
+				player:Kick("\nAuto Reconnecting... Don't click anything!")
 			end)
 		end
+
+		teleportService.TeleportInitFailed:Connect(function()
+			task.wait(2)
+			pcall(function()
+				teleportService:Teleport(placeId, player)
+			end)
+		end)
+
+		reconnectThread = task.spawn(function()
+			while true do
+				pcall(function()
+					if #players:GetPlayers() <= 1 then
+						teleportService:Teleport(placeId, player)
+					else
+						local success = pcall(function()
+							teleportService:TeleportToPlaceInstance(placeId, jobId, player)
+						end)
+						if not success then
+							teleportService:Teleport(placeId, player)
+						end
+					end
+				end)
+				task.wait(30)
+			end
+		end)
+	end
+
+	local function ExecuteRejoin()
+		ExecuteReconnect()
 	end
 
 	local function ApplyFPSBoost()
@@ -378,14 +454,49 @@ local ExtraSetting = {} do
 		end)
 	end
 
-	local function InitAutoRejoin()
+	local function InitAutoReconnect()
+		if connErrorMessage then
+			connErrorMessage:Disconnect()
+			connErrorMessage = nil
+		end
+
 		connErrorMessage = guiService.ErrorMessageChanged:Connect(function(msg)
+			if isReconnecting then return end
 			if not msg or msg == "" then return end
+
 			local low = string.lower(msg)
-			if string.find(low, "exploiting") or string.find(low, "banned") then return end
-			print("[ExtraSetting] Disconnected: " .. tostring(msg))
-			print("[ExtraSetting] Rejoining...")
-			ExecuteRejoin()
+			for _, phrase in ipairs(RECONNECT_IGNORE_PHRASES) do
+				if string.find(low, phrase) then
+					return
+				end
+			end
+
+			local shouldReconnect = false
+
+			local code = nil
+			pcall(function()
+				local errEnum = guiService:GetErrorCode()
+				if errEnum and errEnum.Value then
+					code = errEnum.Value
+				end
+			end)
+
+			if code and DISCONNECT_ERROR_CODES[code] then
+				shouldReconnect = true
+			else
+				for _, phrase in ipairs(RECONNECT_TRIGGER_PHRASES) do
+					if string.find(low, phrase) then
+						shouldReconnect = true
+						break
+					end
+				end
+			end
+
+			if not shouldReconnect then return end
+
+			print("[ExtraSetting] Disconnected / AFK: " .. tostring(msg))
+			print("[ExtraSetting] Reconnecting...")
+			ExecuteReconnect()
 		end)
 	end
 
@@ -481,6 +592,11 @@ local ExtraSetting = {} do
 		isAFKModeEnabled = false
 		isAutoRejoinTimerRunning = false
 		isFPSBoostApplied = false
+		if reconnectThread then
+			task.cancel(reconnectThread)
+			reconnectThread = nil
+		end
+		isReconnecting = false
 		inited = false
 	end
 
@@ -540,7 +656,7 @@ local ExtraSetting = {} do
 			InitAntiAFK()
 		end
 		if self.SavedConfig.EnableAutoReconnect then
-			InitAutoRejoin()
+			InitAutoReconnect()
 		end
 		SetupQueueOnTeleport()
 
@@ -683,7 +799,7 @@ local ExtraSetting = {} do
 					cfg.EnableAutoReconnect = v
 					SaveConfig()
 					if v then
-						InitAutoRejoin()
+						InitAutoReconnect()
 					elseif connErrorMessage then
 						connErrorMessage:Disconnect()
 						connErrorMessage = nil
