@@ -74,7 +74,7 @@ return function(Title, Desc, Parent, Hover, Config)
 		Parent = Parent,
 		AutomaticSize = Enum.AutomaticSize.Y,
 		Text = "",
-		LayoutOrder = 7,
+		LayoutOrder = Config.LayoutOrder or Creator.GetNextLayoutOrder(Parent),
 		ThemeTag = {
 			BackgroundColor3 = "Element",
 			BackgroundTransparency = "ElementTransparency",

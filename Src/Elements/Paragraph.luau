@@ -6,6 +6,11 @@ Element.__index = Element
 Element.__type = "Paragraph"
 
 function Element:New(Idx, Config)
+	if typeof(Idx) == "table" and Config == nil then
+		Config = Idx
+		Idx = nil
+	end
+	Config = Config or {}
 	local Library = self.Library
 	assert(Config.Title, "Paragraph - Missing Title")
 	Config.Content = Config.Content or ""

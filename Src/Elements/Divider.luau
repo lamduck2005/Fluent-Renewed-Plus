@@ -34,7 +34,7 @@ function Element:New(Idx, Config)
         Parent = Parent,
         Size = Config.ParentType ~= "Group" and UDim2.new(1, 0, 0, 7) or UDim2.new(0, 7, 1, -7),
         BackgroundTransparency = 1,
-        LayoutOrder = 7,
+        LayoutOrder = Config.LayoutOrder or Creator.GetNextLayoutOrder(Parent),
     }, {
         DividerFrame,
     })

@@ -22,7 +22,7 @@ return function(Title, Parent)
 	Section.Root = New("Frame", {
 		BackgroundTransparency = 1,
 		Size = UDim2.new(1, 0, 0, 42),
-		LayoutOrder = 7,
+		LayoutOrder = Creator.GetNextLayoutOrder(Parent),
 		Parent = Parent,
 	}, {
 		New("TextLabel", {
