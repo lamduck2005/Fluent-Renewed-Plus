@@ -325,6 +325,23 @@ function Element:New(Idx, Config)
 		end
 	end)
 
+	local Window = self.Library.CreatedWindow
+	if Window and Window.Root then
+		dropdownConns[#dropdownConns + 1] = Window.Root:GetPropertyChangedSignal("Visible"):Connect(function()
+			if not Window.Root.Visible and Dropdown.Opened then
+				Dropdown:Close()
+			end
+		end)
+	end
+
+	if self.Container then
+		dropdownConns[#dropdownConns + 1] = self.Container:GetPropertyChangedSignal("Visible"):Connect(function()
+			if not self.Container.Visible and Dropdown.Opened then
+				Dropdown:Close()
+			end
+		end)
+	end
+
 	function Dropdown:Display()
 		local Values = Dropdown.Values
 		local Str = ""
