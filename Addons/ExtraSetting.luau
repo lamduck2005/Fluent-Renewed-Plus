@@ -92,6 +92,7 @@ local ExtraSetting = {} do
 	local afkExtraInfo = {}
 	local afkToggleRef = nil
 	local connIdled = nil
+	local antiAfkThread = nil
 	local connErrorMessage = nil
 	local fpsOverlayConn
 	local fpsCount, fpsTime, currentFps = 0, 0, 0
@@ -433,24 +434,79 @@ local ExtraSetting = {} do
 		end)
 	end
 
+	local function SendAntiAFKInput()
+		print(string.format("[Anti-AFK] Triggered at %s", os.date("%X")))
+
+		pcall(function()
+			virtualUser:CaptureController()
+			virtualUser:ClickButton2(Vector2.new())
+		end)
+		pcall(function()
+			virtualInputManager:SendKeyEvent(true, Enum.KeyCode.RightShift, false, game)
+			virtualInputManager:SendKeyEvent(false, Enum.KeyCode.RightShift, false, game)
+		end)
+		pcall(function()
+			virtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 1)
+			virtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 1)
+		end)
+
+		pcall(function()
+			local character = player.Character
+			local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+			if humanoid and humanoid.Health > 0 then
+				humanoid:Move(Vector3.new(0, 0, -0.001), false)
+			end
+		end)
+
+		pcall(function()
+			virtualUser:PanCamera(Vector2.new(1, 0))
+			virtualUser:PanCamera(Vector2.new(-1, 0))
+		end)
+
+		pcall(function()
+			if keypress and keyrelease then
+				keypress(0x10)
+				keyrelease(0x10)
+			end
+		end)
+
+		pcall(function()
+			local character = player.Character
+			local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+			if humanoid and humanoid.Health > 0 then
+				humanoid.Jump = true
+				humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+			end
+		end)
+	end
+
+	local function StopAntiAFK()
+		if connIdled then
+			connIdled:Disconnect()
+			connIdled = nil
+		end
+		if antiAfkThread then
+			pcall(task.cancel, antiAfkThread)
+			antiAfkThread = nil
+		end
+	end
+
 	local function InitAntiAFK()
+		StopAntiAFK()
+
 		pcall(function()
 			for _, v in pairs(getconnections(player.Idled)) do v:Disable() end
 		end)
 		connIdled = player.Idled:Connect(function()
-			pcall(function()
-				virtualUser:CaptureController()
-				virtualUser:ClickButton2(Vector2.new())
-			end)
-			pcall(function()
-				virtualInputManager:SendKeyEvent(true, Enum.KeyCode.RightShift, false, game)
-				virtualInputManager:SendKeyEvent(false, Enum.KeyCode.RightShift, false, game)
-			end)
-			pcall(function()
-				virtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 1)
-				virtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 1)
-			end)
-			pcall(function() player.Character:FindFirstChildOfClass("Humanoid").Jump = true end)
+			SendAntiAFKInput()
+		end)
+
+		antiAfkThread = task.spawn(function()
+			while ExtraSetting.SavedConfig.EnableAntiAFK do
+				task.wait(300)
+				if not ExtraSetting.SavedConfig.EnableAntiAFK then break end
+				SendAntiAFKInput()
+			end
 		end)
 	end
 
@@ -567,10 +623,7 @@ local ExtraSetting = {} do
 			afkInfoThread = nil
 		end
 
-		if connIdled then
-			connIdled:Disconnect()
-			connIdled = nil
-		end
+		StopAntiAFK()
 		if connErrorMessage then
 			connErrorMessage:Disconnect()
 			connErrorMessage = nil
@@ -785,9 +838,8 @@ local ExtraSetting = {} do
 					SaveConfig()
 					if v then
 						InitAntiAFK()
-					elseif connIdled then
-						connIdled:Disconnect()
-						connIdled = nil
+					else
+						StopAntiAFK()
 					end
 				end,
 			})
