@@ -27,9 +27,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION="${{ github.event.inputs.version }}"
-          VERSION_HYPHEN="${VERSION// /-}"
-          gh release create "v${VERSION_HYPHEN}" --title "${VERSION}" --notes "${{ github.event.inputs.summary }}" --latest
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            RAW="${{ github.event.inputs.version }}"
+            CLEAN="${RAW#v}"
+            TAG="v${CLEAN// /-}"
+            TITLE="${RAW}"
+            NOTES="${{ github.event.inputs.summary }}"
+          else
+            TAG="${{ github.ref_name }}"
+            TITLE="${TAG}"
+            NOTES="Release ${TAG}"
+          fi
+          gh release create "${TAG}" --title "${TITLE}" --notes "${NOTES}" --latest || gh release edit "${TAG}" --title "${TITLE}" --notes "${NOTES}" --latest
 
   build-script:
     name: Bundle and Upload Fluent Renewed
@@ -64,18 +73,28 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          $version = "${{ github.event.inputs.version }}"
-          $versionHyphen = $version -replace " ", "-"
-          gh release upload "v$versionHyphen" "Distribution/Fluent.luau"
+          $verInput = "${{ github.event.inputs.version }}"
+          if ($verInput) {
+            $clean = $verInput -replace "^v", ""
+            $tag = "v" + ($clean -replace " ", "-")
+          } else {
+            $tag = "${{ github.ref_name }}"
+          }
+          gh release upload "$tag" "Distribution/Fluent.luau" --clobber
         shell: pwsh
       
       - name: Upload Fluent Renewed Model to Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          $version = "${{ github.event.inputs.version }}"
-          $versionHyphen = $version -replace " ", "-"
-          gh release upload "v$versionHyphen" "Distribution/Fluent.rbxm"
+          $verInput = "${{ github.event.inputs.version }}"
+          if ($verInput) {
+            $clean = $verInput -replace "^v", ""
+            $tag = "v" + ($clean -replace " ", "-")
+          } else {
+            $tag = "${{ github.ref_name }}"
+          }
+          gh release upload "$tag" "Distribution/Fluent.rbxm" --clobber
         shell: pwsh
 
       - name: Upload Fluent Renewed Model to Artifacts
