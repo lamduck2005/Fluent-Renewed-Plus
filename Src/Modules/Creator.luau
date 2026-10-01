@@ -244,4 +244,14 @@ function Creator.SpringMotor(Initial: any, Instance: Object, Prop: string, Ignor
 	return Motor, SetValue
 end
 
+function Creator.GetNextLayoutOrder(Parent: Instance?): number
+	if not Parent or typeof(Parent) ~= "Instance" then
+		return 1
+	end
+	local Current = (Parent:GetAttribute("FluentLayoutOrder") or 0) + 1
+	Parent:SetAttribute("FluentLayoutOrder", Current)
+	return Current
+end
+
 return Creator
+

@@ -25,7 +25,7 @@ function Element:New(Idx, Config)
 	local NavigationWrapper = New("Frame", {
 		Size = UDim2.new(1, 0, 0, 44),
 		BackgroundTransparency = 1,
-		LayoutOrder = 7,
+		LayoutOrder = Creator.GetNextLayoutOrder(self.Container),
 		Parent = self.Container,
 	})
 
@@ -63,7 +63,7 @@ function Element:New(Idx, Config)
 		Size = UDim2.new(1, 0, 0, 0),
 		AutomaticSize = "Y",
 		BackgroundTransparency = 1,
-		LayoutOrder = 7,
+		LayoutOrder = Creator.GetNextLayoutOrder(self.Container),
 		Parent = self.Container,
 	})
 

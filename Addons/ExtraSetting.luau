@@ -7,6 +7,7 @@ local guiService = game:GetService("GuiService")
 local teleportService = game:GetService("TeleportService")
 local runService = game:GetService("RunService")
 local statsService = game:GetService("Stats")
+local userInputService = game:GetService("UserInputService")
 
 local DISCONNECT_ERROR_CODES = {
 	[260] = true,
@@ -72,6 +73,12 @@ local ExtraSetting = {} do
 		EnableAntiAFK = true,
 		EnableAutoReconnect = true,
 		DisablePurchasePrompts = true,
+		WalkSpeed = 30,
+		EnableWalkSpeed = false,
+		JumpPower = 50,
+		EnableJumpPower = false,
+		EnableMultiJump = false,
+		EnableNoclip = false,
 	}
 
 	local isFPSBoostApplied = false
@@ -92,7 +99,16 @@ local ExtraSetting = {} do
 	local afkExtraInfo = {}
 	local afkToggleRef = nil
 	local connIdled = nil
+	local antiAfkThread = nil
 	local connErrorMessage = nil
+	local originalWalkSpeed = nil
+	local originalJumpPower = nil
+	local originalJumpHeight = nil
+	local isWalkSpeedLoopRunning = false
+	local isJumpPowerLoopRunning = false
+	local connMultiJump = nil
+	local connNoclip = nil
+	local noclipParts = {}
 	local fpsOverlayConn
 	local fpsCount, fpsTime, currentFps = 0, 0, 0
 	local perfStartTime, lastLogTime, lastLuaMb, lastTotalMb = 0, 0, 0, 0
@@ -433,24 +449,79 @@ local ExtraSetting = {} do
 		end)
 	end
 
+	local function SendAntiAFKInput()
+		print(string.format("[Anti-AFK] Triggered at %s", os.date("%X")))
+
+		pcall(function()
+			virtualUser:CaptureController()
+			virtualUser:ClickButton2(Vector2.new())
+		end)
+		pcall(function()
+			virtualInputManager:SendKeyEvent(true, Enum.KeyCode.RightShift, false, game)
+			virtualInputManager:SendKeyEvent(false, Enum.KeyCode.RightShift, false, game)
+		end)
+		pcall(function()
+			virtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 1)
+			virtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 1)
+		end)
+
+		pcall(function()
+			local character = player.Character
+			local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+			if humanoid and humanoid.Health > 0 then
+				humanoid:Move(Vector3.new(0, 0, -0.001), false)
+			end
+		end)
+
+		pcall(function()
+			virtualUser:PanCamera(Vector2.new(1, 0))
+			virtualUser:PanCamera(Vector2.new(-1, 0))
+		end)
+
+		pcall(function()
+			if keypress and keyrelease then
+				keypress(0x10)
+				keyrelease(0x10)
+			end
+		end)
+
+		pcall(function()
+			local character = player.Character
+			local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+			if humanoid and humanoid.Health > 0 then
+				humanoid.Jump = true
+				humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+			end
+		end)
+	end
+
+	local function StopAntiAFK()
+		if connIdled then
+			connIdled:Disconnect()
+			connIdled = nil
+		end
+		if antiAfkThread then
+			pcall(task.cancel, antiAfkThread)
+			antiAfkThread = nil
+		end
+	end
+
 	local function InitAntiAFK()
+		StopAntiAFK()
+
 		pcall(function()
 			for _, v in pairs(getconnections(player.Idled)) do v:Disable() end
 		end)
 		connIdled = player.Idled:Connect(function()
-			pcall(function()
-				virtualUser:CaptureController()
-				virtualUser:ClickButton2(Vector2.new())
-			end)
-			pcall(function()
-				virtualInputManager:SendKeyEvent(true, Enum.KeyCode.RightShift, false, game)
-				virtualInputManager:SendKeyEvent(false, Enum.KeyCode.RightShift, false, game)
-			end)
-			pcall(function()
-				virtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 1)
-				virtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 1)
-			end)
-			pcall(function() player.Character:FindFirstChildOfClass("Humanoid").Jump = true end)
+			SendAntiAFKInput()
+		end)
+
+		antiAfkThread = task.spawn(function()
+			while ExtraSetting.SavedConfig.EnableAntiAFK do
+				task.wait(300)
+				if not ExtraSetting.SavedConfig.EnableAntiAFK then break end
+				SendAntiAFKInput()
+			end
 		end)
 	end
 
@@ -540,6 +611,170 @@ local ExtraSetting = {} do
 		end
 	end
 
+	local function StartWalkSpeedLoop()
+		if isWalkSpeedLoopRunning then return end
+		isWalkSpeedLoopRunning = true
+
+		task.spawn(function()
+			while not (ExtraSetting.Library and ExtraSetting.Library.Unloaded) and ExtraSetting.SavedConfig.EnableWalkSpeed do
+				local char = player.Character
+				local hum = char and char:FindFirstChildWhichIsA("Humanoid")
+				if hum then
+					if originalWalkSpeed == nil then
+						originalWalkSpeed = hum.WalkSpeed
+					end
+					local targetSpeed = ExtraSetting.SavedConfig.WalkSpeed or 30
+					if hum.WalkSpeed ~= targetSpeed then
+						hum.WalkSpeed = targetSpeed
+					end
+				end
+				task.wait(0.1)
+			end
+
+			local char = player.Character
+			local hum = char and char:FindFirstChildWhichIsA("Humanoid")
+			if hum and originalWalkSpeed then
+				hum.WalkSpeed = originalWalkSpeed
+			end
+			isWalkSpeedLoopRunning = false
+		end)
+	end
+
+	local function SetWalkSpeed(enabled)
+		if enabled then
+			StartWalkSpeedLoop()
+		else
+			local char = player.Character
+			local hum = char and char:FindFirstChildWhichIsA("Humanoid")
+			if hum and originalWalkSpeed then
+				hum.WalkSpeed = originalWalkSpeed
+			end
+		end
+	end
+
+	local function StartJumpPowerLoop()
+		if isJumpPowerLoopRunning then return end
+		isJumpPowerLoopRunning = true
+
+		task.spawn(function()
+			while not (ExtraSetting.Library and ExtraSetting.Library.Unloaded) and ExtraSetting.SavedConfig.EnableJumpPower do
+				local char = player.Character
+				local hum = char and char:FindFirstChildWhichIsA("Humanoid")
+				if hum then
+					local targetPower = ExtraSetting.SavedConfig.JumpPower or 50
+					if hum.UseJumpPower then
+						if originalJumpPower == nil then
+							originalJumpPower = hum.JumpPower
+						end
+						if hum.JumpPower ~= targetPower then
+							hum.JumpPower = targetPower
+						end
+					else
+						if originalJumpHeight == nil then
+							originalJumpHeight = hum.JumpHeight
+						end
+						if hum.JumpHeight ~= targetPower then
+							hum.JumpHeight = targetPower
+						end
+					end
+				end
+				task.wait(0.1)
+			end
+
+			local char = player.Character
+			local hum = char and char:FindFirstChildWhichIsA("Humanoid")
+			if hum then
+				if hum.UseJumpPower and originalJumpPower then
+					hum.JumpPower = originalJumpPower
+				elseif not hum.UseJumpPower and originalJumpHeight then
+					hum.JumpHeight = originalJumpHeight
+				end
+			end
+			isJumpPowerLoopRunning = false
+		end)
+	end
+
+	local function SetJumpPower(enabled)
+		if enabled then
+			StartJumpPowerLoop()
+		else
+			local char = player.Character
+			local hum = char and char:FindFirstChildWhichIsA("Humanoid")
+			if hum then
+				if hum.UseJumpPower and originalJumpPower then
+					hum.JumpPower = originalJumpPower
+				elseif not hum.UseJumpPower and originalJumpHeight then
+					hum.JumpHeight = originalJumpHeight
+				end
+			end
+		end
+	end
+
+	local function SetMultiJump(enabled)
+		if connMultiJump then
+			connMultiJump:Disconnect()
+			connMultiJump = nil
+		end
+
+		if enabled then
+			local debounce = false
+			connMultiJump = userInputService.JumpRequest:Connect(function()
+				if (ExtraSetting.Library and ExtraSetting.Library.Unloaded) or not ExtraSetting.SavedConfig.EnableMultiJump then
+					if connMultiJump then
+						connMultiJump:Disconnect()
+						connMultiJump = nil
+					end
+					return
+				end
+				if not debounce then
+					debounce = true
+					local char = player.Character
+					local hum = char and char:FindFirstChildWhichIsA("Humanoid")
+					if hum then
+						hum:ChangeState(Enum.HumanoidStateType.Jumping)
+					end
+					task.wait()
+					debounce = false
+				end
+			end)
+		end
+	end
+
+	local function SetNoclip(enabled)
+		if connNoclip then
+			connNoclip:Disconnect()
+			connNoclip = nil
+		end
+
+		if enabled then
+			connNoclip = runService.Stepped:Connect(function()
+				if (ExtraSetting.Library and ExtraSetting.Library.Unloaded) or not ExtraSetting.SavedConfig.EnableNoclip then
+					if connNoclip then
+						connNoclip:Disconnect()
+						connNoclip = nil
+					end
+					return
+				end
+				local char = player.Character
+				if char then
+					for _, part in ipairs(char:GetDescendants()) do
+						if part:IsA("BasePart") and part.CanCollide then
+							part.CanCollide = false
+							noclipParts[part] = true
+						end
+					end
+				end
+			end)
+		else
+			for part, _ in pairs(noclipParts) do
+				if typeof(part) == "Instance" and part:IsA("BasePart") and part.Parent then
+					part.CanCollide = true
+				end
+			end
+			table.clear(noclipParts)
+		end
+	end
+
 	local function Cleanup()
 		if purchasePromptConnection then
 			purchasePromptConnection:Disconnect()
@@ -567,14 +802,19 @@ local ExtraSetting = {} do
 			afkInfoThread = nil
 		end
 
-		if connIdled then
-			connIdled:Disconnect()
-			connIdled = nil
-		end
+		StopAntiAFK()
 		if connErrorMessage then
 			connErrorMessage:Disconnect()
 			connErrorMessage = nil
 		end
+
+		SetWalkSpeed(false)
+		SetJumpPower(false)
+		SetMultiJump(false)
+		SetNoclip(false)
+		originalWalkSpeed = nil
+		originalJumpPower = nil
+		originalJumpHeight = nil
 
 		pcall(function()
 			local pg = player:FindFirstChild("PlayerGui")
@@ -719,6 +959,19 @@ local ExtraSetting = {} do
 			StartAutoAFKLoop()
 		end
 
+		if self.SavedConfig.EnableWalkSpeed then
+			SetWalkSpeed(true)
+		end
+		if self.SavedConfig.EnableJumpPower then
+			SetJumpPower(true)
+		end
+		if self.SavedConfig.EnableMultiJump then
+			SetMultiJump(true)
+		end
+		if self.SavedConfig.EnableNoclip then
+			SetNoclip(true)
+		end
+
 		if self.SavedConfig.EnableAutoRejoin and ExtraSetting.AutoExecuteUrl then
 			StartAutoRejoinTimerLoop()
 		end
@@ -766,6 +1019,96 @@ local ExtraSetting = {} do
 
 			section:AddDivider()
 
+			section:AddSlider("ExtraSetting_WalkSpeed", {
+				Title = "WalkSpeed",
+				Default = cfg.WalkSpeed or 30,
+				Min = 20,
+				Max = 200,
+				Rounding = 0,
+				Callback = function(value)
+					cfg.WalkSpeed = value
+					SaveConfig()
+					if cfg.EnableWalkSpeed then
+						local char = player.Character
+						local hum = char and char:FindFirstChildWhichIsA("Humanoid")
+						if hum then
+							hum.WalkSpeed = value
+						end
+					end
+				end,
+			})
+
+			section:AddToggle("ExtraSetting_EnableWalkSpeed", {
+				Title = "Enable WalkSpeed",
+				Default = cfg.EnableWalkSpeed,
+				Callback = function(value)
+					cfg.EnableWalkSpeed = value
+					SaveConfig()
+					SetWalkSpeed(value)
+				end,
+			})
+
+			section:AddDivider()
+
+			section:AddSlider("ExtraSetting_JumpPower", {
+				Title = "JumpPower",
+				Default = cfg.JumpPower or 50,
+				Min = 20,
+				Max = 200,
+				Rounding = 0,
+				Callback = function(value)
+					cfg.JumpPower = value
+					SaveConfig()
+					if cfg.EnableJumpPower then
+						local char = player.Character
+						local hum = char and char:FindFirstChildWhichIsA("Humanoid")
+						if hum then
+							if hum.UseJumpPower then
+								hum.JumpPower = value
+							else
+								hum.JumpHeight = value
+							end
+						end
+					end
+				end,
+			})
+
+			section:AddToggle("ExtraSetting_EnableJumpPower", {
+				Title = "Enable JumpPower",
+				Default = cfg.EnableJumpPower,
+				Callback = function(value)
+					cfg.EnableJumpPower = value
+					SaveConfig()
+					SetJumpPower(value)
+				end,
+			})
+
+			section:AddToggle("ExtraSetting_MultiJump", {
+				Title = "Multi Jump",
+				Description = "Allows jumping repeatedly in mid-air",
+				Default = cfg.EnableMultiJump,
+				Callback = function(value)
+					cfg.EnableMultiJump = value
+					SaveConfig()
+					SetMultiJump(value)
+				end,
+			})
+
+			section:AddDivider()
+
+			section:AddToggle("ExtraSetting_Noclip", {
+				Title = "Noclip",
+				Description = "Allows character to walk through walls and obstacles",
+				Default = cfg.EnableNoclip,
+				Callback = function(value)
+					cfg.EnableNoclip = value
+					SaveConfig()
+					SetNoclip(value)
+				end,
+			})
+
+			section:AddDivider()
+
 			section:AddToggle("ExtraSetting_DisablePurchasePrompts", {
 				Title = "Disable Purchase Prompts",
 				Description = "Block Robux and gamepass purchase popups",
@@ -785,9 +1128,8 @@ local ExtraSetting = {} do
 					SaveConfig()
 					if v then
 						InitAntiAFK()
-					elseif connIdled then
-						connIdled:Disconnect()
-						connIdled = nil
+					else
+						StopAntiAFK()
 					end
 				end,
 			})

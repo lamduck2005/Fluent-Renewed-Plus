@@ -21,7 +21,7 @@ function Element:New(Idx, Config)
     
     local SpaceContainer = New("Frame", {
         Parent = Parent,
-        LayoutOrder = 7,
+        LayoutOrder = Config.LayoutOrder or Creator.GetNextLayoutOrder(Parent),
         BackgroundTransparency = 1,
     })
     
