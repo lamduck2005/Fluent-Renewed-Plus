@@ -1,3 +1,4 @@
+local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Root = script.Parent.Parent
 local Creator = require(Root.Modules.Creator)
@@ -32,10 +33,11 @@ function Element:New(Idx, Config)
 	Slider.SetDesc = SliderFrame.SetDesc
 
 	local SliderDot = New("ImageLabel", {
-		AnchorPoint = Vector2.new(0, 0.5),
-		Position = UDim2.new(0, -7, 0.5, 0),
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.new(0, 0, 0.5, 0),
 		Size = UDim2.fromOffset(14, 14),
 		Image = "http://www.roblox.com/asset/?id=12266946128",
+		ZIndex = 4,
 		ThemeTag = {
 			ImageColor3 = "Accent",
 		}
@@ -72,9 +74,20 @@ function Element:New(Idx, Config)
 		Size = UDim2.new(0, 100, 0, 14),
 		Position = UDim2.new(0, -4, 0.5, 0),
 		AnchorPoint = Vector2.new(1, 0.5),
+		ZIndex = 6,
 		ThemeTag = {
 			TextColor3 = "SubText",
 		}
+	})
+
+	local SliderHitbox = New("TextButton", {
+		BackgroundTransparency = 1,
+		Text = "",
+		AutoButtonColor = false,
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.new(0.5, 0, 0.5, 0),
+		Size = UDim2.new(1, 14, 0, 24),
+		ZIndex = 5,
 	})
 
 	local SliderInner = New("Frame", {
@@ -95,30 +108,66 @@ function Element:New(Idx, Config)
 		}),
 		SliderDisplay,
 		SliderFill,
-		SliderRail
+		SliderRail,
+		SliderHitbox
 	})
 
 	local ActiveInput = nil
+
+	local function UpdateSliderFromInput(input)
+		local sizeScale = math.clamp(
+			(input.Position.X - SliderRail.AbsolutePosition.X) / SliderRail.AbsoluteSize.X,
+			0, 1
+		)
+		Slider:SetValue(Slider.Min + ((Slider.Max - Slider.Min) * sizeScale))
+	end
+
+	local function SetDragging(isDragging)
+		if Dragging == isDragging then return end
+		Dragging = isDragging
+		local accentColor = Creator.GetThemeProperty("Accent")
+		if isDragging then
+			local brightColor = accentColor:Lerp(Color3.new(1, 1, 1), 0.3)
+			TweenService:Create(SliderDot, TweenInfo.new(0.18, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+				Size = UDim2.fromOffset(20, 20),
+				ImageColor3 = brightColor,
+			}):Play()
+		else
+			TweenService:Create(SliderDot, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+				Size = UDim2.fromOffset(14, 14),
+				ImageColor3 = accentColor,
+			}):Play()
+		end
+	end
+
+	Creator.AddSignal(SliderHitbox.InputBegan, function(Input)
+		if
+			Input.UserInputType == Enum.UserInputType.MouseButton1
+			or Input.UserInputType == Enum.UserInputType.Touch
+		then
+			ActiveInput = Input
+			SetDragging(true)
+			UpdateSliderFromInput(Input)
+		end
+	end)
 
 	Creator.AddSignal(SliderInner.InputBegan, function(Input)
 		if
 			Input.UserInputType == Enum.UserInputType.MouseButton1
 			or Input.UserInputType == Enum.UserInputType.Touch
 		then
-			Dragging = true
 			ActiveInput = Input
-			local SizeScale = math.clamp(
-				(Input.Position.X - SliderRail.AbsolutePosition.X) / SliderRail.AbsoluteSize.X,
-				0, 1
-			)
-			Slider:SetValue(Slider.Min + ((Slider.Max - Slider.Min) * SizeScale))
+			SetDragging(true)
+			UpdateSliderFromInput(Input)
 		end
 	end)
 
 	Creator.AddSignal(UserInputService.InputEnded, function(Input)
-		if Input == ActiveInput then
-			Dragging = false
-			ActiveInput = nil
+		if Input == ActiveInput or Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+			if Dragging then
+				ActiveInput = nil
+				SetDragging(false)
+			end
 		end
 	end)
 
@@ -132,7 +181,7 @@ function Element:New(Idx, Config)
 
 		rawset(self, "Value", Library.Utilities:Round(math.clamp(Value, Slider.Min, Slider.Max), Slider.Rounding))
 
-		SliderDot.Position = UDim2.new((self.Value - Slider.Min) / (Slider.Max - Slider.Min), -7, 0.5, 0)
+		SliderDot.Position = UDim2.new((self.Value - Slider.Min) / (Slider.Max - Slider.Min), 0, 0.5, 0)
 		SliderFill.Size = UDim2.fromScale((self.Value - Slider.Min) / (Slider.Max - Slider.Min), 1)
 		SliderDisplay.Text = tostring(self.Value)
 
@@ -152,9 +201,7 @@ function Element:New(Idx, Config)
 				or Input.UserInputType == Enum.UserInputType.Touch
 			)
 		then
-			local SizeScale =
-				math.clamp((Input.Position.X - SliderRail.AbsolutePosition.X) / SliderRail.AbsoluteSize.X, 0, 1)
-			Slider:SetValue(Slider.Min + ((Slider.Max - Slider.Min) * SizeScale))
+			UpdateSliderFromInput(Input)
 		end
 	end)
 
