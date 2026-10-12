@@ -484,15 +484,6 @@ local ExtraSetting = {} do
 				keyrelease(0x10)
 			end
 		end)
-
-		pcall(function()
-			local character = player.Character
-			local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-			if humanoid and humanoid.Health > 0 then
-				humanoid.Jump = true
-				humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-			end
-		end)
 	end
 
 	local function StopAntiAFK()
@@ -591,7 +582,7 @@ local ExtraSetting = {} do
 					fpsOverlayLabel.Text = string.format("FPS: %d | Mem: %d MB", currentFps, math.floor(curLuaMb))
 
 					local nowClock = os.clock()
-					if nowClock - lastLogTime >= 30 then
+					if nowClock - lastLogTime >= 300 then
 						local curTotalMb = statsService and statsService:GetTotalMemoryUsageMb() or 0
 						local elapsedMins = (nowClock - perfStartTime) / 60
 						local luaDelta = curLuaMb - lastLuaMb
