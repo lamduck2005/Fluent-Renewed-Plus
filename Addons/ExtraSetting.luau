@@ -2,7 +2,6 @@ local httpService = game:GetService("HttpService")
 local players = game:GetService("Players")
 local player = players.LocalPlayer
 local virtualUser = game:GetService("VirtualUser")
-local virtualInputManager = game:GetService("VirtualInputManager")
 local guiService = game:GetService("GuiService")
 local teleportService = game:GetService("TeleportService")
 local runService = game:GetService("RunService")
@@ -456,32 +455,12 @@ local ExtraSetting = {} do
 			virtualUser:CaptureController()
 			virtualUser:ClickButton2(Vector2.new())
 		end)
-		pcall(function()
-			virtualInputManager:SendKeyEvent(true, Enum.KeyCode.RightShift, false, game)
-			virtualInputManager:SendKeyEvent(false, Enum.KeyCode.RightShift, false, game)
-		end)
-		pcall(function()
-			virtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 1)
-			virtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 1)
-		end)
 
 		pcall(function()
 			local character = player.Character
 			local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 			if humanoid and humanoid.Health > 0 then
 				humanoid:Move(Vector3.new(0, 0, -0.001), false)
-			end
-		end)
-
-		pcall(function()
-			virtualUser:PanCamera(Vector2.new(1, 0))
-			virtualUser:PanCamera(Vector2.new(-1, 0))
-		end)
-
-		pcall(function()
-			if keypress and keyrelease then
-				keypress(0x10)
-				keyrelease(0x10)
 			end
 		end)
 	end
@@ -509,7 +488,7 @@ local ExtraSetting = {} do
 
 		antiAfkThread = task.spawn(function()
 			while ExtraSetting.SavedConfig.EnableAntiAFK do
-				task.wait(300)
+				task.wait(600)
 				if not ExtraSetting.SavedConfig.EnableAntiAFK then break end
 				SendAntiAFKInput()
 			end
