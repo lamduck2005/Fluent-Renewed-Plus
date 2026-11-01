@@ -14,6 +14,7 @@ function KeySystem.Show(Config, Library, Callback)
 	local serviceInstances = {}
 	local enteredKey = ""
 	local isClosing = false
+	local DropdownFrame = nil
 
 	local HasThumbnail = Config.Thumbnail and Config.Thumbnail.Image
 	local ThumbnailWidth = HasThumbnail and (Config.Thumbnail.Width or 200) or 0
@@ -47,6 +48,10 @@ function KeySystem.Show(Config, Library, Callback)
 	local function close()
 		if isClosing then return end
 		isClosing = true
+		if DropdownFrame then
+			DropdownFrame:Destroy()
+			DropdownFrame = nil
+		end
 		RootTransparency(1)
 		task.delay(0.2, function()
 			RootFrame:Destroy()
@@ -274,6 +279,9 @@ function KeySystem.Show(Config, Library, Callback)
 		if #serviceList > 0 then
 			local DropdownOpen = false
 			local DropdownWidth = 220
+			local MaxDropdownHeight = 220
+			local TotalContentHeight = #serviceList * 36 + math.max(0, #serviceList - 1) * 2 + 12
+			local TargetContentHeight = math.min(TotalContentHeight, MaxDropdownHeight)
 
 			local GetKeyButton = ButtonFactory("", ButtonContainer, true)
 			GetKeyButton.Title.Text = "Get Key"
@@ -292,21 +300,23 @@ function KeySystem.Show(Config, Library, Callback)
 				ThemeTag = { ImageColor3 = "Text" },
 			})
 
-			local DropdownFrame = New("Frame", {
+			DropdownFrame = New("Frame", {
 				Size = UDim2.fromOffset(DropdownWidth, 0),
 				AnchorPoint = Vector2.new(1, 1),
-				Position = UDim2.new(1, 0, 0, -4),
 				BackgroundTransparency = 1,
 				ClipsDescendants = true,
-				ZIndex = 12,
-				Parent = GetKeyButton.Frame,
+				ZIndex = 25,
+				Parent = BaseContainer,
 			})
 
-			local DropdownInner = New("Frame", {
-				Size = UDim2.new(1, 0, 0, 0),
-				AutomaticSize = Enum.AutomaticSize.Y,
-				Position = UDim2.fromOffset(0, 0),
+			local DropdownInner = New("ScrollingFrame", {
+				Size = UDim2.fromScale(1, 1),
+				CanvasSize = UDim2.fromOffset(0, TotalContentHeight),
+				ScrollBarThickness = TotalContentHeight > MaxDropdownHeight and 3 or 0,
+				ScrollBarImageColor3 = Color3.fromRGB(180, 180, 180),
+				BorderSizePixel = 0,
 				BackgroundTransparency = 0,
+				ZIndex = 26,
 				ThemeTag = { BackgroundColor3 = "DialogHolder" },
 				Parent = DropdownFrame,
 			}, {
@@ -323,13 +333,23 @@ function KeySystem.Show(Config, Library, Callback)
 					PaddingTop = UDim.new(0, 6),
 					PaddingBottom = UDim.new(0, 6),
 					PaddingLeft = UDim.new(0, 6),
-					PaddingRight = UDim.new(0, 6),
+					PaddingRight = UDim.new(0, TotalContentHeight > MaxDropdownHeight and 8 or 6),
 				}),
 			})
 
+			local isFetching = false
+
+			local function updateDropdownPosition()
+				local btnPos = GetKeyButton.Frame.AbsolutePosition
+				local btnSize = GetKeyButton.Frame.AbsoluteSize
+				local guiPos = BaseContainer.AbsolutePosition
+				DropdownFrame.Position = UDim2.fromOffset(btnPos.X + btnSize.X - guiPos.X, btnPos.Y - 4 - guiPos.Y)
+			end
+
 			local function toggleDropdown()
 				DropdownOpen = not DropdownOpen
-				local targetHeight = DropdownOpen and DropdownInner.AbsoluteSize.Y or 0
+				updateDropdownPosition()
+				local targetHeight = DropdownOpen and TargetContentHeight or 0
 				local chevronTarget = DropdownOpen and 180 or 0
 
 				RootMotor:stop()
@@ -348,46 +368,65 @@ function KeySystem.Show(Config, Library, Callback)
 					Text = "",
 					Size = UDim2.new(1, 0, 0, 36),
 					BackgroundTransparency = 1,
+					ZIndex = 27,
 					Parent = DropdownInner,
 				})
 
-				local defIcon = item.Def.Icon
+				local iconCfg = item.Config.Icon
+				if iconCfg == nil then
+					iconCfg = item.Def.Icon
+				end
+
+				local hasIcon = iconCfg ~= false and iconCfg ~= ""
 				local ico = nil
 
-				if type(defIcon) == "string" and defIcon:find("^rbxassetid://") then
-					ico = { Image = defIcon }
-				elseif type(defIcon) == "string" then
-					local found = Icons[defIcon]
-					if type(found) == "string" then
-						ico = { Image = found }
-					elseif type(found) == "table" then
-						ico = found
+				if hasIcon then
+					local iconStr = tostring(iconCfg)
+					if iconStr:find("^rbxassetid://") or iconStr:find("^rbxthumb://") or iconStr:find("^rbxasset://") then
+						ico = { Image = iconStr }
+					elseif iconStr:match("^%d+$") then
+						ico = { Image = "rbxassetid://" .. iconStr }
+					else
+						local found = Icons[iconStr]
+						if type(found) == "string" then
+							ico = { Image = found }
+						elseif type(found) == "table" then
+							ico = found
+						end
+					end
+					if not ico then
+						ico = Icons.key
 					end
 				end
-				if not ico then
-					ico = Icons.key
-				end
 
-				local ItemIcon = New("ImageLabel", {
-					Image = ico.Image,
-					ImageRectSize = ico.ImageRectSize,
-					ImageRectOffset = ico.ImageRectOffset,
-					Size = UDim2.fromOffset(18, 18),
-					Position = UDim2.fromOffset(8, 9),
-					BackgroundTransparency = 1,
-					Parent = ItemBtn,
-					ThemeTag = { ImageColor3 = "Text" },
-				})
+				if hasIcon and ico then
+					local isCustomThumb = type(iconCfg) == "string" and (iconCfg:find("^rbxthumb://") or iconCfg:find("^rbxassetid://"))
+					local itemIconProps = {
+						Image = ico.Image,
+						ImageRectSize = ico.ImageRectSize,
+						ImageRectOffset = ico.ImageRectOffset,
+						Size = UDim2.fromOffset(18, 18),
+						Position = UDim2.fromOffset(8, 9),
+						BackgroundTransparency = 1,
+						ZIndex = 28,
+						Parent = ItemBtn,
+					}
+					if not isCustomThumb then
+						itemIconProps.ThemeTag = { ImageColor3 = "Text" }
+					end
+					New("ImageLabel", itemIconProps)
+				end
 
 				local ItemLabel = New("TextLabel", {
 					FontFace = Font.new("rbxasset://fonts/families/Montserrat.json"),
-					Text = item.Config.Title or item.Def.Name,
+					Text = item.Config.Title or item.Config.Name or item.Def.Name,
 					TextSize = 13,
 					TextXAlignment = Enum.TextXAlignment.Left,
 					TextYAlignment = Enum.TextYAlignment.Center,
-					Size = UDim2.new(1, -34, 1, 0),
-					Position = UDim2.fromOffset(32, 0),
+					Size = UDim2.new(1, hasIcon and -34 or -16, 1, 0),
+					Position = UDim2.fromOffset(hasIcon and 32 or 10, 0),
 					BackgroundTransparency = 1,
+					ZIndex = 28,
 					Parent = ItemBtn,
 					ThemeTag = { TextColor3 = "Text" },
 				})
@@ -400,23 +439,62 @@ function KeySystem.Show(Config, Library, Callback)
 					ItemBtn.BackgroundTransparency = 1
 				end)
 				Creator.AddSignal(ItemBtn.MouseButton1Click, function()
-					local ok, msg = pcall(item.Instance.Copy)
-					local content
-					if item.Instance.Unavailable then
-						content = "Service unavailable in this environment."
-					elseif not ok then
-						content = "Copy failed: " .. tostring(msg)
-					elseif msg ~= nil and msg ~= true then
-						content = tostring(msg)
-					else
-						content = "Key link copied to clipboard."
+					if isFetching then
+						Library:Notify({
+							Title = "Key System",
+							Content = "Please wait, key link is being generated...",
+							Duration = 2,
+						})
+						return
 					end
+
+					if DropdownOpen then
+						toggleDropdown()
+					end
+
+					isFetching = true
 					Library:Notify({
 						Title = "Key System",
-						Content = content,
+						Content = "Generating key link, please wait...",
 						Duration = 3,
 					})
-					toggleDropdown()
+
+					task.spawn(function()
+						local ok, success, msg = pcall(item.Instance.Copy)
+						isFetching = false
+
+						if item.Instance.Unavailable then
+							Library:Notify({
+								Title = "Key System",
+								Content = "Service unavailable in this environment.",
+								Duration = 3,
+							})
+							return
+						end
+
+						if not ok then
+							Library:Notify({
+								Title = "Key System",
+								Content = "Failed: " .. tostring(success),
+								Duration = 4,
+							})
+							return
+						end
+
+						if success == false then
+							Library:Notify({
+								Title = "Key System",
+								Content = (msg and #tostring(msg) > 0) and tostring(msg) or "Failed to generate key link.",
+								Duration = 4,
+							})
+						else
+							Library:Notify({
+								Title = "Key System",
+								Content = "Key link copied to clipboard.",
+								Duration = 3,
+							})
+						end
+					end)
 				end)
 			end
 

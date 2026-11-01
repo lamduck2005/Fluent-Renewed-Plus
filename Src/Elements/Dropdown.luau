@@ -1,4 +1,5 @@
 local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 local Mouse = game:GetService("Players").LocalPlayer:GetMouse()
 local Camera = game:GetService("Workspace").CurrentCamera
 
@@ -17,6 +18,7 @@ function Element:New(Idx, Config)
 
 	local dropdownConns = {}
 	local optionCleanup = {}
+	local AllButton, NoneButton, AllButtonLabel, NoneButtonLabel
 
 	local Dropdown = {
 		Values = (function()
@@ -28,7 +30,35 @@ function Element:New(Idx, Config)
 
 			return Idxes
 		end)(),
-		Value = (Config.Multi and (Config.Default or Config.Value or {})) or Config.Default or Config.Value,
+		Value = (function()
+			local valuesList = {}
+			for _, v in next, Config.Values or {} do
+				valuesList[#valuesList + 1] = v
+			end
+
+			if Config.Multi then
+				local result = {}
+				local raw = Config.Default or Config.Value
+				if type(raw) == "table" then
+					for k, v in next, raw do
+						if type(k) == "number" and table.find(valuesList, v) then
+							result[v] = true
+						elseif v == true and table.find(valuesList, k) then
+							result[k] = true
+						end
+					end
+				end
+				return result
+			else
+				local raw = Config.Default or Config.Value
+				if type(raw) == "number" and valuesList[raw] ~= nil then
+					return valuesList[raw]
+				elseif raw and table.find(valuesList, raw) then
+					return raw
+				end
+				return nil
+			end
+		end)(),
 		Multi = Config.Multi or false,
 		AutoDeselect = Config.AutoDeselect or false,
 		Searchable = Config.Searchable or false,
@@ -39,6 +69,8 @@ function Element:New(Idx, Config)
 		end,
 		CustomDisplayer = (typeof(Config.Displayer) == "function" and Config.Displayer and true) or false,
 		Buttons = {},
+		ButtonsList = {},
+		Built = false,
 		Opened = false,
 		Type = "Dropdown",
 		Callback = Config.Callback or function() end,
@@ -105,6 +137,7 @@ function Element:New(Idx, Config)
 
 	local DropdownListLayout = New("UIListLayout", {
 		Padding = UDim.new(0, 3),
+		SortOrder = Enum.SortOrder.LayoutOrder,
 	})
 
 	local DropdownScrollFrame = New("ScrollingFrame", {
@@ -256,11 +289,38 @@ function Element:New(Idx, Config)
 	end
 
 	local function RecalculateCanvasSize()
-		DropdownScrollFrame.CanvasSize = UDim2.fromOffset(0, DropdownListLayout.AbsoluteContentSize.Y)
+		DropdownScrollFrame.CanvasSize = UDim2.fromOffset(0, DropdownListLayout.AbsoluteContentSize.Y + 10)
 	end
 
-	local function RepopulateDropdownList()
-		Dropdown:BuildDropdownList()
+	local function FilterDropdownList()
+		if not Dropdown.Built then return end
+		local Query = string.lower(SearchBox.Text)
+		local IsFiltered = Dropdown.Searchable and Query ~= ""
+		local MatchingCount = 0
+
+		for _, item in ipairs(Dropdown.ButtonsList) do
+			local text = tostring(Dropdown.Displayer(item.Value))
+			local Matches = (not IsFiltered) or (string.find(string.lower(text), Query, 1, true) ~= nil)
+			item.Button.Visible = Matches
+			if Matches then
+				MatchingCount += 1
+			end
+		end
+
+		if Config.Multi and AllButton and NoneButton then
+			local Show = MatchingCount > 0
+			AllButton.Visible = Show
+			NoneButton.Visible = Show
+			if AllButtonLabel then
+				AllButtonLabel.Text = IsFiltered and "[ Select Filtered ]" or "[ Select All ]"
+			end
+			if NoneButtonLabel then
+				NoneButtonLabel.Text = IsFiltered and "[ Clear Filtered ]" or "[ Clear All ]"
+			end
+		end
+
+		RecalculateCanvasSize()
+		RecalculateListSizeAndPosition()
 	end
 
 	RecalculateListSizeAndPosition()
@@ -273,7 +333,13 @@ function Element:New(Idx, Config)
 			end
 		end)
 	end
-	dropdownConns[#dropdownConns + 1] = SearchBox:GetPropertyChangedSignal("Text"):Connect(RepopulateDropdownList)
+	dropdownConns[#dropdownConns + 1] = SearchBox:GetPropertyChangedSignal("Text"):Connect(FilterDropdownList)
+	dropdownConns[#dropdownConns + 1] = DropdownListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+		RecalculateCanvasSize()
+		if Dropdown.Opened then
+			RecalculateListSizeAndPosition()
+		end
+	end)
 
 	local ScrollFrame = self.ScrollFrame
 	function Dropdown:Open()
@@ -281,10 +347,20 @@ function Element:New(Idx, Config)
 		ScrollFrame.ScrollingEnabled = false
 		DropdownHolderCanvas.Visible = true
 		DropdownHolderFrame.Size = UDim2.fromScale(1, 1)
+
+		TweenService:Create(DropdownIco, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Rotation = 180
+		}):Play()
+
+		if not Dropdown.Built then
+			Dropdown:BuildDropdownList()
+		end
+
 		RecalculateListSizeAndPosition()
 
 		if Dropdown.Searchable then
 			SearchBox.Text = ""
+			FilterDropdownList()
 			
 			if Dropdown.FocusSearch then
 				SearchBox:CaptureFocus()
@@ -298,30 +374,44 @@ function Element:New(Idx, Config)
 		DropdownHolderFrame.Size = UDim2.fromScale(1, 0.6)
 		DropdownHolderCanvas.Visible = false
 
+		TweenService:Create(DropdownIco, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Rotation = 0
+		}):Play()
+
 		if Dropdown.Searchable then
 			SearchBox.Text = ""
 			SearchBox:ReleaseFocus()
 		end
 	end
 
+	local function IsPointInGui(point: Vector2, gui: GuiObject): boolean
+		if not gui then return false end
+		local absPos = gui.AbsolutePosition
+		local absSize = gui.AbsoluteSize
+		return point.X >= absPos.X and point.X <= (absPos.X + absSize.X)
+			and point.Y >= absPos.Y and point.Y <= (absPos.Y + absSize.Y)
+	end
+
 	dropdownConns[#dropdownConns + 1] = DropdownInner.MouseButton1Click:Connect(function()
-		Dropdown:Open()
+		if Dropdown.Opened then
+			Dropdown:Close()
+		else
+			Dropdown:Open()
+		end
 	end)
 
 	dropdownConns[#dropdownConns + 1] = UserInputService.InputBegan:Connect(function(Input)
+		if not Dropdown.Opened then return end
+
 		if
 			Input.UserInputType == Enum.UserInputType.MouseButton1
 			or Input.UserInputType == Enum.UserInputType.Touch
 		then
-			local AbsPos, AbsSize = DropdownHolderFrame.AbsolutePosition, DropdownHolderFrame.AbsoluteSize
-			if
-				Mouse.X < AbsPos.X
-				or Mouse.X > AbsPos.X + AbsSize.X
-				or Mouse.Y < (AbsPos.Y - 20 - 1)
-				or Mouse.Y > AbsPos.Y + AbsSize.Y
-			then
-				Dropdown:Close()
+			local clickPos = Vector2.new(Input.Position.X, Input.Position.Y)
+			if IsPointInGui(clickPos, DropdownHolderFrame) or IsPointInGui(clickPos, DropdownInner) then
+				return
 			end
+			Dropdown:Close()
 		end
 	end)
 
@@ -376,7 +466,6 @@ function Element:New(Idx, Config)
 
 	function Dropdown:BuildDropdownList()
 		local Values = Dropdown.Values
-		local Buttons = {}
 
 		for _, Element in next, DropdownScrollFrame:GetChildren() do
 			if not Element:IsA("UIListLayout") then
@@ -385,25 +474,37 @@ function Element:New(Idx, Config)
 					for _, obj in data.registry do
 						Creator.Registry[obj] = nil
 					end
+					for _, conn in data.conns do
+						conn:Disconnect()
+					end
 					optionCleanup[Element] = nil
 				end
 				Element:Destroy()
 			end
 		end
 
-		local AllButton, NoneButton
+		table.clear(Dropdown.Buttons)
+		table.clear(Dropdown.ButtonsList)
+		AllButton = nil
+		NoneButton = nil
+		AllButtonLabel = nil
+		NoneButtonLabel = nil
+
+		local Query = (Dropdown.Searchable and SearchBox.Text ~= "") and string.lower(SearchBox.Text) or ""
+		local IsFiltered = Query ~= ""
+
 		if Config.Multi then
-			local IsFiltered = Dropdown.Searchable and SearchBox.Text ~= ""
-			
 			-- Select All / Filtered Option
 			AllButton = Button_BuildList:Clone()
-			local AllButtonSelector, AllButtonLabel = AllButton.Frame, AllButton.ButtonLabel
-			
+			local AllButtonSelector = AllButton.Frame
+			AllButtonLabel = AllButton.ButtonLabel
+			AllButton.LayoutOrder = 1
+
 			AllButtonSelector.BackgroundTransparency = 1
 			AllButtonSelector.Size = UDim2.new(0, 0, 0, 0)
 			AllButtonLabel.Text = IsFiltered and "[ Select Filtered ]" or "[ Select All ]"
 			AllButtonLabel.TextColor3 = Color3.fromRGB(80, 180, 255)
-			
+
 			local AllConns = {}
 			AllConns[#AllConns + 1] = AllButton.MouseEnter:Connect(function()
 				AllButton.BackgroundTransparency = 0.89
@@ -411,21 +512,23 @@ function Element:New(Idx, Config)
 			AllConns[#AllConns + 1] = AllButton.MouseLeave:Connect(function()
 				AllButton.BackgroundTransparency = 1
 			end)
-			
+
 			local function DoSelectAll()
 				local tbl = {}
 				for val, bool in next, Dropdown.Value do
 					tbl[val] = true
 				end
+				local activeQuery = (Dropdown.Searchable and SearchBox.Text ~= "") and string.lower(SearchBox.Text) or ""
 				for _, val in next, Dropdown.Values do
-					if not Dropdown.Searchable or SearchBox.Text == "" or string.lower(Dropdown.Displayer(val)):match(string.lower(SearchBox.Text)) then
+					local text = tostring(Dropdown.Displayer(val))
+					if activeQuery == "" or string.find(string.lower(text), activeQuery, 1, true) then
 						tbl[val] = true
 					end
 				end
 				Dropdown:SetValue(tbl)
 			end
 			AllConns[#AllConns + 1] = AllButton.Activated:Connect(DoSelectAll)
-			
+
 			optionCleanup[AllButton] = {
 				registry = { AllButton, AllButtonSelector, AllButtonLabel },
 				conns = AllConns,
@@ -434,13 +537,15 @@ function Element:New(Idx, Config)
 
 			-- Clear All / Filtered Option
 			NoneButton = Button_BuildList:Clone()
-			local NoneButtonSelector, NoneButtonLabel = NoneButton.Frame, NoneButton.ButtonLabel
-			
+			local NoneButtonSelector = NoneButton.Frame
+			NoneButtonLabel = NoneButton.ButtonLabel
+			NoneButton.LayoutOrder = 2
+
 			NoneButtonSelector.BackgroundTransparency = 1
 			NoneButtonSelector.Size = UDim2.new(0, 0, 0, 0)
 			NoneButtonLabel.Text = IsFiltered and "[ Clear Filtered ]" or "[ Clear All ]"
 			NoneButtonLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-			
+
 			local NoneConns = {}
 			NoneConns[#NoneConns + 1] = NoneButton.MouseEnter:Connect(function()
 				NoneButton.BackgroundTransparency = 0.89
@@ -448,21 +553,23 @@ function Element:New(Idx, Config)
 			NoneConns[#NoneConns + 1] = NoneButton.MouseLeave:Connect(function()
 				NoneButton.BackgroundTransparency = 1
 			end)
-			
+
 			local function DoSelectNone()
 				local tbl = {}
 				for val, bool in next, Dropdown.Value do
 					tbl[val] = true
 				end
+				local activeQuery = (Dropdown.Searchable and SearchBox.Text ~= "") and string.lower(SearchBox.Text) or ""
 				for _, val in next, Dropdown.Values do
-					if not Dropdown.Searchable or SearchBox.Text == "" or string.lower(Dropdown.Displayer(val)):match(string.lower(SearchBox.Text)) then
+					local text = tostring(Dropdown.Displayer(val))
+					if activeQuery == "" or string.find(string.lower(text), activeQuery, 1, true) then
 						tbl[val] = nil
 					end
 				end
 				Dropdown:SetValue(tbl)
 			end
 			NoneConns[#NoneConns + 1] = NoneButton.Activated:Connect(DoSelectNone)
-			
+
 			optionCleanup[NoneButton] = {
 				registry = { NoneButton, NoneButtonSelector, NoneButtonLabel },
 				conns = NoneConns,
@@ -471,26 +578,11 @@ function Element:New(Idx, Config)
 		end
 
 		local MatchingCount = 0
-		local Count = 0
 
 		for Idx, Value in next, Values do
-			Count += 1
-
-			if Count % 30 == 0 then
-				task.wait()
-			end
-
-			if Dropdown.Searchable and SearchBox.Text ~= "" and not string.lower(Dropdown.Displayer(Value)):match(string.lower(SearchBox.Text)) then
-				continue
-			end
-
-			MatchingCount += 1
-
-			local Table = {}
-			local Selected
-
 			local Button = Button_BuildList:Clone()
 			local ButtonSelector, ButtonLabel = Button.Frame, Button.ButtonLabel
+			Button.LayoutOrder = Idx + 2
 
 			Creator.AddThemeObject(Button, {
 				BackgroundColor3 = "DropdownOption"
@@ -504,12 +596,7 @@ function Element:New(Idx, Config)
 				TextColor3 = "Text"
 			})
 
-			if Config.Multi then
-				Selected = Dropdown.Value[Value]
-			else
-				Selected = Dropdown.Value == Value
-			end
-
+			local isSelected = false
 			local function SetBackTransparency(val)
 				Button.BackgroundTransparency = val
 			end
@@ -520,41 +607,48 @@ function Element:New(Idx, Config)
 				ButtonSelector.Size = UDim2.new(0, 4, 0, val)
 			end
 
+			local item = {}
+			item.Button = Button
+			item.Selector = ButtonSelector
+			item.Label = ButtonLabel
+			item.Value = Value
+
+			function item:UpdateButton()
+				if Config.Multi then
+					isSelected = Dropdown.Value[Value] == true
+				else
+					isSelected = Dropdown.Value == Value
+				end
+
+				SetBackTransparency(isSelected and 0.89 or 1)
+				SetSelectorSize(isSelected and 14 or 6)
+				SetSelTransparency(isSelected and 0 or 1)
+			end
+
 			local optionConns = {}
 			optionConns[#optionConns + 1] = Button.MouseEnter:Connect(function()
-				SetBackTransparency(Selected and 0.85 or 0.89)
+				SetBackTransparency(isSelected and 0.85 or 0.89)
 			end)
 			optionConns[#optionConns + 1] = Button.MouseLeave:Connect(function()
-				SetBackTransparency(Selected and 0.89 or 1)
+				SetBackTransparency(isSelected and 0.89 or 1)
 			end)
 			optionConns[#optionConns + 1] = Button.MouseButton1Down:Connect(function()
 				SetBackTransparency(0.92)
 			end)
 			optionConns[#optionConns + 1] = Button.MouseButton1Up:Connect(function()
-				SetBackTransparency(Selected and 0.85 or 0.89)
+				SetBackTransparency(isSelected and 0.85 or 0.89)
 			end)
 
-			function Table:UpdateButton()
-				if Config.Multi then
-					Selected = Dropdown.Value[Value]
-					SetBackTransparency(Selected and 0.89 or 1)
-				else
-					Selected = Dropdown.Value == Value
-					SetBackTransparency(Selected and 0.89 or 1)
-				end
-
-				SetSelectorSize(Selected and 14 or 6)
-				SetSelTransparency(Selected and 0 or 1)
-			end
-
 			local function OnSelect()
-				local Try = not Selected
+				local try = not isSelected
 
-				if Dropdown:GetActiveValues() == 1 and not Try and not Config.AllowNull then
+				if Dropdown:GetActiveValues() == 1 and not try and not Config.AllowNull then
 				else
 					if Config.Multi then
-						Selected = Try
-						Dropdown.Value[Value] = Selected and true or nil
+						isSelected = try
+						Dropdown.Value[Value] = isSelected and true or nil
+						item:UpdateButton()
+						Dropdown:Display()
 
 						if typeof(Dropdown.Callback) == "function" then
 							Library:SafeCallback(Dropdown.Callback, Dropdown.Value)
@@ -563,21 +657,14 @@ function Element:New(Idx, Config)
 							Library:SafeCallback(Dropdown.Changed, Dropdown.Value)
 						end
 					else
-						Selected = Try
-						Dropdown:SetValue(Selected and Value or nil)
-
-						for _, OtherButton in next, Buttons do
-							OtherButton:UpdateButton()
-						end
+						isSelected = try
+						Dropdown:SetValue(isSelected and Value or nil)
 					end
-
-					Table:UpdateButton()
-					Dropdown:Display()
 				end
 			end
 			optionConns[#optionConns + 1] = Button.InputEnded:Connect(function(Input)
 				if Input.UserInputType == Enum.UserInputType.Touch then
-					SetBackTransparency(Selected and 0.89 or 1)
+					SetBackTransparency(isSelected and 0.89 or 1)
 				end
 			end)
 			optionConns[#optionConns + 1] = Button.Activated:Connect(OnSelect)
@@ -587,13 +674,21 @@ function Element:New(Idx, Config)
 				conns = optionConns,
 			}
 
-			ButtonLabel.Text = Dropdown.Displayer(Value)
+			local displayStr = tostring(Dropdown.Displayer(Value))
+			ButtonLabel.Text = displayStr
+
+			local isMatch = (not IsFiltered) or (string.find(string.lower(displayStr), Query, 1, true) ~= nil)
+			Button.Visible = isMatch
+			if isMatch then
+				MatchingCount += 1
+			end
+
 			Button.Parent = DropdownScrollFrame
 
-			Table:UpdateButton()
-			Dropdown:Display()
+			item:UpdateButton()
 
-			Buttons[Button] = Table
+			Dropdown.Buttons[Value] = item
+			Dropdown.ButtonsList[#Dropdown.ButtonsList + 1] = item
 		end
 
 		if Config.Multi and AllButton and NoneButton then
@@ -603,16 +698,14 @@ function Element:New(Idx, Config)
 		end
 
 		ListSizeX = 0
-
-		for Button, Table in next, Buttons do
-			if Button.ButtonLabel then
-				if Button.ButtonLabel.TextBounds.X > ListSizeX then
-					ListSizeX = Button.ButtonLabel.TextBounds.X
-				end
+		for _, item in ipairs(Dropdown.ButtonsList) do
+			if item.Label and item.Label.TextBounds.X > ListSizeX then
+				ListSizeX = item.Label.TextBounds.X
 			end
 		end
 
 		ListSizeX = ListSizeX + 30
+		Dropdown.Built = true
 
 		RecalculateCanvasSize()
 		RecalculateListSizeAndPosition()
@@ -620,10 +713,37 @@ function Element:New(Idx, Config)
 
 	function Dropdown:SetValues(NewValues)
 		if NewValues then
-			rawset(Dropdown, "Values", NewValues)
+			local Idxes = {}
+			for _, v in next, NewValues do
+				Idxes[#Idxes + 1] = v
+			end
+			rawset(Dropdown, "Values", Idxes)
 		end
 
-		Dropdown:BuildDropdownList()
+		if Dropdown.Opened then
+			Dropdown:BuildDropdownList()
+		else
+			Dropdown.Built = false
+			for _, Element in next, DropdownScrollFrame:GetChildren() do
+				if not Element:IsA("UIListLayout") then
+					local data = optionCleanup[Element]
+					if data then
+						for _, obj in data.registry do
+							Creator.Registry[obj] = nil
+						end
+						for _, conn in data.conns do
+							conn:Disconnect()
+						end
+						optionCleanup[Element] = nil
+					end
+					Element:Destroy()
+				end
+			end
+			table.clear(Dropdown.Buttons)
+			table.clear(Dropdown.ButtonsList)
+		end
+
+		Dropdown:Display()
 	end
 
 	function Dropdown:OnChanged(Func)
@@ -636,9 +756,13 @@ function Element:New(Idx, Config)
 			local nTable = {}
 
 			if Val then
-				for Value, Bool in next, Val do
-					if table.find(Dropdown.Values, Value) then
-						nTable[Value] = true
+				for Key, Value in next, Val do
+					if type(Key) == "number" and type(Value) == "string" then
+						if table.find(Dropdown.Values, Value) then
+							nTable[Value] = true
+						end
+					elseif Value == true and table.find(Dropdown.Values, Key) then
+						nTable[Key] = true
 					end
 				end
 			end
@@ -652,7 +776,13 @@ function Element:New(Idx, Config)
 			end
 		end
 
-		Dropdown:BuildDropdownList()
+		Dropdown:Display()
+
+		if Dropdown.Built then
+			for _, item in ipairs(Dropdown.ButtonsList) do
+				item:UpdateButton()
+			end
+		end
 
 		if typeof(Dropdown.Callback) == "function" then
 			Library:SafeCallback(Dropdown.Callback, Dropdown.Value)
@@ -678,6 +808,8 @@ function Element:New(Idx, Config)
 			optionCleanup[btn] = nil
 		end
 		table.clear(optionCleanup)
+		table.clear(Dropdown.Buttons)
+		table.clear(Dropdown.ButtonsList)
 
 		for i, v in ipairs(Library.OpenFrames) do
 			if v == DropdownHolderCanvas then
@@ -691,43 +823,7 @@ function Element:New(Idx, Config)
 		Library.Options[Idx] = nil
 	end
 
-	Dropdown:BuildDropdownList()
 	Dropdown:Display()
-
-	local Defaults = {}
-
-	if type(Config.Default) == "table" then
-		for _, Value in next, Config.Default do
-			local Indx = table.find(Dropdown.Values, Value)
-
-			if Indx then
-				Defaults[#Defaults + 1] = Indx
-			end
-		end
-	elseif type(Config.Default) == "number" and Dropdown.Values[Config.Default] ~= nil then
-		Defaults[#Defaults + 1] = Config.Default
-	else
-		local Indx = table.find(Dropdown.Values, Config.Default)
-		if Indx then
-			Defaults[#Defaults + 1] = Indx
-		end
-	end
-
-	if next(Defaults) then
-		for i = 1, #Defaults do
-			local Index = Defaults[i]
-
-			if Config.Multi then
-				Dropdown.Value[Dropdown.Values[Index]] = true
-			else
-				Dropdown.Value = Dropdown.Values[Index]
-				break
-			end
-		end
-
-		Dropdown:BuildDropdownList()
-		Dropdown:Display()
-	end
 
 	Library.Options[Idx] = Dropdown
 

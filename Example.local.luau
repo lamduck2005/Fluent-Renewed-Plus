@@ -50,6 +50,56 @@ local Window = Library:Window{
 	-- 		{ Type = "junkiedevelopment", ServiceId = "your-service-id", ApiKey = "your-api-key", Provider = "your-provider" },
 	-- 	},
 	-- },
+
+    KeySystem = {
+        Title = "Key System",
+        Note = "Choose gateway to get key:",
+        SaveKey = true,
+        API = {
+            {
+                Type = "platoboost",
+                Title = "Platoboost - Lootlabs",
+                Icon = "rbxthumb://type=Asset&id=110590623652416&w=150&h=150",
+                ServiceId = "your_service_id_1",
+                Secret = "your_secret_1",
+            },
+            {
+                Type = "platoboost",
+                Title = "Platooooooooboost Work.ink",
+                Icon = "rbxthumb://type=Asset&id=115020386850484&w=150&h=150",
+                ServiceId = "your_service_id_2",
+                Secret = "your_secret_2",
+            },
+            {
+                Type = "platoboost",
+                Title = "Work.ink",
+                Icon = "rbxthumb://type=Asset&id=115020386850484&w=150&h=150",
+                ServiceId = "your_service_id_2",
+                Secret = "your_secret_2",
+            },
+            {
+                Type = "platoboost",
+                Title = "Work.ink",
+                Icon = "rbxthumb://type=Asset&id=115020386850484&w=150&h=150",
+                ServiceId = "your_service_id_2",
+                Secret = "your_secret_2",
+            },
+            {
+                Type = "platoboost",
+                Title = "Work.ink",
+                Icon = "rbxthumb://type=Asset&id=115020386850484&w=150&h=150",
+                ServiceId = "your_service_id_2",
+                Secret = "your_secret_2",
+            },
+            {
+                Type = "platoboost",
+                Title = "Work.ink",
+                Icon = "rbxthumb://type=Asset&id=115020386850484&w=150&h=150",
+                ServiceId = "your_service_id_2",
+                Secret = "your_secret_2",
+            },
+        },
+    },
 }
 
 local Options = Library.Options

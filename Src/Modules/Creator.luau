@@ -105,6 +105,20 @@ function Creator.GetThemeProperty(Property)
 end
 
 function Creator.UpdateTheme(RegistryIndex: Instance?)
+	if typeof(RegistryIndex) == "Instance" then
+		local data = Creator.Registry[RegistryIndex]
+		if data then
+			for Property, ColorIdx in next, data.Properties do
+				if typeof(ColorIdx) == "function" then
+					ColorIdx(Creator.GetThemeProperty)
+				else
+					RegistryIndex[Property] = Creator.GetThemeProperty(ColorIdx)
+				end
+			end
+		end
+		return
+	end
+
 	if Creator.Theme.Updating then
 		Creator.Theme.Updated:Wait()
 	end
@@ -113,8 +127,14 @@ function Creator.UpdateTheme(RegistryIndex: Instance?)
 
 	local Count = 0
 
-	if typeof(RegistryIndex) == "Instance" and Creator.Registry[RegistryIndex] then
-		for Property, ColorIdx in next, Creator.Registry[RegistryIndex].Properties do
+	for _, Object in next, Creator.Registry do
+		Count += 1
+
+		if Count % 135 == 0 then
+			task.wait()
+		end
+
+		for Property, ColorIdx in next, Object.Properties do
 			Count += 1
 
 			if Count % 135 == 0 then
@@ -124,32 +144,10 @@ function Creator.UpdateTheme(RegistryIndex: Instance?)
 			if typeof(ColorIdx) == "function" then
 				ColorIdx(Creator.GetThemeProperty)
 			else
-				RegistryIndex[Property] = Creator.GetThemeProperty(ColorIdx)
+				Object.Object[Property] = Creator.GetThemeProperty(ColorIdx)
 			end
 		end
-	else
-		for _, Object in next, Creator.Registry do
-			Count += 1
-
-			if Count % 135 == 0 then
-				task.wait()
-			end
-
-			for Property, ColorIdx in next, Object.Properties do
-				Count += 1
-
-				if Count % 135 == 0 then
-					task.wait()
-				end
-
-				if typeof(ColorIdx) == "function" then
-					ColorIdx(Creator.GetThemeProperty)
-				else
-					Object.Object[Property] = Creator.GetThemeProperty(ColorIdx)
-				end
-			end
-		end
-	end	
+	end
 
 	for Idx: number, Motor in next, Creator.TransparencyMotors do
 		if Idx % 135 == 0 then
