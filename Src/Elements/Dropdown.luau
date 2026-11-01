@@ -1,4 +1,5 @@
 local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 local Mouse = game:GetService("Players").LocalPlayer:GetMouse()
 local Camera = game:GetService("Workspace").CurrentCamera
 
@@ -347,6 +348,10 @@ function Element:New(Idx, Config)
 		DropdownHolderCanvas.Visible = true
 		DropdownHolderFrame.Size = UDim2.fromScale(1, 1)
 
+		TweenService:Create(DropdownIco, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Rotation = 180
+		}):Play()
+
 		if not Dropdown.Built then
 			Dropdown:BuildDropdownList()
 		end
@@ -369,30 +374,44 @@ function Element:New(Idx, Config)
 		DropdownHolderFrame.Size = UDim2.fromScale(1, 0.6)
 		DropdownHolderCanvas.Visible = false
 
+		TweenService:Create(DropdownIco, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Rotation = 0
+		}):Play()
+
 		if Dropdown.Searchable then
 			SearchBox.Text = ""
 			SearchBox:ReleaseFocus()
 		end
 	end
 
+	local function IsPointInGui(point: Vector2, gui: GuiObject): boolean
+		if not gui then return false end
+		local absPos = gui.AbsolutePosition
+		local absSize = gui.AbsoluteSize
+		return point.X >= absPos.X and point.X <= (absPos.X + absSize.X)
+			and point.Y >= absPos.Y and point.Y <= (absPos.Y + absSize.Y)
+	end
+
 	dropdownConns[#dropdownConns + 1] = DropdownInner.MouseButton1Click:Connect(function()
-		Dropdown:Open()
+		if Dropdown.Opened then
+			Dropdown:Close()
+		else
+			Dropdown:Open()
+		end
 	end)
 
 	dropdownConns[#dropdownConns + 1] = UserInputService.InputBegan:Connect(function(Input)
+		if not Dropdown.Opened then return end
+
 		if
 			Input.UserInputType == Enum.UserInputType.MouseButton1
 			or Input.UserInputType == Enum.UserInputType.Touch
 		then
-			local AbsPos, AbsSize = DropdownHolderFrame.AbsolutePosition, DropdownHolderFrame.AbsoluteSize
-			if
-				Mouse.X < AbsPos.X
-				or Mouse.X > AbsPos.X + AbsSize.X
-				or Mouse.Y < (AbsPos.Y - 20 - 1)
-				or Mouse.Y > AbsPos.Y + AbsSize.Y
-			then
-				Dropdown:Close()
+			local clickPos = Vector2.new(Input.Position.X, Input.Position.Y)
+			if IsPointInGui(clickPos, DropdownHolderFrame) or IsPointInGui(clickPos, DropdownInner) then
+				return
 			end
+			Dropdown:Close()
 		end
 	end)
 
