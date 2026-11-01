@@ -90,7 +90,9 @@ function Platoboost.New(serviceId: string, secret: string)
 		local success, link = cacheLink()
 		if success then
 			fSetClipboard(link)
+			return true, link
 		end
+		return false, link
 	end
 
 	local function redeemKey(key)
