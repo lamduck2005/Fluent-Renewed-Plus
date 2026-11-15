@@ -2,6 +2,7 @@ local Root = script.Parent.Parent
 local Creator = require(Root.Modules.Creator)
 local Flipper = require(Root.Packages.Flipper)
 local Services = require(Root.Modules.Services)
+local Hwid = require(Root.Modules.Hwid)
 local ButtonFactory = require(Root.Components.Button)
 local Icons = require(Root.Modules.Icons)
 
@@ -159,14 +160,14 @@ function KeySystem.Show(Config, Library, Callback)
 	local function handleSuccess(key)
 		close()
 		if Config.SaveKey then
-			local hwid = gethwid and gethwid() or game:GetService("Players").LocalPlayer.UserId
+			local hwid = Hwid.Get()
 			local folder = Config.KeyFolder or "FluentTemp"
 			if writefile and isfolder and not isfolder(folder) and makefolder then
 				makefolder(folder)
 			end
 			pcall(function()
 				if writefile then
-					writefile(folder .. "/" .. tostring(hwid) .. ".key", tostring(key))
+					writefile(folder .. "/" .. hwid .. ".key", tostring(key))
 				end
 			end)
 		end

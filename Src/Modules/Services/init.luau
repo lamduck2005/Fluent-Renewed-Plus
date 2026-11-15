@@ -39,6 +39,12 @@ local Services = {
 		Args = { "ServiceId", "ApiKey", "Provider" },
 		New = (not IsStudio) and require(script.JunkieDevelopment).New or mockNew,
 	},
+	lamduck = {
+		Name = "LamDuck",
+		Icon = "rbxthumb://type=Asset&id=81215685023875&w=150&h=150",
+		Args = { "BaseUrl", "VerifySecret" },
+		New = (not IsStudio) and require(script.LamDuck).New or mockNew,
+	},
 }
 
 return Services
