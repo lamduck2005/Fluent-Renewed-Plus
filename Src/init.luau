@@ -55,6 +55,7 @@ local Icons = require(Root.Modules.Icons)
 local Themes = require(Root.Themes)
 local Signal = require(Root.Packages.Signal)
 local Services = require(Root.Modules.Services)
+local Hwid = require(Root.Modules.Hwid)
 
 local NotificationModule = require(Components.Notification)
 local KeySystem = require(Components.KeySystem)
@@ -270,6 +271,7 @@ function Library:Window(Config: {
 			Note: string?,
 			URL: string?,
 			SaveKey: boolean?,
+			AllowWhitelist: boolean?,
 			Thumbnail: {
 				Image: string,
 				Title: string?,
@@ -332,11 +334,41 @@ function Library:Window(Config: {
 			makefolder(Config.KeyFolder)
 		end
 
-		local hwid = gethwid and gethwid() or game:GetService("Players").LocalPlayer.UserId
-		local keyFile = Config.KeyFolder .. "/" .. tostring(hwid) .. ".key"
+		local hwid = Hwid.Get()
+		local keyFile = Config.KeyFolder .. "/" .. hwid .. ".key"
 		local canLoad = false
 
+		local allowWhitelist = Config.KeySystem.AllowWhitelist == true
+
+		local function tryWhitelist(): boolean
+			local api = Config.KeySystem.API
+			if type(api) ~= "table" then
+				return false
+			end
+			for _, entry in next, api do
+				local serviceDef = Services[entry.Type]
+				if serviceDef then
+					local args = {}
+					for _, argName in next, serviceDef.Args do
+						table.insert(args, entry[argName])
+					end
+					local ok, service = pcall(serviceDef.New, table.unpack(args))
+					if ok and service and service.Verify then
+						local pcallOk, verifyOk = pcall(service.Verify, "")
+						if pcallOk and verifyOk then
+							return true
+						end
+					end
+				end
+			end
+			return false
+		end
+
 		local function showKeyDialog()
+			if allowWhitelist and tryWhitelist() then
+				canLoad = true
+				return
+			end
 			KeySystem.Show(Config.KeySystem, Library, function(success)
 				canLoad = success
 			end)
