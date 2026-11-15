@@ -1,10 +1,13 @@
 -- LamDuck API | https://lamduck.vercel.app
 
+local Hwid = require(script.Parent.Parent.Hwid)
+
+local _lamduck_source = [==[
+local HwidGetter = ...
 local Clone = (cloneref or clonereference or function(instance)
 	return instance
 end)
 local HttpService = Clone(game:GetService("HttpService"))
-local Hwid = require(script.Parent.Parent.Hwid)
 
 local fRequest = request or http_request or (syn and syn.request)
 local fSetClipboard = setclipboard or toclipboard
@@ -108,14 +111,18 @@ local function hmacSha256Raw(message: string, key: string): string
 	return sha256Digest(table.concat(outer) .. sha256Digest(table.concat(inner) .. message))
 end
 
-local function computeHmac(message: string, key: string): string
+local function computeHmac(message: string, key: string): string?
 	if fHmac then
 		local ok, result = pcall(fHmac, "sha256", message, key)
 		if ok and type(result) == "string" and result ~= "" then
 			return result
 		end
 	end
-	return toHex(hmacSha256Raw(message, key))
+	local ok2, digest = pcall(hmacSha256Raw, message, key)
+	if ok2 and type(digest) == "string" and #digest == 32 then
+		return toHex(digest)
+	end
+	return nil
 end
 
 local function reasonMessage(reason: any): string
@@ -129,13 +136,18 @@ local function reasonMessage(reason: any): string
 	return known[text] or ("Key validation failed" .. (text ~= "" and (": " .. text) or "."))
 end
 
+local function trim(value: string): string
+	return (value:gsub("^%s*(.-)%s*$", "%1"))
+end
+
 local LamDuck = {}
+local requestSending = false
 
 function LamDuck.New(baseUrl: string?, verifySecret: string?)
 	local host = if baseUrl and tostring(baseUrl) ~= "" then tostring(baseUrl) else "https://lamduck.vercel.app"
-	host = host:gsub("/+$", "")
-	local secret = (tostring(verifySecret or ""):gsub("^%s*(.-)%s*$", "%1"))
-	local hwid = Hwid.Get()
+	host = trim(host):gsub("/+$", "")
+	local secret = trim(tostring(verifySecret or ""))
+	local hwid = trim(tostring(HwidGetter() or ""))
 
 	local function copyLink(): (boolean, string)
 		if secret == "" then
@@ -152,7 +164,12 @@ function LamDuck.New(baseUrl: string?, verifySecret: string?)
 		if secret == "" then
 			return false, MISSING_SECRET
 		end
-		local normalizedKey = if typeof(key) == "string" then key else ""
+		if requestSending then
+			return false, "A verification request is already in progress, please wait."
+		end
+		requestSending = true
+
+		local normalizedKey = if typeof(key) == "string" then trim(key) else ""
 
 		local success, response = pcall(function()
 			if fRequest then
@@ -173,6 +190,7 @@ function LamDuck.New(baseUrl: string?, verifySecret: string?)
 			end
 			return game:HttpGet(url)
 		end)
+		requestSending = false
 
 		if not success or response == nil then
 			return false, "LamDuck request failed."
@@ -211,7 +229,8 @@ function LamDuck.New(baseUrl: string?, verifySecret: string?)
 			tostring(data.mode or data.reason or ""),
 			tostring(data.timestamp)
 		)
-		if string.lower(computeHmac(payload, secret)) ~= string.lower(data.signature) then
+		local expectedSig = computeHmac(payload, secret)
+		if not expectedSig or string.lower(expectedSig) ~= string.lower(data.signature) then
 			return false, SIGNATURE_FAILED
 		end
 
@@ -225,3 +244,10 @@ function LamDuck.New(baseUrl: string?, verifySecret: string?)
 end
 
 return LamDuck
+]==]
+
+local _lamduck_fn, _lamduck_err = loadstring(_lamduck_source)
+if not _lamduck_fn then
+	error("Failed to load LamDuck: " .. tostring(_lamduck_err))
+end
+return _lamduck_fn(Hwid.Get)

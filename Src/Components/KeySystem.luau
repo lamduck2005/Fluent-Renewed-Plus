@@ -15,6 +15,7 @@ function KeySystem.Show(Config, Library, Callback)
 	local serviceInstances = {}
 	local enteredKey = ""
 	local isClosing = false
+	local isSubmitting = false
 	local DropdownFrame = nil
 
 	local HasThumbnail = Config.Thumbnail and Config.Thumbnail.Image
@@ -28,6 +29,7 @@ function KeySystem.Show(Config, Library, Callback)
 	local RootHeight = InputY + 36 + 16 + 50 -- InputFrame bottom + tight gap + button row reserve
 
 	local RootFrame = New("CanvasGroup", {
+		Name = "KeySystemPopup",
 		Active = true,
 		Size = UDim2.fromOffset(TotalWidth, RootHeight),
 		AnchorPoint = Vector2.new(0.5, 0.5),
@@ -125,6 +127,7 @@ function KeySystem.Show(Config, Library, Callback)
 	})
 
 	local InputBox = New("TextBox", {
+		Name = "KeySystemInput",
 		FontFace = Font.new("rbxasset://fonts/families/Montserrat.json"),
 		TextColor3 = Color3.fromRGB(200, 200, 200),
 		TextSize = 14,
@@ -176,6 +179,7 @@ function KeySystem.Show(Config, Library, Callback)
 	end
 
 	local function handleFail(message)
+		isSubmitting = false
 		Library:Notify({
 			Title = "Key System",
 			Content = message or "Invalid key.",
@@ -184,10 +188,26 @@ function KeySystem.Show(Config, Library, Callback)
 	end
 
 	local function submitKey()
+		if isSubmitting then
+			Library:Notify({
+				Title = "Key System",
+				Content = "Already verifying, please wait...",
+				Duration = 2,
+			})
+			return
+		end
 		local key = tostring(enteredKey or "")
 		if key == "" then
 			handleFail("Please enter a key.")
 			return
+		end
+		isSubmitting = true
+		if Config.API then
+			Library:Notify({
+				Title = "Key System",
+				Content = "Verifying key, please wait...",
+				Duration = 5,
+			})
 		end
 
 		if Config.KeyValidator then
@@ -504,6 +524,7 @@ function KeySystem.Show(Config, Library, Callback)
 	end
 
 	local SubmitButton = ButtonFactory("", ButtonContainer, true)
+	SubmitButton.Frame.Name = "KeySystemSubmit"
 	SubmitButton.Title.Text = "Submit"
 	SubmitButton.Frame.Size = UDim2.fromOffset(90, 32)
 	SubmitButton.Frame.LayoutOrder = 2
