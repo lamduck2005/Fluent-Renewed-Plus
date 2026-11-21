@@ -56,8 +56,9 @@ local RECONNECT_IGNORE_PHRASES = {
 local ExtraSetting = {} do
 	ExtraSetting.Folder = "FluentSettings"
 	ExtraSetting.Library = nil
-	ExtraSetting.Discord = nil
+	ExtraSetting.Links = {}
 	ExtraSetting.AutoExecuteUrl = nil
+	ExtraSetting.RandomNotifyConfig = nil
 
 	ExtraSetting.SavedConfig = {
 		EnableUnlockFPS = false,
@@ -71,12 +72,12 @@ local ExtraSetting = {} do
 		AutoExecuteUrl = "",
 		EnableAntiAFK = true,
 		EnableAutoReconnect = true,
+		EnableRandomNotify = true,
 		DisablePurchasePrompts = true,
 		WalkSpeed = 30,
 		EnableWalkSpeed = false,
 		JumpPower = 50,
 		EnableJumpPower = false,
-		EnableMultiJump = false,
 		EnableNoclip = false,
 	}
 
@@ -84,7 +85,7 @@ local ExtraSetting = {} do
 	local isAFKModeEnabled = false
 	local isAutoAFKEnabled = false
 	local autoAFKTimeThreshold = 300
-	local lastActivityTime = tick()
+	local lastActivityTime = os.clock()
 	local lastClickTime = 0
 	local afkStartTime = 0
 	local isAutoAFKLoopRunning = false
@@ -92,9 +93,10 @@ local ExtraSetting = {} do
 	local OriginalVolume = 1
 	local HasMutedAudio = false
 	local isAutoRejoinTimerRunning = false
-	local autoRejoinTimerStartTime = tick()
+	local autoRejoinTimerStartTime = os.clock()
 	local isReconnecting = false
 	local reconnectThread = nil
+	local connTeleportFailed = nil
 	local afkExtraInfo = {}
 	local afkToggleRef = nil
 	local connIdled = nil
@@ -105,8 +107,10 @@ local ExtraSetting = {} do
 	local originalJumpHeight = nil
 	local isWalkSpeedLoopRunning = false
 	local isJumpPowerLoopRunning = false
-	local connMultiJump = nil
 	local connNoclip = nil
+	local connNoclipChar = nil
+	local connNoclipDescendant = nil
+	local connNoclipRemoving = nil
 	local noclipParts = {}
 	local fpsOverlayConn
 	local fpsCount, fpsTime, currentFps = 0, 0, 0
@@ -114,6 +118,25 @@ local ExtraSetting = {} do
 	local fpsOverlayGui
 	local fpsOverlayLabel
 	local inited = false
+	local saveConfigThread = nil
+	local randomNotifyThread = nil
+	local isRandomNotifyRunning = false
+
+	local function GetGuiContainer()
+		local success, result = pcall(function()
+			return (gethui or get_hidden_ui)()
+		end)
+		if success and result then return result end
+
+		success, result = pcall(function()
+			local coreGui = game:GetService("CoreGui")
+			coreGui:GetFullName()
+			return coreGui
+		end)
+		if success and result then return result end
+
+		return player:FindFirstChild("PlayerGui")
+	end
 
 	local function ConfigPath()
 		return ExtraSetting.Folder .. "/extra/extra_config.json"
@@ -131,6 +154,16 @@ local ExtraSetting = {} do
 				makefolder(extra)
 			end
 			writefile(path, httpService:JSONEncode(ExtraSetting.SavedConfig))
+		end)
+	end
+
+	local function DebouncedSaveConfig()
+		if saveConfigThread then
+			task.cancel(saveConfigThread)
+		end
+		saveConfigThread = task.delay(0.5, function()
+			saveConfigThread = nil
+			SaveConfig()
 		end)
 	end
 
@@ -161,12 +194,14 @@ local ExtraSetting = {} do
 			end)
 		end
 
-		teleportService.TeleportInitFailed:Connect(function()
-			task.wait(2)
-			pcall(function()
-				teleportService:Teleport(placeId, player)
+		if not connTeleportFailed then
+			connTeleportFailed = teleportService.TeleportInitFailed:Connect(function()
+				task.wait(2)
+				pcall(function()
+					teleportService:Teleport(placeId, player)
+				end)
 			end)
-		end)
+		end
 
 		reconnectThread = task.spawn(function()
 			while true do
@@ -269,8 +304,7 @@ local ExtraSetting = {} do
 	end
 
 	local function ToggleAFKMode(enable)
-		local playerGui = player:FindFirstChild("PlayerGui")
-		local stats = game:GetService("Stats")
+		local container = GetGuiContainer()
 
 		pcall(function()
 			runService:Set3dRenderingEnabled(not enable)
@@ -288,8 +322,8 @@ local ExtraSetting = {} do
 				pcall(task.cancel, afkInfoThread)
 				afkInfoThread = nil
 			end
-			if playerGui then
-				local blackout = playerGui:FindFirstChild("AFKBlackoutScreenGui")
+			if container then
+				local blackout = container:FindFirstChild("AFKBlackoutScreenGui")
 				if blackout then blackout.Enabled = false end
 			end
 			return
@@ -302,13 +336,14 @@ local ExtraSetting = {} do
 			HasMutedAudio = true
 		end)
 
-		if not playerGui then return end
-		local blackoutScreenGui = playerGui:FindFirstChild("AFKBlackoutScreenGui")
+		if not container then return end
+		local blackoutScreenGui = container:FindFirstChild("AFKBlackoutScreenGui")
 		if not blackoutScreenGui then
 			blackoutScreenGui = Instance.new("ScreenGui")
 			blackoutScreenGui.Name = "AFKBlackoutScreenGui"
 			blackoutScreenGui.IgnoreGuiInset = true
-			blackoutScreenGui.DisplayOrder = 2147483647
+			blackoutScreenGui.DisplayOrder = 2147483646
+			blackoutScreenGui.ResetOnSpawn = false
 
 			local backgroundFrame = Instance.new("TextButton")
 			backgroundFrame.Name = "Background"
@@ -320,12 +355,12 @@ local ExtraSetting = {} do
 			backgroundFrame.Parent = blackoutScreenGui
 
 			backgroundFrame.MouseButton1Click:Connect(function()
-				local now = tick()
+				local now = os.clock()
 				if now - lastClickTime < 0.5 then
 					isAFKModeEnabled = false
 					ToggleAFKMode(false)
 					pcall(function() afkToggleRef:SetValue(false) end)
-					lastActivityTime = tick()
+					lastActivityTime = os.clock()
 				end
 				lastClickTime = now
 			end)
@@ -347,7 +382,7 @@ local ExtraSetting = {} do
 			textConstraint.MinTextSize = 12
 			textConstraint.Parent = statusLabel
 
-			pcall(function() blackoutScreenGui.Parent = playerGui end)
+			pcall(function() blackoutScreenGui.Parent = container end)
 		else
 			blackoutScreenGui.Enabled = true
 		end
@@ -362,8 +397,14 @@ local ExtraSetting = {} do
 			while isAFKModeEnabled and blackoutScreenGui and blackoutScreenGui.Enabled do
 				local duration = os.time() - afkStartTime
 				local cfg = ExtraSetting.SavedConfig
-				local actualFps = math.floor(stats.Workspace.Heartbeat:GetValue())
-				local ramUsage = math.floor(stats:GetTotalMemoryUsageMb())
+				local actualFps = 0
+				pcall(function()
+					actualFps = math.floor(statsService.Workspace.Heartbeat:GetValue())
+				end)
+				local ramUsage = 0
+				pcall(function()
+					ramUsage = math.floor(statsService:GetTotalMemoryUsageMb())
+				end)
 				local hours = math.floor(duration / 3600)
 				local minutes = math.floor((duration % 3600) / 60)
 				local seconds = duration % 60
@@ -371,7 +412,7 @@ local ExtraSetting = {} do
 
 				local statusParts = {}
 				if cfg.EnableAutoRejoin and isAutoRejoinTimerRunning then
-					local remain = math.max(0, (cfg.AutoRejoinMinutes * 60) - math.floor(tick() - autoRejoinTimerStartTime))
+					local remain = math.max(0, (cfg.AutoRejoinMinutes * 60) - math.floor(os.clock() - autoRejoinTimerStartTime))
 					local rh = math.floor(remain / 3600)
 					local rm = math.floor((remain % 3600) / 60)
 					local rs = remain % 60
@@ -407,10 +448,10 @@ local ExtraSetting = {} do
 		if isAutoAFKLoopRunning or not isAutoAFKEnabled then return end
 		isAutoAFKLoopRunning = true
 		task.spawn(function()
-			lastActivityTime = tick()
+			lastActivityTime = os.clock()
 			while isAutoAFKEnabled do
 				if not isAFKModeEnabled then
-					local idleTime = tick() - lastActivityTime
+					local idleTime = os.clock() - lastActivityTime
 					if idleTime >= autoAFKTimeThreshold then
 						isAFKModeEnabled = true
 						ToggleAFKMode(true)
@@ -428,9 +469,9 @@ local ExtraSetting = {} do
 		if not ExtraSetting.AutoExecuteUrl then return end
 		isAutoRejoinTimerRunning = true
 		task.spawn(function()
-			autoRejoinTimerStartTime = tick()
+			autoRejoinTimerStartTime = os.clock()
 			while ExtraSetting.SavedConfig.EnableAutoRejoin do
-				local elapsed = (tick() - autoRejoinTimerStartTime) / 60
+				local elapsed = (os.clock() - autoRejoinTimerStartTime) / 60
 				if elapsed >= (ExtraSetting.SavedConfig.AutoRejoinMinutes or 60) then
 					print("[ExtraSetting] Auto Rejoin triggered.")
 					ExtraSetting.Library:Notify({
@@ -546,14 +587,14 @@ local ExtraSetting = {} do
 		fpsOverlayGui.Enabled = enabled
 		if enabled then
 			if fpsOverlayConn then return end
-			fpsCount, fpsTime = 0, tick()
+			fpsCount, fpsTime = 0, os.clock()
 			perfStartTime = os.clock()
 			lastLogTime = os.clock()
 			lastLuaMb = gcinfo() / 1024
 			lastTotalMb = statsService and statsService:GetTotalMemoryUsageMb() or 0
 			fpsOverlayConn = runService.RenderStepped:Connect(function()
 				fpsCount += 1
-				local now = tick()
+				local now = os.clock()
 				if now - fpsTime >= 1 then
 					currentFps = math.floor(fpsCount / (now - fpsTime))
 					fpsCount, fpsTime = 0, now
@@ -680,34 +721,38 @@ local ExtraSetting = {} do
 		end
 	end
 
-	local function SetMultiJump(enabled)
-		if connMultiJump then
-			connMultiJump:Disconnect()
-			connMultiJump = nil
+	local function UpdateNoclipCache(char)
+		table.clear(noclipParts)
+		if connNoclipDescendant then
+			connNoclipDescendant:Disconnect()
+			connNoclipDescendant = nil
+		end
+		if connNoclipRemoving then
+			connNoclipRemoving:Disconnect()
+			connNoclipRemoving = nil
+		end
+		if not char then return end
+
+		for _, part in ipairs(char:GetDescendants()) do
+			if part:IsA("BasePart") then
+				table.insert(noclipParts, part)
+			end
 		end
 
-		if enabled then
-			local debounce = false
-			connMultiJump = userInputService.JumpRequest:Connect(function()
-				if (ExtraSetting.Library and ExtraSetting.Library.Unloaded) or not ExtraSetting.SavedConfig.EnableMultiJump then
-					if connMultiJump then
-						connMultiJump:Disconnect()
-						connMultiJump = nil
-					end
-					return
+		connNoclipDescendant = char.DescendantAdded:Connect(function(part)
+			if part:IsA("BasePart") then
+				table.insert(noclipParts, part)
+			end
+		end)
+
+		connNoclipRemoving = char.DescendantRemoving:Connect(function(part)
+			if part:IsA("BasePart") then
+				local idx = table.find(noclipParts, part)
+				if idx then
+					table.remove(noclipParts, idx)
 				end
-				if not debounce then
-					debounce = true
-					local char = player.Character
-					local hum = char and char:FindFirstChildWhichIsA("Humanoid")
-					if hum then
-						hum:ChangeState(Enum.HumanoidStateType.Jumping)
-					end
-					task.wait()
-					debounce = false
-				end
-			end)
-		end
+			end
+		end)
 	end
 
 	local function SetNoclip(enabled)
@@ -715,29 +760,39 @@ local ExtraSetting = {} do
 			connNoclip:Disconnect()
 			connNoclip = nil
 		end
+		if connNoclipChar then
+			connNoclipChar:Disconnect()
+			connNoclipChar = nil
+		end
+		if connNoclipDescendant then
+			connNoclipDescendant:Disconnect()
+			connNoclipDescendant = nil
+		end
+		if connNoclipRemoving then
+			connNoclipRemoving:Disconnect()
+			connNoclipRemoving = nil
+		end
 
 		if enabled then
+			UpdateNoclipCache(player.Character)
+			connNoclipChar = player.CharacterAdded:Connect(function(char)
+				UpdateNoclipCache(char)
+			end)
+
 			connNoclip = runService.Stepped:Connect(function()
 				if (ExtraSetting.Library and ExtraSetting.Library.Unloaded) or not ExtraSetting.SavedConfig.EnableNoclip then
-					if connNoclip then
-						connNoclip:Disconnect()
-						connNoclip = nil
-					end
+					SetNoclip(false)
 					return
 				end
-				local char = player.Character
-				if char then
-					for _, part in ipairs(char:GetDescendants()) do
-						if part:IsA("BasePart") and part.CanCollide then
-							part.CanCollide = false
-							noclipParts[part] = true
-						end
+				for _, part in ipairs(noclipParts) do
+					if part.Parent and part.CanCollide then
+						part.CanCollide = false
 					end
 				end
 			end)
 		else
-			for part, _ in pairs(noclipParts) do
-				if typeof(part) == "Instance" and part:IsA("BasePart") and part.Parent then
+			for _, part in ipairs(noclipParts) do
+				if part.Parent then
 					part.CanCollide = true
 				end
 			end
@@ -745,7 +800,70 @@ local ExtraSetting = {} do
 		end
 	end
 
+	local function StopRandomNotify()
+		if randomNotifyThread then
+			pcall(task.cancel, randomNotifyThread)
+			randomNotifyThread = nil
+		end
+		isRandomNotifyRunning = false
+	end
+
+	local function StartRandomNotifyLoop()
+		StopRandomNotify()
+		local cfg = ExtraSetting.RandomNotifyConfig
+		if not cfg or not cfg.Messages or #cfg.Messages == 0 then return end
+		if not ExtraSetting.SavedConfig.EnableRandomNotify then return end
+
+		isRandomNotifyRunning = true
+		randomNotifyThread = task.spawn(function()
+			local interval = cfg.Interval or {}
+			local minTime = math.max(5, interval.Min or interval.min or 300)
+			local maxTime = math.max(minTime, interval.Max or interval.max or 600)
+			local lastIdx = nil
+
+			while isRandomNotifyRunning and not (ExtraSetting.Library and ExtraSetting.Library.Unloaded) and ExtraSetting.SavedConfig.EnableRandomNotify do
+				local waitSec = math.random(minTime, maxTime)
+				task.wait(waitSec)
+
+				if not isRandomNotifyRunning or not ExtraSetting.SavedConfig.EnableRandomNotify or (ExtraSetting.Library and ExtraSetting.Library.Unloaded) then
+					break
+				end
+
+				local msgs = cfg.Messages
+				if msgs and #msgs > 0 and ExtraSetting.Library then
+					local idx = math.random(1, #msgs)
+					if #msgs > 1 and idx == lastIdx then
+						idx = (idx % #msgs) + 1
+					end
+					lastIdx = idx
+
+					local msg = msgs[idx]
+					if msg and msg.Content then
+						ExtraSetting.Library:Notify({
+							Title = msg.Title or "Notification",
+							SubTitle = msg.SubTitle,
+							Content = msg.Content,
+							Duration = msg.Duration or cfg.Duration or 6,
+						})
+					end
+				end
+			end
+			isRandomNotifyRunning = false
+		end)
+	end
+
 	local function Cleanup()
+		if saveConfigThread then
+			task.cancel(saveConfigThread)
+			saveConfigThread = nil
+			SaveConfig()
+		end
+
+		if connTeleportFailed then
+			connTeleportFailed:Disconnect()
+			connTeleportFailed = nil
+		end
+
 		if purchasePromptConnection then
 			purchasePromptConnection:Disconnect()
 			purchasePromptConnection = nil
@@ -773,6 +891,7 @@ local ExtraSetting = {} do
 		end
 
 		StopAntiAFK()
+		StopRandomNotify()
 		if connErrorMessage then
 			connErrorMessage:Disconnect()
 			connErrorMessage = nil
@@ -780,16 +899,15 @@ local ExtraSetting = {} do
 
 		SetWalkSpeed(false)
 		SetJumpPower(false)
-		SetMultiJump(false)
 		SetNoclip(false)
 		originalWalkSpeed = nil
 		originalJumpPower = nil
 		originalJumpHeight = nil
 
 		pcall(function()
-			local pg = player:FindFirstChild("PlayerGui")
-			if pg then
-				local b = pg:FindFirstChild("AFKBlackoutScreenGui")
+			local container = GetGuiContainer()
+			if container then
+				local b = container:FindFirstChild("AFKBlackoutScreenGui")
 				if b then b:Destroy() end
 			end
 		end)
@@ -854,6 +972,32 @@ local ExtraSetting = {} do
 		self.Folder = folder
 	end
 
+	function ExtraSetting:AddLink(linkData)
+		table.insert(self.Links, linkData)
+	end
+
+	function ExtraSetting:SetLinks(links)
+		self.Links = links or {}
+	end
+
+	function ExtraSetting:SetRandomNotify(config)
+		if type(config) == "table" then
+			if config.Messages then
+				self.RandomNotifyConfig = config
+			elseif #config > 0 then
+				self.RandomNotifyConfig = { Messages = config }
+			else
+				self.RandomNotifyConfig = config
+			end
+		else
+			self.RandomNotifyConfig = nil
+		end
+
+		if inited and self.SavedConfig.EnableRandomNotify then
+			StartRandomNotifyLoop()
+		end
+	end
+
 	function ExtraSetting:Init()
 		if inited then return end
 		inited = true
@@ -871,11 +1015,13 @@ local ExtraSetting = {} do
 		SetupQueueOnTeleport()
 
 		pcall(function()
-			local playerGui = player:FindFirstChild("PlayerGui")
-			if not playerGui then return end
+			local container = GetGuiContainer()
+			if not container then return end
 			fpsOverlayGui = Instance.new("ScreenGui")
 			fpsOverlayGui.Name = "FluentFPSOverlay"
 			fpsOverlayGui.ResetOnSpawn = false
+			fpsOverlayGui.IgnoreGuiInset = true
+			fpsOverlayGui.DisplayOrder = 2147483647
 			fpsOverlayGui.Enabled = false
 
 			local bg = Instance.new("Frame")
@@ -885,6 +1031,7 @@ local ExtraSetting = {} do
 			bg.BackgroundColor3 = Color3.new(0, 0, 0)
 			bg.BackgroundTransparency = 0.35
 			bg.BorderSizePixel = 0
+			bg.ZIndex = 2147483647
 			bg.Parent = fpsOverlayGui
 
 			fpsOverlayLabel = Instance.new("TextLabel")
@@ -895,10 +1042,11 @@ local ExtraSetting = {} do
 			fpsOverlayLabel.Font = Enum.Font.Code
 			fpsOverlayLabel.TextXAlignment = Enum.TextXAlignment.Right
 			fpsOverlayLabel.Position = UDim2.fromOffset(0, 0)
+			fpsOverlayLabel.ZIndex = 2147483647
 			fpsOverlayLabel.Text = "FPS: -- | MEM: -- MB"
 			fpsOverlayLabel.Parent = bg
 
-			fpsOverlayGui.Parent = playerGui
+			fpsOverlayGui.Parent = container
 		end)
 
 		if self.SavedConfig.EnableFPSOverlay then
@@ -935,15 +1083,16 @@ local ExtraSetting = {} do
 		if self.SavedConfig.EnableJumpPower then
 			SetJumpPower(true)
 		end
-		if self.SavedConfig.EnableMultiJump then
-			SetMultiJump(true)
-		end
 		if self.SavedConfig.EnableNoclip then
 			SetNoclip(true)
 		end
 
 		if self.SavedConfig.EnableAutoRejoin and ExtraSetting.AutoExecuteUrl then
 			StartAutoRejoinTimerLoop()
+		end
+
+		if self.SavedConfig.EnableRandomNotify and self.RandomNotifyConfig then
+			StartRandomNotifyLoop()
 		end
 
 		if self.Library and self.Library.OnUnload then
@@ -960,34 +1109,25 @@ local ExtraSetting = {} do
 		do
 			local section = tab:AddSection("Utilities")
 
-			section:AddButton({
-				Title = "Fluent Renewed Plus",
-				Description = "Lamduck2005 > Fluent-Renewed-Plus",
-				Callback = function()
-					local ok = pcall(function() setclipboard("https://github.com/lamduck2005/Fluent-Renewed-Plus") end)
-					lib:Notify({
-						Title = "Links",
-						Content = ok and "Link copied to clipboard!" or "Clipboard not available",
-						Duration = 3,
-					})
-				end,
-			})
-
-			if self.Discord then
-				section:AddButton({
-					Title = "Join Discord",
-					Callback = function()
-						local ok = pcall(function() setclipboard(self.Discord) end)
-						lib:Notify({
-							Title = "Discord",
-							Content = ok and "Link copied to clipboard!" or "Clipboard not available",
-							Duration = 3,
+			if type(self.Links) == "table" and #self.Links > 0 then
+				for _, link in ipairs(self.Links) do
+					if type(link) == "table" and link.Url then
+						section:AddButton({
+							Title = link.Title or "Link",
+							Description = link.Description,
+							Callback = function()
+								local ok = pcall(function() setclipboard(link.Url) end)
+								lib:Notify({
+									Title = link.Title or "Links",
+									Content = ok and "Link copied to clipboard!" or "Clipboard not available",
+									Duration = 3,
+								})
+							end,
 						})
-					end,
-				})
+					end
+				end
+				section:AddDivider()
 			end
-
-			section:AddDivider()
 
 			section:AddSlider("ExtraSetting_WalkSpeed", {
 				Title = "WalkSpeed",
@@ -997,7 +1137,7 @@ local ExtraSetting = {} do
 				Rounding = 0,
 				Callback = function(value)
 					cfg.WalkSpeed = value
-					SaveConfig()
+					DebouncedSaveConfig()
 					if cfg.EnableWalkSpeed then
 						local char = player.Character
 						local hum = char and char:FindFirstChildWhichIsA("Humanoid")
@@ -1028,7 +1168,7 @@ local ExtraSetting = {} do
 				Rounding = 0,
 				Callback = function(value)
 					cfg.JumpPower = value
-					SaveConfig()
+					DebouncedSaveConfig()
 					if cfg.EnableJumpPower then
 						local char = player.Character
 						local hum = char and char:FindFirstChildWhichIsA("Humanoid")
@@ -1053,22 +1193,10 @@ local ExtraSetting = {} do
 				end,
 			})
 
-			section:AddToggle("ExtraSetting_MultiJump", {
-				Title = "Multi Jump",
-				Description = "Allows jumping repeatedly in mid-air",
-				Default = cfg.EnableMultiJump,
-				Callback = function(value)
-					cfg.EnableMultiJump = value
-					SaveConfig()
-					SetMultiJump(value)
-				end,
-			})
-
 			section:AddDivider()
 
 			section:AddToggle("ExtraSetting_Noclip", {
 				Title = "Noclip",
-				Description = "Allows character to walk through walls and obstacles",
 				Default = cfg.EnableNoclip,
 				Callback = function(value)
 					cfg.EnableNoclip = value
@@ -1081,7 +1209,6 @@ local ExtraSetting = {} do
 
 			section:AddToggle("ExtraSetting_DisablePurchasePrompts", {
 				Title = "Disable Purchase Prompts",
-				Description = "Block Robux and gamepass purchase popups",
 				Default = cfg.DisablePurchasePrompts,
 				Callback = function(Value)
 					cfg.DisablePurchasePrompts = Value
@@ -1090,19 +1217,21 @@ local ExtraSetting = {} do
 				end,
 			})
 
-			section:AddToggle("ExtraSetting_AntiAFK", {
-				Title = "Anti-AFK",
-				Default = cfg.EnableAntiAFK,
-				Callback = function(v)
-					cfg.EnableAntiAFK = v
-					SaveConfig()
-					if v then
-						InitAntiAFK()
-					else
-						StopAntiAFK()
-					end
-				end,
-			})
+			if self.RandomNotifyConfig and self.RandomNotifyConfig.Messages and #self.RandomNotifyConfig.Messages > 0 then
+				section:AddToggle("ExtraSetting_RandomNotify", {
+					Title = "Tips & Announcements",
+					Default = cfg.EnableRandomNotify,
+					Callback = function(v)
+						cfg.EnableRandomNotify = v
+						SaveConfig()
+						if v then
+							StartRandomNotifyLoop()
+						else
+							StopRandomNotify()
+						end
+					end,
+				})
+			end
 
 			section:AddToggle("ExtraSetting_AutoReconnect", {
 				Title = "Auto Reconnect",
@@ -1163,7 +1292,6 @@ local ExtraSetting = {} do
 
 			section:AddToggle("ExtraSetting_FPSOverlay", {
 				Title = "FPS Overlay",
-				Description = "Shows FPS and Lua memory usage on screen",
 				Default = cfg.EnableFPSOverlay,
 				Callback = function(v)
 					cfg.EnableFPSOverlay = v
@@ -1176,7 +1304,7 @@ local ExtraSetting = {} do
 
 			local afkToggle = section:AddToggle("ExtraSetting_AFKMode", {
 				Title = "AFK Mode",
-				Description = "Disables 3D rendering and mutes audio to reduce resource usage",
+				Description = "Disables 3D rendering + mutes",
 				Default = false,
 				Callback = function(v)
 					isAFKModeEnabled = v
@@ -1220,7 +1348,7 @@ local ExtraSetting = {} do
 						cfg.EnableAutoAFK = true
 						cfg.AutoAFKTime = sec
 						autoAFKTimeThreshold = sec
-						lastActivityTime = tick()
+						lastActivityTime = os.clock()
 						StartAutoAFKLoop()
 					end
 					SaveConfig()
@@ -1270,7 +1398,7 @@ local ExtraSetting = {} do
 							if autoExecOption then
 								autoExecOption:SetValue(true)
 							end
-							autoRejoinTimerStartTime = tick()
+							autoRejoinTimerStartTime = os.clock()
 							StartAutoRejoinTimerLoop()
 						end
 						SaveConfig()
