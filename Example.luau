@@ -381,7 +381,16 @@ InterfaceManager:SetFolder("FluentScriptHub")
 SaveManager:SetFolder("FluentScriptHub/specific-game")
 ExtraSetting:SetFolder("FluentScriptHub")
 
--- ExtraSetting.Discord = "https://discord.gg/N3uxkAHYtM"
+-- ExtraSetting.Links = {
+--     { Title = "Join Discord", Description = "Community & Updates", Url = "https://discord.gg/N3uxkAHYtM" },
+-- }
+-- ExtraSetting:SetRandomNotify({
+--     Interval = { Min = 300, Max = 600 }, -- Random between 5 to 10 minutes
+--     Messages = {
+--         { Title = "Discord Community", Content = "Join our Discord server for updates and support!" },
+--         { Title = "Found a Bug?", Content = "Please report any bugs to our team on Discord." },
+--     }
+-- })
 ExtraSetting.AutoExecuteUrl = "https://raw.githubusercontent.com/DarkNetworks/Infinite-Yield/main/latest.lua"
 
 InterfaceManager:BuildInterfaceSection(Tabs.Settings)
